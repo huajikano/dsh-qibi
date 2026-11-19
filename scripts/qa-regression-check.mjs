@@ -128,6 +128,45 @@ try{
     }})
     try{await app.settle();app.nodes(n=>n.type==='button'&&n.props.className==='qibi-author-btn')[0].props.onClick();await app.settle();b.resolve({id:2,name:'B',sources:[],versions:[]});await app.settle();assert.equal(app.nodes(n=>n.props?.className==='qibi-distill-title')[0].props.children,'B');a.resolve({id:1,name:'A',sources:[],versions:[]});await app.settle();assert.equal(app.nodes(n=>n.props?.className==='qibi-distill-title')[0].props.children,'B')}finally{app.unmount()}
   })
+  await check('连续性首次读取失败禁止空写，重试成功才解锁', async()=>{
+    let fail=true,writes=0
+    const app=mount(panel.ContinuityTab,{novelId:1,chapterId:11,call:async(method)=>{
+      if(method==='volumes')return{volumes:[]}
+      if(method==='chapterSummary'){if(fail)throw Error('fixture summary load failure');return{summary:{exists:true,summary:'保留摘要',keyEvents:'',cliffhanger:'',token:'s1'}}}
+      if(method==='writerState'){if(fail)throw Error('fixture writer load failure');return{writerState:{exists:true,progress:'保留进度',foreshadowing:'[]',token:'w1'}}}
+      if(method==='updateChapterSummary'||method==='updateWriterState'){writes++;return{}}
+      throw Error(method)
+    }})
+    try{
+      await app.settle()
+      const saveButtons=app.nodes(n=>n.type==='button'&&n.props.className==='qibi-btn small primary')
+      assert.equal(saveButtons.length,2);assert.ok(saveButtons.every(n=>n.props.disabled))
+      for(const button of saveButtons)await button.props.onClick()
+      await app.settle();assert.equal(writes,0)
+      fail=false
+      const retries=app.nodes(n=>n.type==='button'&&n.props.children==='retry')
+      assert.equal(retries.length,2)
+      for(const button of retries)await button.props.onClick()
+      await app.settle();assert.ok(app.field('保留摘要'));assert.ok(app.field('保留进度'))
+      assert.ok(app.nodes(n=>n.type==='button'&&n.props.className==='qibi-btn small primary').every(n=>!n.props.disabled))
+    }finally{app.unmount()}
+  })
+  await check('蒸馏列表加载失败可重试，重复点当前作者不清详情', async()=>{
+    let fail=true
+    const app=mount(panel.DistillTab,{novelId:1,call:async(method)=>{
+      if(method==='distilledAuthors'){if(fail)throw Error('fixture author list failure');return[{id:1,name:'固定作者',sourceCount:0}]}
+      if(method==='writerState')return{writerState:{}}
+      if(method==='distilledAuthor')return{id:1,name:'固定作者',sources:[],versions:[]}
+      throw Error(method)
+    }})
+    try{
+      await app.settle();assert.ok(app.button('retry'))
+      fail=false;await app.button('retry').props.onClick();await app.settle()
+      assert.equal(app.nodes(n=>n.props?.className==='qibi-distill-title')[0].props.children,'固定作者')
+      app.nodes(n=>n.type==='button'&&n.props.className==='qibi-author-btn active')[0].props.onClick();await app.settle()
+      assert.equal(app.nodes(n=>n.props?.className==='qibi-distill-title')[0].props.children,'固定作者')
+    }finally{app.unmount()}
+  })
   console.log(`PASS: ${passed} deferred-request QA checks; actual component callbacks, isolated state and fake failures only. Browser layout is not tested here.`)
 }finally{
   for(const[key,descriptor]of Object.entries(originals)){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else delete globalThis[key]}

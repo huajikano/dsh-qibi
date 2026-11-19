@@ -17,6 +17,9 @@ import CharacterAiDialog from './CharacterAiDialog.jsx'
 import { AppearanceFrame, ThemeButton } from './Appearance.jsx'
 import { runSerializedSave, flushDraft } from './draft-save.js'
 import { saveCharacterEditor } from './character-editor.js'
+import DistillGuide from './DistillGuide.jsx'
+import { distillInstruction } from './distill-guide.js'
+import ForeshadowEditor from './ForeshadowEditor.jsx'
 
 /** 面板 id：侧栏图标与中央面板必须用同一个。 */
 const PANEL_ID = 'qibi'
@@ -1152,6 +1155,7 @@ function CharactersTab({ call, novelId, chapterId, writable, active, notify, t, 
 /** 蒸馏作者：素材、DSH Agent 生成、版本与绑定。 */
 function DistillTab({ call, novelId, writable, active, notify, t }) {
   const [authors, setAuthors] = useState(null)
+  const [authorsError, setAuthorsError] = useState('')
   const [authorId, setAuthorId] = useState(null)
   const [detail, setDetail] = useState(null)
   const [binding, setBinding] = useState(null)
@@ -1161,6 +1165,8 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
   const [pasteOpen, setPasteOpen] = useState(false)
   const [pasteName, setPasteName] = useState('')
   const [pasteText, setPasteText] = useState('')
+  const [instruction, setInstruction] = useState('')
+  const [instructionCopied, setInstructionCopied] = useState(false)
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState(null)
   const [preview, setPreview] = useState(null)
@@ -1170,12 +1176,14 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
   authorRef.current = authorId
 
   const loadAuthors = useCallback(async () => {
+    setAuthorsError('')
     try {
       const result = await call('distilledAuthors', {})
       const list = Array.isArray(result) ? result : (result?.authors ?? [])
       setAuthors(list)
       setAuthorId(previous => (previous != null && list.some(author => author.id === previous) ? previous : (list[0]?.id ?? null)))
     } catch (cause) {
+      setAuthorsError(causeText(cause))
       notify('error', causeText(cause))
     }
   }, [call, notify])
@@ -1216,6 +1224,8 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
     if (!active) return
     setDetail(null)
     setPreview(null)
+    setInstruction('')
+    setInstructionCopied(false)
     void loadDetail(authorId)
   }, [active, authorId, loadDetail])
 
@@ -1337,19 +1347,17 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
   }
 
   const copyInstruction = async () => {
-    if (!detail) return
-    const text = [
-      `请蒸馏起笔作者《${detail.name}》（authorId=${detail.id}）。`,
-      `1. 调用 qibi_distill(action=read, authorId=${detail.id}) 读取素材、上一版本与三段提示词。`,
-      '2. 依次生成 writingSkill、authorPersona、skillMarkdown。',
-      `3. 调用 qibi_distill(action=save, authorId=${detail.id}, writingSkill, authorPersona, skillMarkdown, sampleSummary) 保存新版本。`,
-      '完成后回到起笔面板的「蒸馏」页签刷新查看版本。',
-    ].join('\n')
+    if (!detail || detail.id !== authorId) return
+    const text = distillInstruction(detail)
+    setInstruction(text)
+    setInstructionCopied(false)
     try {
       await navigator.clipboard.writeText(text)
+      if (authorRef.current !== detail.id) return
+      setInstructionCopied(true)
       notify('info', t('distillInstructionCopied'))
-    } catch (cause) {
-      notify('error', causeText(cause))
+    } catch {
+      if (authorRef.current === detail.id) notify('info', t('distillCopyManual'))
     }
   }
 
@@ -1416,7 +1424,8 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
           </div>
         )}
         <div className="qibi-list">
-          {authors === null && <div className="qibi-sub" style={{ padding: '8px' }}>{t('loading')}</div>}
+          {authorsError && <div className="qibi-error-text" role="alert">{authorsError} <button type="button" className="qibi-btn small" onClick={() => void loadAuthors()}>{t('retry')}</button></div>}
+          {!authorsError && authors === null && <div className="qibi-sub" style={{ padding: '8px' }}>{t('loading')}</div>}
           {authors !== null && authors.length === 0 && <div className="qibi-sub" style={{ padding: '8px' }}>{t('distillEmpty')}</div>}
           {(authors ?? []).map(author => (
             <button
@@ -1424,7 +1433,7 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
               key={author.id}
               className={`qibi-author-btn${author.id === authorId ? ' active' : ''}`}
               disabled={busy}
-              onClick={() => { setDetail(null); setAuthorId(author.id) }}
+              onClick={() => { if (author.id === authorId) return; setDetail(null); setAuthorId(author.id) }}
             >
               <span className="qibi-author-name">{author.name}</span>
               <span className="qibi-author-meta">{author.sourceCount} {t('distillSourceCount')} · {author.currentVersion ? `v${author.currentVersion.version}` : t('distillNoVersion')}</span>
@@ -1434,6 +1443,15 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
       </div>
 
       <div className="qibi-distill-main">
+        <DistillGuide
+          detail={detail?.id === authorId ? detail : null}
+          loading={authors === null || (authorId != null && detail?.id !== authorId && !detailError)}
+          writable={writable} busy={busy} boundAuthorId={binding?.distilledAuthorId} novelId={novelId} t={t}
+          onCreate={() => setCreating(true)}
+          onAddMaterials={() => setPasteOpen(true)}
+          onCopyInstruction={() => void copyInstruction()}
+          onBind={() => { if (detail?.id === authorId) void bindAuthor(detail.id) }}
+        />
         {detailError && <LoadError message={detailError} onRetry={() => void loadDetail(authorId)} t={t} />}
         {!detailError && (!detail || detail.id !== authorId) && (
           <div className="qibi-empty">
@@ -1536,6 +1554,13 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
               </div>
             </div>
 
+            {instruction && <section className="qibi-card qibi-distill-instruction" aria-label={t('distillInstructionPreview')}>
+              <strong>{t(instructionCopied ? 'distillPasteIntoChat' : 'distillCopyManual')}</strong>
+              <p>{t('distillAfterChatHint')}</p>
+              <label className="qibi-field"><span className="qibi-label">{t('distillInstructionPreview')}</span><textarea className="qibi-textarea mono" rows={7} readOnly value={instruction} onFocus={event => event.target.select()} /></label>
+              <button type="button" className="qibi-btn small" disabled={busy} onClick={() => { void loadDetail(authorId); void loadAuthors(); void loadBinding() }}>{t('distillRefreshAfterChat')}</button>
+            </section>}
+
             <div className="qibi-section-title">{t('distillVersions')} ({detail.versions.length})</div>
             {detail.versions.length === 0 && <div className="qibi-sub">{t('distillNoVersions')}</div>}
             {detail.versions.map(version => (
@@ -1593,6 +1618,8 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
   const [busy, setBusy] = useState(false)
   const [loadingSummary, setLoadingSummary] = useState(false)
   const [loadingWriter, setLoadingWriter] = useState(false)
+  const [summaryError, setSummaryError] = useState('')
+  const [writerError, setWriterError] = useState('')
   const summarySeq = useRef(0)
   const writerSeq = useRef(0)
   const volumeSeq = useRef(0)
@@ -1624,6 +1651,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
     const target = chapterId
     const seq = ++summarySeq.current
     setLoadingSummary(true)
+    setSummaryError('')
     try {
       const result = await call('chapterSummary', { chapterId: target })
       // 切章后旧响应不能覆盖新章的表单，否则保存会把 A 章摘要写进 B 章。
@@ -1636,7 +1664,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
       })
       loadedSummaryFor.current = target
     } catch (cause) {
-      if (seq === summarySeq.current) notify('error', causeText(cause))
+      if (seq === summarySeq.current) { setSummaryError(causeText(cause)); notify('error', causeText(cause)) }
     } finally {
       if (seq === summarySeq.current) setLoadingSummary(false)
     }
@@ -1648,6 +1676,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
     const target = novelId
     const seq = ++writerSeq.current
     setLoadingWriter(true)
+    setWriterError('')
     try {
       const result = await call('writerState', { novelId: target })
       if (seq !== writerSeq.current || scopeRef.current.novelId !== target) return
@@ -1658,7 +1687,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
       })
       loadedWriterFor.current = target
     } catch (cause) {
-      if (seq === writerSeq.current) notify('error', causeText(cause))
+      if (seq === writerSeq.current) { setWriterError(causeText(cause)); notify('error', causeText(cause)) }
     } finally {
       if (seq === writerSeq.current) setLoadingWriter(false)
     }
@@ -1678,6 +1707,8 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
     setWriterForm({ progress: '', foreshadowing: '[]' })
     setLoadingSummary(false)
     setLoadingWriter(false)
+    setSummaryError('')
+    setWriterError('')
   }, [novelId])
 
   useEffect(() => {
@@ -1731,7 +1762,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
   }
 
   const submitSummary = async () => {
-    if (busy || loadingSummary || chapterId === null) return
+    if (!writable || busy || loadingSummary || summaryError || chapterId === null || loadedSummaryFor.current !== chapterId) return
     setBusy(true)
     try {
       await call('updateChapterSummary', { chapterId, ...summaryForm, expectedToken: summary?.token ?? undefined })
@@ -1750,7 +1781,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
   }
 
   const submitWriter = async () => {
-    if (busy || loadingWriter) return
+    if (!writable || busy || loadingWriter || writerError || loadedWriterFor.current !== novelId) return
     try {
       JSON.parse(writerForm.foreshadowing)
     } catch {
@@ -1814,10 +1845,11 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
       )}
 
       <div className="qibi-section-title">{t('chapterSummary')}</div>
+      {summaryError && <div className="qibi-error-text" role="alert">{t('continuityReadFailed')} {summaryError} <button type="button" className="qibi-btn small" disabled={busy || loadingSummary} onClick={() => void loadSummary()}>{t('retry')}</button></div>}
       {chapterId === null
         ? <div className="qibi-sub">{t('noChapterHint')}</div>
         : (
-          <fieldset className="qibi-form-lock" disabled={busy || !writable || loadingSummary}><div className="qibi-form">
+          <fieldset className="qibi-form-lock" disabled={busy || !writable || loadingSummary || Boolean(summaryError) || loadedSummaryFor.current !== chapterId}><div className="qibi-form">
             <Field label={t('summaryText')}>
               <textarea className="qibi-textarea" rows={3} value={summaryForm.summary} onChange={event => setSummaryForm(current => ({ ...current, summary: event.target.value }))} />
             </Field>
@@ -1828,7 +1860,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
               <textarea className="qibi-textarea" rows={2} value={summaryForm.cliffhanger} onChange={event => setSummaryForm(current => ({ ...current, cliffhanger: event.target.value }))} />
             </Field>
             <div className="qibi-actions">
-              <button type="button" className="qibi-btn small primary" disabled={!writable || busy || loadingSummary} onClick={() => void submitSummary()}>{t('save')}</button>
+              <button type="button" className="qibi-btn small primary" disabled={!writable || busy || loadingSummary || Boolean(summaryError) || loadedSummaryFor.current !== chapterId} onClick={() => void submitSummary()}>{t('save')}</button>
               <button type="button" className="qibi-btn small" disabled={busy || loadingSummary} onClick={() => { if (window.confirm(t('discardInfoDraftConfirm'))) void loadSummary() }}>{t('reload')}</button>
               {summary?.exists && <span className="qibi-sub">{t('updatedAt')} {summary.updatedAt}</span>}
             </div>
@@ -1836,15 +1868,17 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
         )}
 
       <div className="qibi-section-title">{t('writerState')}</div>
-      <fieldset className="qibi-form-lock" disabled={busy || !writable || loadingWriter}><div className="qibi-form">
+      {writerError && <div className="qibi-error-text" role="alert">{t('continuityReadFailed')} {writerError} <button type="button" className="qibi-btn small" disabled={busy || loadingWriter} onClick={() => void loadWriter()}>{t('retry')}</button></div>}
+      <fieldset className="qibi-form-lock" disabled={busy || loadingWriter || Boolean(writerError) || loadedWriterFor.current !== novelId}><div className="qibi-form">
         <Field label={t('progress')}>
-          <textarea className="qibi-textarea" rows={3} value={writerForm.progress} onChange={event => setWriterForm(current => ({ ...current, progress: event.target.value }))} />
+          <textarea className="qibi-textarea" rows={3} readOnly={!writable} value={writerForm.progress} onChange={event => setWriterForm(current => ({ ...current, progress: event.target.value }))} />
         </Field>
-        <Field label={t('foreshadowing')}>
-          <textarea className="qibi-textarea mono" rows={5} value={writerForm.foreshadowing} onChange={event => setWriterForm(current => ({ ...current, foreshadowing: event.target.value }))} />
-        </Field>
+        <div className="qibi-field">
+          <span className="qibi-label">{t('foreshadowing')}</span>
+          <ForeshadowEditor value={writerForm.foreshadowing} onChange={value => setWriterForm(current => ({ ...current, foreshadowing: value }))} disabled={!writable || busy || loadingWriter || Boolean(writerError) || loadedWriterFor.current !== novelId} t={t} />
+        </div>
         <div className="qibi-actions">
-          <button type="button" className="qibi-btn small primary" disabled={!writable || busy || loadingWriter} onClick={() => void submitWriter()}>{t('save')}</button>
+          <button type="button" className="qibi-btn small primary" disabled={!writable || busy || loadingWriter || Boolean(writerError) || loadedWriterFor.current !== novelId} onClick={() => void submitWriter()}>{t('save')}</button>
           <button type="button" className="qibi-btn small" disabled={busy || loadingWriter} onClick={() => { if (window.confirm(t('discardInfoDraftConfirm'))) void loadWriter() }}>{t('reload')}</button>
           {writerState?.exists && <span className="qibi-sub">{t('updatedAt')} {writerState.updatedAt}</span>}
         </div>

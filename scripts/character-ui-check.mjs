@@ -7,8 +7,8 @@ import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { transform } from 'esbuild'
 
-const require = createRequire(import.meta.url)
 const filename = fileURLToPath(new URL('../src/CharacterAiDialog.jsx', import.meta.url))
+const require = createRequire(filename)
 const source = await readFile(filename, 'utf8')
 const compiled = await transform(source, { loader: 'jsx', format: 'cjs', target: 'es2022', sourcefile: filename })
 const evaluated = { exports: {} }
@@ -17,6 +17,7 @@ const CharacterAiDialog = evaluated.exports.default
 const t = key => key
 const model = { available: true, model: 'fixture/model', reasoning: { known: true, supported: true, efforts: [{ id: 'low' }, { id: 'high' }], selectedEffort: 'low' } }
 const fields = ['name', 'alias', 'role', 'gender', 'age', 'appearance', 'personality', 'background']
+const chapters = { chapters: [{ id: 11, title: 'First', wordCount: 0, order: 0 }, { id: 8, title: 'Second', wordCount: 42, order: 1 }, { id: 6, title: 'Last', wordCount: 31, order: 2 }] }
 const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no }); return { promise, resolve, reject } }
 const tick = () => new Promise(resolve => setImmediate(resolve))
 let assertions = 0
@@ -42,6 +43,8 @@ function mount(overrides = {}) {
   const storage = new Map([['qibi:ai-reasoning', JSON.stringify({ 'fixture/model': 'high' })]])
   globalThis.localStorage = { getItem(key) { return storage.get(key) }, setItem(key, value) { storage.set(key, value) } }
   const props = { call: async () => model, novelId: 7, chapterId: 8, characters: [], writable: true, t, onClose() {}, onImported() {}, ...overrides }
+  const call = props.call
+  props.call = (...args) => args[0] === 'chapters' && !overrides.chapterFixture ? Promise.resolve(chapters) : call(...args)
   const dispatcher = {
     useState(initial) {
       const index = cursor++
@@ -143,7 +146,7 @@ check(notified.length === 1 && closeCount === 0, 'awaits onImported before close
 check(fixture.text().includes('characterAiCreated 1') && fixture.text().includes('characterAiSkipped 0'), 'created/skipped feedback visible while callback runs')
 importGate.resolve()
 await importing
-check(closeCount === 1, 'closes after import callback resolves')
+check(closeCount === 0 && fixture.nodes(node => node.type === 'fieldset').length === 1 && fixture.text().includes('characterAiDuplicate'), 'successful import removes the selected character but preserves the unchecked duplicate')
 fixture.unmount()
 check(document.activeElement === fixture.trigger, 'returns focus to trigger on unmount')
 
@@ -250,7 +253,7 @@ const retryFixture = mount({ chapterId: null, call: async (method, input) => {
   }
   allRequest = input
   if (previewAttempt++ === 0) throw Error('fixture preview failure')
-  return { characters: [], source: { scope: 'all', analyzedChapters: 0, availableChapters: 0, truncated: false } }
+  return { characters: [], source: { scope: 'range', analyzedChapters: 3, availableChapters: 3, truncated: false, nextCursor: null, done: true } }
 } })
 await retryFixture.settle()
 check(retryFixture.text().includes('fixture metadata failure') && retryFixture.button('characterAiStartExtract').props.disabled, 'metadata error prevents start and exposes retry')
@@ -262,8 +265,8 @@ await retryFixture.settle()
 check(retryFixture.text().includes('fixture preview failure'), 'preview error remains retryable')
 await retryFixture.button('characterAiStartExtract').props.onClick()
 await retryFixture.settle()
-check(allRequest.scope === 'all' && !Object.hasOwn(allRequest, 'chapterId'), 'without current chapter defaults to bounded all scope')
-check(retryFixture.text().includes('characterAiEmpty') && retryFixture.button('characterAiRetryPreview'), 'empty result offers retry')
+check(allRequest.scope === 'range' && allRequest.startChapterId === 11 && allRequest.endChapterId === 6 && !Object.hasOwn(allRequest, 'chapterId'), 'without current chapter, whole-book analysis uses the ordered first and last chapter IDs')
+check(retryFixture.text().includes('characterAiEmpty') && retryFixture.button('characterAiResetPreview') && !retryFixture.button('characterAiNextBatch'), 'empty final result offers restart, not automatic retry')
 retryFixture.unmount()
 
 const confirmedImport = deferred()
@@ -322,5 +325,140 @@ for (const departure of ['context', 'unmount']) {
   check(callbacks === 0, `${departure} ignores expired import callbacks`)
   if (departure === 'context') detached.unmount()
 }
+
+function rangeResult(characters, nextCursor, availableChapters = 2) {
+  return { characters, source: { scope: 'range', analyzedChapters: 1, availableChapters, truncated: nextCursor != null, nextCursor, done: nextCursor == null } }
+}
+const select = (fixture, key) => fixture.nodes(node => node.type === 'select' && node.props['aria-label'] === key)[0]
+const checks = fixture => fixture.nodes(node => node.type === 'input' && node.props.type === 'checkbox')
+const fieldsets = fixture => fixture.nodes(node => node.type === 'fieldset')
+const edit = (fixture, row, field, value) => {
+  const input = fieldsets(fixture)[row].props.children[2].props.children[fields.indexOf(field)].props.children
+  input.props.onChange({ target: { value } })
+  fixture.sync()
+}
+const read = (fixture, row, field) => fieldsets(fixture)[row].props.children[2].props.children[fields.indexOf(field)].props.children.props.value
+
+const batchRequests = []
+const batchImports = []
+const canceledBatch = deferred()
+const firstCursor = { chapterIndex: 0, offset: 6000 }
+const handoffCursor = { chapterIndex: 1, offset: 0 }
+let batchClosed = 0
+const batch = mount({
+  call: async (method, input, options) => {
+    if (method === 'aiInfo') return model
+    if (method === 'importCharacters') {
+      batchImports.push(input)
+      return { created: input.characters.length, skipped: 0, characters: batchImports.flatMap(row => row.characters) }
+    }
+    batchRequests.push({ input, signal: options.signal })
+    switch (batchRequests.length) {
+      case 1: return rangeResult([{ name: 'Alice', alias: 'A', appearance: 'First outfit', personality: 'first personality' }], firstCursor)
+      case 2: throw Error('fixture max tokens')
+      case 3: return rangeResult([{ name: 'Invalid Cursor Fixture' }], firstCursor)
+      case 4: return canceledBatch.promise
+      case 5: return rangeResult([{ name: 'ＡＬＩＣＥ', alias: 'must not restore', appearance: 'should not override', background: 'new fact', personality: 'do not replace' }, ...Array.from({ length: 29 }, (_, index) => ({ name: `Batch person ${index}` }))], handoffCursor)
+      case 6: return rangeResult([{ name: ' alice ', age: '31' }, { name: 'Final person A' }, { name: 'Final person B' }], null)
+      default: throw Error('a batch was called without the author clicking')
+    }
+  }, onClose: () => batchClosed++,
+})
+await batch.settle()
+select(batch, 'characterAiScope').props.onChange({ target: { value: 'range' } })
+batch.sync()
+select(batch, 'characterAiRangeStart').props.onChange({ target: { value: '6' } })
+batch.sync()
+select(batch, 'characterAiRangeEnd').props.onChange({ target: { value: '8' } })
+batch.sync()
+check(batch.text().includes('characterAiRangeInvalid') && batch.button('characterAiStartExtract').props.disabled, 'reversed chapter order blocks the request')
+select(batch, 'characterAiRangeStart').props.onChange({ target: { value: '11' } })
+batch.sync()
+await batch.button('characterAiStartExtract').props.onClick()
+await batch.settle()
+check(batchRequests.length === 1 && batchRequests[0].input.scope === 'range' && batchRequests[0].input.startChapterId === 11 && batchRequests[0].input.endChapterId === 8 && !Object.hasOwn(batchRequests[0].input, 'batchCursor'), 'inclusive selected IDs hit exactly one initial model call')
+check(batch.text().includes('characterAiBatchProgress 0 / 2') && batch.text().includes('characterAiBatchAnalyzed 1') && !batch.text().includes('characterAiTruncated'), 'partial long chapter reports successful batch separately from range progress')
+select(batch, 'characterAiRangeEnd').props.onChange({ target: { value: '6' } })
+batch.sync()
+check(select(batch, 'characterAiRangeEnd').props.value === '8' && fieldsets(batch).length === 1 && Boolean(batch.button('characterAiResetApply')), 'range change waits for confirmation without clearing candidates')
+batch.button('characterAiResetKeep').props.onClick()
+batch.sync()
+check(select(batch, 'characterAiRangeEnd').props.value === '8' && !batch.button('characterAiResetApply'), 'canceling range change keeps the previous preview')
+edit(batch, 0, 'name', 'Alice Renamed')
+edit(batch, 0, 'alias', '')
+edit(batch, 0, 'appearance', 'Author-edited outfit')
+checks(batch)[0].props.onChange({ target: { checked: false } })
+batch.sync()
+for (const error of ['fixture max tokens', 'characterAiBatchInvalid']) {
+  await batch.button('characterAiNextBatch').props.onClick()
+  await batch.settle()
+  check(batch.text().includes(error) && fieldsets(batch).length === 1 && read(batch, 0, 'name') === 'Alice Renamed' && batch.text().includes('characterAiBatchProgress 0 / 2'), 'failed or non-progressing response leaves successful data and cursor untouched')
+}
+const canceled = batch.button('characterAiNextBatch').props.onClick()
+batch.sync()
+batch.button('characterAiCancelRequest').props.onClick()
+check(batchRequests.at(-1).signal.aborted, 'cancel next batch aborts that request')
+canceledBatch.resolve(rangeResult([{ name: 'Canceled Late' }], null))
+await canceled
+await batch.settle()
+check(fieldsets(batch).length === 1 && batch.text().includes('characterAiCancelled') && Boolean(batch.button('characterAiNextBatch')), 'late canceled batch cannot advance, append or remove prior candidates')
+await batch.button('characterAiNextBatch').props.onClick()
+await batch.settle()
+assert.deepEqual(batchRequests.slice(1, 5).map(row => row.input.batchCursor), Array(4).fill(firstCursor))
+check(batchImports.length === 0 && !checks(batch)[0].props.checked && fieldsets(batch).length === 30 && read(batch, 0, 'name') === 'Alice Renamed' && read(batch, 0, 'alias') === '' && read(batch, 0, 'appearance') === 'Author-edited outfit' && read(batch, 0, 'personality') === 'first personality' && read(batch, 0, 'background') === 'new fact', 'merge dedupes by original NFKC name and only fills untouched empty fields without changing selection')
+await batch.button('characterAiNextBatch').props.onClick()
+await batch.settle()
+assert.deepEqual(batchRequests.at(-1).input.batchCursor, handoffCursor)
+check(fieldsets(batch).length === 32 && checks(batch).filter(node => node.props.checked).length === 30 && checks(batch).at(-1).props.disabled && batch.text().includes('characterAiSelectionLimit') && batch.text().includes('characterAiBatchDone') && !batch.button('characterAiNextBatch') && read(batch, 0, 'age') === '31', 'new candidates fill available selection slots without dropping the excess')
+checks(batch).at(-1).props.onChange({ target: { checked: true } })
+batch.sync()
+check(checks(batch).filter(node => node.props.checked).length === 30, 'handler independently enforces the 30-person cap')
+await batch.button('characterAiConfirmImport').props.onClick()
+await batch.settle()
+check(batchImports.length === 1 && batchImports[0].characters.length === 30 && batchClosed === 0 && fieldsets(batch).length === 2 && checks(batch).every(node => !node.props.checked && !node.props.disabled), 'only one explicit import of 30 happens and the remaining candidates stay available')
+edit(batch, 1, 'name', ' BATCH PERSON 0 ')
+check(batch.text().includes('characterAiDuplicate'), 'confirmed import updates existing names before parent props refresh')
+checks(batch)[0].props.onChange({ target: { checked: true } })
+batch.sync()
+await batch.button('characterAiConfirmImport').props.onClick()
+await batch.settle()
+check(batchImports.length === 2 && batchImports[1].characters[0].name === 'Alice Renamed' && fieldsets(batch).length === 1 && batchClosed === 0, 'remaining candidates require another explicit confirmation')
+select(batch, 'characterAiRangeEnd').props.onChange({ target: { value: '6' } })
+batch.sync()
+batch.button('characterAiResetApply').props.onClick()
+batch.sync()
+check(fieldsets(batch).length === 0 && select(batch, 'characterAiRangeEnd').props.value === '6' && batchRequests.length === 6, 'confirmed range change clears the preview and does not call the model')
+batch.unmount()
+
+const oldCatalog = deferred()
+const oldBatch = deferred()
+let staleCatalogSignal, staleBatchSignal
+const stale = mount({ chapterFixture: true, call: (method, input, options) => {
+  if (method === 'aiInfo') return model
+  if (method === 'characterAi') { staleBatchSignal = options.signal; return oldBatch.promise }
+  if (input.novelId === 7) { staleCatalogSignal = options.signal; return oldCatalog.promise }
+  return input.novelId === 99 ? chapters : { chapters: [] }
+} })
+await stale.settle()
+select(stale, 'characterAiScope').props.onChange({ target: { value: 'range' } })
+stale.sync()
+check(stale.button('characterAiStartExtract').props.disabled && stale.text().includes('characterAiChaptersLoading'), 'waits for chapter metadata before range analysis')
+stale.props.novelId = 99
+await stale.settle()
+check(staleCatalogSignal.aborted, 'chapter catalogue read is canceled when novel changes')
+oldCatalog.resolve({ chapters: [{ id: 1000, title: 'Wrong Novel Catalogue' }] })
+select(stale, 'characterAiScope').props.onChange({ target: { value: 'all' } })
+await stale.settle()
+const pendingRange = stale.button('characterAiStartExtract').props.onClick()
+stale.props.novelId = 101
+await stale.settle()
+check(staleBatchSignal.aborted, 'pending range preview is canceled when novel changes')
+oldBatch.resolve(rangeResult([{ name: 'Wrong Novel Candidate' }], null, 3))
+await pendingRange
+await stale.settle()
+select(stale, 'characterAiScope').props.onChange({ target: { value: 'range' } })
+stale.sync()
+check(!stale.text().includes('Wrong Novel') && fieldsets(stale).length === 0 && !select(stale, 'characterAiRangeStart') && stale.text().includes('characterAiChaptersEmpty') && stale.button('characterAiStartExtract').props.disabled, 'late catalogue and range result cannot change an empty new-context preview')
+stale.unmount()
 
 console.log(`Character AI UI checks passed (${assertions} assertions; React 18 SSR + offline lifecycle fixtures).`)

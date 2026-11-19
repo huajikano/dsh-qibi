@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { DEFAULT_THEME, PREFERENCE_KEY, THEMES, normalizeThemePreference, readThemePreference, saveThemePreference, themeVariables } from './themes.js'
+import { DENSITY_KEY, DEFAULT_DENSITY, normalizeDensity, readDensity, saveDensity } from './density.js'
 
 function systemIsDark() {
   try { return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches }
@@ -27,7 +28,7 @@ function Specimen({ theme, mode, t }) {
 }
 
 /** A live appearance control inside the plugin, not a separate preview page or global theme. */
-export function ThemeDialog({ preference, systemDark, feedback, onChange, onClose, t }) {
+export function ThemeDialog({ preference, density = DEFAULT_DENSITY, systemDark, feedback, onChange, onDensityChange, onClose, t }) {
   const dialogRef = useRef(null)
   const closeRef = useRef(onClose)
   closeRef.current = onClose
@@ -76,6 +77,8 @@ export function ThemeDialog({ preference, systemDark, feedback, onChange, onClos
           <h3>{t(theme.nameKey)}</h3><p className="qibi-sub">{t(theme.descriptionKey)}</p>
           <fieldset className="qibi-theme-mode-options" disabled={preference.theme === 'host'}><legend>{t('themeAppearance')}</legend>{['light', 'dark', 'system'].map(mode => <label key={mode} className={`qibi-theme-mode${preference.mode === mode ? ' selected' : ''}`}><input type="radio" name={`${id}-mode`} value={mode} checked={preference.mode === mode} onChange={() => onChange({ ...preference, mode })} />{t(`themeMode${mode[0].toUpperCase()}${mode.slice(1)}`)}</label>)}</fieldset>
           {preference.theme === 'host' ? <div className="qibi-card qibi-theme-host-hint">{t('themeHostHint')}</div> : <div className="qibi-theme-specimens"><Specimen theme={theme} mode="light" t={t} /><Specimen theme={theme} mode="dark" t={t} /></div>}
+          <fieldset className="qibi-theme-mode-options qibi-density-options"><legend>{t('densityTitle')}</legend>{['comfortable', 'compact'].map(value => <label key={value} className={`qibi-theme-mode${density === value ? ' selected' : ''}`}><input type="radio" name={`${id}-density`} value={value} checked={density === value} onChange={() => onDensityChange?.(value)} />{t(value === 'comfortable' ? 'densityComfortable' : 'densityCompact')}</label>)}</fieldset>
+          <p className="qibi-sub">{t(density === 'comfortable' ? 'densityComfortableHint' : 'densityCompactHint')}</p>
           <p className="qibi-sub" id={`${id}-hint`}>{t('themeScopeHint')}</p>
           <p className={`qibi-sub${feedback === 'failed' ? ' qibi-theme-save-error' : ''}`} role="status" aria-live="polite">{feedback === 'failed' ? t('themeSaveFailed') : feedback === 'saved' ? t('themeSaved') : t('themeInstantHint')}</p>
         </div>
@@ -88,6 +91,7 @@ export function ThemeDialog({ preference, systemDark, feedback, onChange, onClos
 /** Owns appearance only. The same Workbench element remains mounted across every theme change. */
 export function AppearanceFrame({ t, children }) {
   const [preference, setPreference] = useState(readThemePreference)
+  const [density, setDensity] = useState(readDensity)
   const [systemDark, setSystemDark] = useState(systemIsDark)
   const [open, setOpen] = useState(false)
   const [feedback, setFeedback] = useState('idle')
@@ -97,6 +101,12 @@ export function AppearanceFrame({ t, children }) {
   const change = useCallback(next => {
     const result = saveThemePreference(next)
     setPreference(result.preference)
+    setFeedback(result.saved ? 'saved' : 'failed')
+  }, [])
+
+  const changeDensity = useCallback(value => {
+    const result = saveDensity(value)
+    setDensity(result.density)
     setFeedback(result.saved ? 'saved' : 'failed')
   }, [])
 
@@ -114,7 +124,9 @@ export function AppearanceFrame({ t, children }) {
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
     const update = event => {
+      if (event.key === DENSITY_KEY) { setDensity(normalizeDensity(event.newValue)); return }
       if (event.key !== PREFERENCE_KEY && event.key !== null) return
+      if (event.key === null) setDensity(DEFAULT_DENSITY)
       let next = DEFAULT_THEME
       if (event.key !== null && event.newValue !== null) {
         try { next = normalizeThemePreference(JSON.parse(event.newValue)) } catch { /* Keep the explicit white fallback. */ }
@@ -126,8 +138,8 @@ export function AppearanceFrame({ t, children }) {
   }, [])
 
   const theme = THEMES.find(row => row.id === preference.theme) ?? THEMES[0]
-  return <div className="qibi-theme-scope" data-qibi-theme={resolved.theme} data-qibi-appearance={resolved.appearance} style={{ ...resolved.variables, colorScheme: resolved.colorScheme }}>
+  return <div className="qibi-theme-scope" data-qibi-theme={resolved.theme} data-qibi-appearance={resolved.appearance} data-qibi-density={density} style={{ ...resolved.variables, colorScheme: resolved.colorScheme }}>
     {children({ open: openDialog, name: t(theme.nameKey), preference })}
-    {open && <ThemeDialog preference={preference} systemDark={systemDark} feedback={feedback} onChange={change} onClose={closeDialog} t={t} />}
+    {open && <ThemeDialog preference={preference} density={density} systemDark={systemDark} feedback={feedback} onChange={change} onDensityChange={changeDensity} onClose={closeDialog} t={t} />}
   </div>
 }
