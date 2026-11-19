@@ -1,0 +1,141 @@
+/**
+ * 浏览器半边的真实渲染/纯逻辑自检。
+ *
+ * 用 esbuild 把 src/panel.jsx 编译成临时模块，再交给 react-dom/server 渲染。
+ * 白屏类问题（渲染期抛错、hooks 顺序）在这里会直接变成自检失败，
+ * 而不是等用户点开面板才发现。React 保持 external，与脚本共用同一份实例。
+ */
+
+import { build } from 'esbuild'
+import React from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { rm } from 'node:fs/promises'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import path from 'node:path'
+
+const here = path.dirname(fileURLToPath(import.meta.url))
+let cached = null
+
+/** 编译并加载一次 panel.jsx（同一进程内复用）。 */
+export async function loadPanel() {
+  if (cached) return cached
+  const outfile = path.join(here, `.panel-render-${process.pid}.mjs`)
+  await build({
+    entryPoints: [path.join(here, '..', 'src', 'panel.jsx')],
+    outfile,
+    bundle: true,
+    format: 'esm',
+    platform: 'node',
+    jsx: 'transform',
+    jsxFactory: 'React.createElement',
+    jsxFragment: 'React.Fragment',
+    external: ['react'],
+    legalComments: 'none',
+    logLevel: 'silent',
+  })
+  try {
+    cached = await import(pathToFileURL(outfile).href)
+  } finally {
+    await rm(outfile, { force: true })
+  }
+  return cached
+}
+
+const PROPS = {
+  call: async () => ({}),
+  novelId: 1,
+  chapterId: 1,
+  draft: '正文内容',
+  selection: null,
+  initialMode: null,
+  writable: true,
+  info: {
+    available: true,
+    model: 'render-check',
+    modes: [
+      { id: 'draft', label: '细纲写章', group: 'chapter' },
+      { id: 'polish', label: '润色全章', group: 'chapter' },
+      { id: 'polish-selection', label: '润色', group: 'selection' },
+      { id: 'review', label: '审查', group: 'report' },
+      { id: 'suggest', label: '创作顾问', group: 'report', saveAsOutline: false },
+    ],
+  },
+  hasOutline: false,
+  t: key => key,
+  notify: () => {},
+  onApply: () => {},
+  onClose: () => {},
+}
+
+/** 渲染 AI 抽屉，返回 HTML。 */
+export async function renderAiDrawer() {
+  const module = await loadPanel()
+  if (typeof module.AiDrawer !== 'function') throw new Error('panel.jsx 未导出 AiDrawer')
+  return renderToStaticMarkup(React.createElement(module.AiDrawer, PROPS))
+}
+
+/** 细纲锚点规则：只匹配当前章、自定义 marker 优先、未写到的标为待写。 */
+export async function checkOutlineAnchors() {
+  const module = await loadPanel()
+  if (typeof module.matchOutlineAnchors !== 'function') throw new Error('panel.jsx 未导出 matchOutlineAnchors')
+  const draft = '开场白。少年入城，风起。'
+  const rows = [
+    { id: 1, title: '少年入城', chapterId: 7 },
+    { id: 2, title: '从未出现', chapterId: 7 },
+    { id: 3, title: '少年入城', chapterId: 8 },
+  ]
+  const list = module.matchOutlineAnchors(draft, rows, { 2: '幕后黑手' }, 7)
+  if (list.length !== 2) throw new Error(`应只匹配当前章，实际 ${list.length} 项`)
+  if (!list[0].done || list[0].pos !== 4) throw new Error('标题前 8 字应命中正文')
+  if (list[1].done) throw new Error('正文里没出现的锚点应标为待写')
+  const custom = module.matchOutlineAnchors(draft, rows, { 1: '风起' }, 7)
+  if (custom[0].marker !== '风起' || custom[0].pos !== draft.indexOf('风起')) {
+    throw new Error('自定义 marker 应优先于标题')
+  }
+  const none = module.matchOutlineAnchors(draft, rows, {}, null)
+  if (none.length !== 0) throw new Error('没有当前章节时不应返回锚点')
+  return true
+}
+
+/** 撤销历史规则：程序化改写整段回退、连续输入合并、停顿分段、可重做。 */
+export async function checkUndoHistory() {
+  const module = await loadPanel()
+  const names = ['createHistory', 'pushHistory', 'pushTypingHistory', 'undoHistory', 'redoHistory']
+  for (const name of names) {
+    if (typeof module[name] !== 'function') throw new Error(`panel.jsx 未导出 ${name}`)
+  }
+  const { createHistory, pushHistory, pushTypingHistory, undoHistory, redoHistory } = module
+
+  const programmatic = { ...createHistory(), lastText: 'A' }
+  pushHistory(programmatic, 'A', 'B')
+  if (undoHistory(programmatic, 'B') !== 'A') throw new Error('程序化改写应能撤销回改写前')
+  if (redoHistory(programmatic, 'A') !== 'B') throw new Error('程序化改写应能重做')
+  if (undoHistory(createHistory(), 'X') !== null) throw new Error('空历史应返回 null')
+
+  const typing = { ...createHistory(), lastText: 'A' }
+  pushTypingHistory(typing, 'A', 'AB', 1000)
+  pushTypingHistory(typing, 'AB', 'ABC', 1200)
+  if (undoHistory(typing, 'ABC') !== 'A') throw new Error('连续输入应合并为一次撤销')
+  if (redoHistory(typing, 'A') !== 'ABC') throw new Error('连续输入应能整体重做')
+
+  const paused = { ...createHistory(), lastText: 'A' }
+  pushTypingHistory(paused, 'A', 'AB', 1000)
+  pushTypingHistory(paused, 'AB', 'ABC', 2000)
+  if (undoHistory(paused, 'ABC') !== 'AB') throw new Error('停顿后应另起一个撤销单元')
+  return true
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try {
+    const html = await renderAiDrawer()
+    const required = ['qibi-ai-overlay', 'qibi-ai-drawer', 'qibi-ai-head', 'qibi-ai-close', 'qibi-presets', 'qibi-ai-note']
+    const missing = required.filter(token => !html.includes(token))
+    if (missing.length > 0) throw new Error(`缺少渲染标记：${missing.join(', ')}`)
+    await checkOutlineAnchors()
+    await checkUndoHistory()
+    console.log(`AI 抽屉渲染正常（${html.length} 字符）；细纲锚点与撤销规则正常`)
+  } catch (error) {
+    console.error(`浏览器半边自检失败：${error.message}`)
+    process.exit(1)
+  }
+}

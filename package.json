@@ -1,0 +1,78 @@
+{
+  "name": "dsh-qibi",
+  "version": "0.1.0",
+  "description": "QiBi writing desk for DeepSeek Harness: a native sidebar panel and 11 qibi_* tools over your local novelforge.db.",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "docs",
+    "assets",
+    "icon.svg",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-connection"
+      ]
+    },
+    "displayName": "起笔写作台（QiBi）",
+    "pluginType": "suite",
+    "compatibility": {
+      "dsh": ">=0.2.0-rc.1 <0.2.1-0 || >=0.2.1-rc.1 <0.2.2-0 || >=0.2.2-rc.1 <0.3.0-0",
+      "dshReleases": {
+        "0.2.2-rc.3": "compatible"
+      }
+    }
+  },
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "novel",
+    "writing",
+    "manuscript",
+    "chinese"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huajikano/dsh-qibi.git"
+  },
+  "homepage": "https://github.com/huajikano/dsh-qibi#readme",
+  "bugs": {
+    "url": "https://github.com/huajikano/dsh-qibi/issues"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "dependencies": {
+    "fflate": "^0.8.3",
+    "iconv-lite": "^0.4.24"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "license": "MIT"
+}

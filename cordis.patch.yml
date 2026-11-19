@@ -1,0 +1,16 @@
+# 起笔写作台（dsh-qibi）
+#
+# 一行插入：Host 半边负责打开本机 novelforge.db、在共享 /api 通道上注册 /api/qibi
+# 精确路由与 qibi_* 工具；Client 半边由本包的 dsh.client 声明的 ./client 自动装载
+# （左侧栏图标 + 中央写作台）。
+#
+# config 可改项：
+#   allowWrite  是否允许插件写入起笔数据库（默认 true；每次覆盖前自动备份到 chapter_revisions）
+#   dataDir     起笔数据目录（默认 %APPDATA%\desktop\data，即起笔桌面版的数据目录）
+#   userId      固定使用哪个起笔用户（默认取第一个拥有作品的未禁用用户）
+
+- insert:
+    - id: qibi
+      name: dsh-qibi
+      config:
+        allowWrite: true
