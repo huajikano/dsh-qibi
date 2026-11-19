@@ -40,7 +40,7 @@
     "displayName": "起笔写作台（QiBi）",
     "pluginType": "suite",
     "compatibility": {
-      "dsh": ">=0.2.0-rc.1 <0.2.1-0 || >=0.2.1-rc.1 <0.2.2-0 || >=0.2.2-rc.1 <0.3.0-0",
+      "dsh": "0.2.2-rc.3",
       "dshReleases": {
         "0.2.2-rc.3": "compatible"
       }
@@ -63,7 +63,12 @@
     "url": "https://github.com/huajikano/dsh-qibi/issues"
   },
   "engines": {
-    "node": ">=22.19.0"
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test:release": "node scripts/release-check.mjs && node scripts/render-check.mjs",
+    "test:local": "node scripts/selftest.mjs"
   },
   "dependencies": {
     "fflate": "^0.8.3",

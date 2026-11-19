@@ -6,7 +6,7 @@
 #
 # config 可改项：
 #   allowWrite  是否允许插件写入起笔数据库（默认 true；每次覆盖前自动备份到 chapter_revisions）
-#   dataDir     起笔数据目录（默认 %APPDATA%\desktop\data，即起笔桌面版的数据目录）
+#   dataDir     必须明确指定起笔数据目录；未配置时不自动打开本机已有书稿。
 #   userId      固定使用哪个起笔用户（默认取第一个拥有作品的未禁用用户）
 
 - insert:

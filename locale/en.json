@@ -7,8 +7,8 @@
   "ui": {
     "panel": "QiBi",
     "loading": "Reading QiBi data…",
-    "noDb": "No QiBi database found",
-    "noDbHint": "The QiBi desktop app keeps its data in {path}. If you moved it, set dataDir in the plugin config.",
+    "noDb": "QiBi database not connected",
+    "noDbHint": "No manuscripts are loaded on first use. Explicitly set dataDir in the plugin config or QIBI_DATA_DIR; the suggested database file is {path}.",
     "emptyNovel": "No novels in QiBi yet",
     "emptyNovelHint": "Create a novel in QiBi first, or create one here.",
     "emptyChapter": "This novel has no chapters",

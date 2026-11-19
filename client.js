@@ -63,8 +63,8 @@ window.__ModuleLoader__.load({
         ui: {
           panel: "QiBi",
           loading: "Reading QiBi data\u2026",
-          noDb: "No QiBi database found",
-          noDbHint: "The QiBi desktop app keeps its data in {path}. If you moved it, set dataDir in the plugin config.",
+          noDb: "QiBi database not connected",
+          noDbHint: "No manuscripts are loaded on first use. Explicitly set dataDir in the plugin config or QIBI_DATA_DIR; the suggested database file is {path}.",
           emptyNovel: "No novels in QiBi yet",
           emptyNovelHint: "Create a novel in QiBi first, or create one here.",
           emptyChapter: "This novel has no chapters",
@@ -325,8 +325,8 @@ window.__ModuleLoader__.load({
         ui: {
           panel: "\u8D77\u7B14",
           loading: "\u6B63\u5728\u8BFB\u53D6\u8D77\u7B14\u6570\u636E\u2026",
-          noDb: "\u6CA1\u6709\u627E\u5230\u8D77\u7B14\u6570\u636E\u5E93",
-          noDbHint: "\u8D77\u7B14\u684C\u9762\u7248\u7684\u6570\u636E\u5E94\u4F4D\u4E8E {path}\u3002\u82E5\u4F60\u628A\u8D77\u7B14\u6539\u5230\u4E86\u522B\u5904\uFF0C\u8BF7\u5728\u63D2\u4EF6 config \u91CC\u8BBE\u7F6E dataDir\u3002",
+          noDb: "\u5C1A\u672A\u8FDE\u63A5\u8D77\u7B14\u6570\u636E\u5E93",
+          noDbHint: "\u9996\u6B21\u4F7F\u7528\u4E0D\u4F1A\u81EA\u52A8\u8F7D\u5165\u4E66\u7A3F\u3002\u8BF7\u5728\u63D2\u4EF6 config \u4E2D\u660E\u786E\u8BBE\u7F6E dataDir\uFF0C\u6216\u8BBE\u7F6E QIBI_DATA_DIR\uFF1B\u5EFA\u8BAE\u7684\u5E93\u6587\u4EF6\u4F4D\u7F6E\u4E3A {path}\u3002",
           emptyNovel: "\u8D77\u7B14\u91CC\u8FD8\u6CA1\u6709\u4F5C\u54C1",
           emptyNovelHint: "\u5148\u6253\u5F00\u8D77\u7B14\u65B0\u5EFA\u4E00\u90E8\u4F5C\u54C1\uFF0C\u6216\u76F4\u63A5\u5728\u8FD9\u91CC\u65B0\u5EFA\u3002",
           emptyChapter: "\u8FD9\u90E8\u4F5C\u54C1\u8FD8\u6CA1\u6709\u7AE0\u8282",

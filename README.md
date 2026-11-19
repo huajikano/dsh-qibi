@@ -10,8 +10,8 @@
 
 <p>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0f766e?style=for-the-badge" alt="License" /></a>
-  <img src="https://img.shields.io/badge/DSH-0.2.x-1d4ed8?style=for-the-badge" alt="Compatible DSH" />
-  <img src="https://img.shields.io/badge/Node.js-%E2%89%A522.19-3f7d3a?style=for-the-badge&logo=node.js&logoColor=white" alt="Node" />
+  <img src="https://img.shields.io/badge/DSH-0.2.2--rc.3-1d4ed8?style=for-the-badge" alt="Tested DSH version" />
+  <img src="https://img.shields.io/badge/Node.js-%E2%89%A524-3f7d3a?style=for-the-badge&logo=node.js&logoColor=white" alt="Node" />
   <img src="https://img.shields.io/badge/topic-dsh--plugin-d97706?style=for-the-badge&logo=github" alt="dsh-plugin" />
 </p>
 
@@ -28,9 +28,11 @@
 
 </div>
 
-> **本地优先。** 插件只读本机那一个 SQLite 文件，所有作品、正文与设定都留在你自己的磁盘上；插件本身不含任何示例小说内容。
+> **本地优先。** 书稿在你明确指定的本机数据库中读写，所有作品、正文与设定都留在你自己的磁盘上。首次安装不会自动连接旧库，发行包不含任何小说内容、用户数据库或备份。
 >
 > *Native QiBi writing desk for DeepSeek Harness: sidebar panel, 11 model tools, and 13 AI writing actions over your local `novelforge.db`.*
+
+起笔桌面版：[huajikano/qibi-desktop](https://github.com/huajikano/qibi-desktop)。本仓库提供独立的 DSH 插件，使用 DSH 原生界面。
 
 ---
 
@@ -64,17 +66,13 @@ DSH 左侧栏出现一枚「起笔」图标，点开是 DSH 原生面板（不�
 
 ## 快速安装
 
-> **运行要求**：DSH `0.2.x`（已验证 `0.2.2-rc.3`）· Node.js ≥ 22.19 · 本机装有起笔桌面版（数据目录里有 `novelforge.db`）
+> **运行要求**：已验证 DSH `0.2.2-rc.3` · Node.js ≥ 24 · 本机有你明确选择的起笔数据库 `novelforge.db`。起笔桌面程序无须运行。
 
-```sh
-dsh plugin --profile web add -w dsh-qibi
-dsh web
-```
-
-尚未发布到 npm 时，从 GitHub 安装：
+当前版本从 GitHub 安装，仓库已提交预构建的 `client.js`，安装不执行构建脚本：
 
 ```sh
 dsh plugin --profile web add -w github:huajikano/dsh-qibi
+dsh web
 ```
 
 或在 **设置 → 插件 → 添加插件 → 本地目录**，选择本仓库根目录（含 `package.json` 的那一层）。
@@ -85,8 +83,8 @@ dsh plugin --profile web add -w github:huajikano/dsh-qibi
 
 ## 三步开始
 
-1. **确认数据目录能被找到**。默认是起笔桌面版的数据目录 `%APPDATA%\desktop\data`（macOS 为 `~/Library/Application Support/desktop/data`）。如果起笔被你改到别处，在配置里写 `dataDir`。
-2. **点开左侧栏「起笔」**。面板会列出当前作者的全部作品；选中一章即可读写。
+1. **明确选择数据目录**。首次安装不自动打开任何已有书稿，先在配置里填写 `dataDir`，或设置 `QIBI_DATA_DIR`。Windows 起笔桌面版常见目录为 `%APPDATA%\desktop\data`，macOS 常见目录为 `~/Library/Application Support/desktop/data`；这些路径只作为提示，不会自动连接。
+2. **点开左侧栏「起笔」**。连接到你选择的数据库后，面板列出其中当前作者的作品；选中一章即可读写。发行包不含小说、用户库或测试备份。
 3. **让 Agent 参与**。直接说「写第五章」「把这一章润色一下」，或让 Agent 调用 `qibi_chapter`、`qibi_distill`；面板会自己发现磁盘上的变化。
 
 选中章节会同步给宿主：Agent 的系统提示里多一行「作者当前在 DSH 面板里选中了作品《X》·第 N 章」，于是「这一章」不需要再问是哪一章。
@@ -116,7 +114,7 @@ dsh plugin --profile web add -w github:huajikano/dsh-qibi
 | :--- | :--- | :--- |
 | `qibi_status` | — | 数据目录、当前作者、作品/章节/字数统计、写入是否开启、面板选中项 |
 | `qibi_novel` | `list` `get` `create` `update` `delete` | 作品增删改查；删除需 `confirm: true` |
-| `qibi_chapter` | `list` `read` `write` `create` `update` `delete` `move` | 章节读写与增删；`write` 返回 `token` 供下次带令牌覆盖 |
+| `qibi_chapter` | `list` `read` `write` `create` `update` `delete` `move` | 章节读写与增删；完整 `read` 返回 `token`，写入时带 `expectedToken` |
 | `qibi_revision` | `list` `restore` | 章节版本历史与恢复 |
 | `qibi_outline` | `list` `create` `update` `delete` | 总纲与章节细纲 |
 | `qibi_character` | `list` `create` `update` `delete` `state` `set_state` | 人物设定与动态账本 |
@@ -152,14 +150,14 @@ dsh plugin --profile web add -w github:huajikano/dsh-qibi
 - id: qibi
   config:
     allowWrite: true                                          # 关掉即全局只读
-    dataDir: 'C:\Users\你\AppData\Roaming\desktop\data'        # 默认即此路径，可省
+    dataDir: 'C:\Users\你\AppData\Roaming\desktop\data'        # 必须明确指定自己的数据目录
     userId: 2                                                  # 多用户时才需要
 ```
 
 | 键 | 默认 | 含义 |
 | :--- | :--- | :--- |
 | `allowWrite` | `true` | 硬开关。`false` 时面板与工具都拒绝一切写入，只保留读取 |
-| `dataDir` | `%APPDATA%\desktop\data` | 起笔数据目录；也可用环境变量 `QIBI_DATA_DIR` |
+| `dataDir` | 未连接 | 必须明确指定的起笔数据目录；也可用环境变量 `QIBI_DATA_DIR`。不自动读取已有书稿 |
 | `userId` | 第一个有作品的未禁用用户 | 多用户起笔里固定作者 |
 
 面板右上角的写入开关只能在 `allowWrite: true` 的前提下临时收窄，不能放宽。
@@ -217,9 +215,12 @@ dsh plugin --profile web add -w github:huajikano/dsh-qibi
 
 ```sh
 npm install
-node build.mjs             # src/*.jsx → client.js（esbuild，React 保持 external 由宿主提供）
-node scripts/selftest.mjs  # 不起 DSH，直接跑 Host 半边与控制台渲染检查
+npm run build             # src/*.jsx → client.js（React 由宿主提供）
+npm run test:release      # 临时夹具验证首次使用隔离 + 浏览器渲染；不需要私有书稿
+npm run test:local        # 可选：针对本机已有起笔库的集成自检
 ```
+
+`test:release` 在临时目录模拟既有数据库，断言首次使用不打开它，作品与章节计数保持为零。`test:local` 只在临时副本执行写入，不会把数据库打包到发行物。
 
 自检覆盖：路由与工具契约、11 个工具的动作、只读拒写、正文保存的四处不变量（字数 / 版本备份 / 作品总字数 / 知识库分块）、令牌乐观锁、版本恢复、人物动态账本、章节摘要、写作状态、知识库重建与 BM25 检索、导出文本，以及 client.js 的 slot 渲染。
 

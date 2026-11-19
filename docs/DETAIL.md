@@ -19,7 +19,8 @@
 
 插件是一个独立的 DSH 包，装进 DSH 的 profile，与 `起笔.exe` **没有进程关系**，不需要起笔正在运行：
 
-- 唯一的数据通路是本机的 SQLite 文件 `novelforge.db`（桌面版默认在 `%APPDATA%\desktop\data`，可用 `dataDir` 改）。
+- 书稿读写通过本机的 SQLite 文件 `novelforge.db`；首次使用必须明确设置 `dataDir` 或 `QIBI_DATA_DIR`，未配置前不读取任何作品。
+- 安装包不含小说正文、用户数据库、备份或密钥。起笔桌面版常见的数据目录为 `%APPDATA%\desktop\data`，此路径只作提示，不自动连接。
 - 起笔与插件可以同时开着：库是 WAL 模式，写操作带 `busy_timeout` 与短事务。
 - 卸载插件不影响起笔；删掉起笔只是让面板显示「没有找到起笔数据库」。
 

@@ -7,8 +7,8 @@
   "ui": {
     "panel": "起笔",
     "loading": "正在读取起笔数据…",
-    "noDb": "没有找到起笔数据库",
-    "noDbHint": "起笔桌面版的数据应位于 {path}。若你把起笔改到了别处，请在插件 config 里设置 dataDir。",
+    "noDb": "尚未连接起笔数据库",
+    "noDbHint": "首次使用不会自动载入书稿。请在插件 config 中明确设置 dataDir，或设置 QIBI_DATA_DIR；建议的库文件位置为 {path}。",
     "emptyNovel": "起笔里还没有作品",
     "emptyNovelHint": "先打开起笔新建一部作品，或直接在这里新建。",
     "emptyChapter": "这部作品还没有章节",

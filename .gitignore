@@ -1,5 +1,17 @@
 node_modules/
 .build/
+artifacts/
+.repair-backup-*/
+chapter-backups/
+data/
+backups/
+*.db
+*.db-*
+*.sqlite*
+*.tgz
+.env
+.env.*
+.session-secret
 *.log
 .DS_Store
 Thumbs.db
