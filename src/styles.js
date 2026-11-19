@@ -238,6 +238,24 @@ export const STYLES = `
   display: flex; align-items: center; gap: 8px;
   padding: 10px 14px; border-top: 1px solid var(--dsw-alias-border-l1);
 }
+.qibi-character-ai-dialog {
+  box-sizing: border-box; width: min(900px, 100%);
+  max-height: calc(100dvh - var(--dsh-frame-top-clearance, 0px) - 48px);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.qibi-character-ai-body { min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.qibi-character-ai-dialog > .qibi-dialog-head, .qibi-character-ai-footer { flex: 0 0 auto; }
+.qibi-character-ai-footer { flex-wrap: wrap; }
+.qibi-character-ai-candidate {
+  min-width: 0; margin: 12px 0; padding: 12px; border-radius: 8px;
+  border: 1px solid var(--dsw-alias-border-l1);
+}
+.qibi-character-ai-fields .qibi-field { min-width: 0; }
+.qibi-character-ai-fields :is(input, textarea) { width: 100%; box-sizing: border-box; }
+.qibi-character-ai-selection { display: inline-flex; align-items: center; gap: 6px; }
+.qibi-character-ai-error { color: var(--dsw-alias-state-error-primary); font-size: 12px; }
+.qibi-character-ai-status { font-size: 12px; }
+.qibi-character-ai-model-settings > .qibi-field > span { overflow-wrap: anywhere; }
 .qibi-distill { display: flex; flex: 1 1 auto; min-height: 0; }
 .qibi-distill-list {
   width: 200px; flex: 0 0 200px; min-height: 0;

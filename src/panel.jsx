@@ -13,6 +13,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { NS, dictionaries } from './i18n.js'
 import { STYLES } from './styles.js'
+import CharacterAiDialog from './CharacterAiDialog.jsx'
 
 /** 面板 id：侧栏图标与中央面板必须用同一个。 */
 const PANEL_ID = 'qibi'
@@ -69,9 +70,10 @@ function rpcError(failure) {
  * @param {string} endpoint 端点名。
  * @param {unknown} payload 参数。
  */
-async function callHost(endpoint, payload) {
+async function callHost(endpoint, payload, options = {}) {
   const response = await fetch(API_PATH, {
     method: 'POST',
+    signal: options.signal,
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ endpoint, payload: payload ?? {} }),
   })
@@ -168,6 +170,19 @@ function reasoningLabel(row, t) {
   return keys[row.id] ? t(keys[row.id]) : row.name || row.id
 }
 
+/** A stored range is usable only while the original text and chapter still match. */
+export function restoreHistorySelection(entry, draft, chapterId) {
+  const range = entry?.selection
+  if (!range || range.chapterId !== chapterId || typeof range.text !== 'string' || !range.text
+    || !Number.isSafeInteger(range.from) || !Number.isSafeInteger(range.to)
+    || range.from < 0 || range.to <= range.from || range.to > String(draft ?? '').length) return null
+  return String(draft ?? '').slice(range.from, range.to) === range.text ? range : null
+}
+
+export function previewOnlyHistory(entry) {
+  return Boolean(entry && (entry.previewOnly === true || (entry.mode === 'continue' && entry.forceRewrite === true && typeof entry.complete !== 'boolean')))
+}
+
 /** 面板内 AI 抽屉：模式、补充要求、流式预览与应用。 */
 function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, writable, info, modelLoading = false, hasOutline, t, notify, onApply, onClose }) {
   const [reasoningEffort, setReasoningEffort] = useState(() => validReasoningPreference(info, readJson(AI_REASONING_KEY, {})?.[info?.model]))
@@ -180,6 +195,9 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
   const [truncated, setTruncated] = useState(false)
   const [forceRewrite, setForceRewrite] = useState(false)
   const [history, setHistory] = useState(() => listAiDrafts(chapterId))
+  const [historyEntry, setHistoryEntry] = useState(null)
+  const effectiveSelection = historyEntry ? restoreHistorySelection(historyEntry, draft, chapterId) : selection
+  const historyPreviewOnly = previewOnlyHistory(historyEntry)
   const abortRef = useRef(null)
   const modes = info?.modes ?? []
   const modeInfo = modes.find(row => row.id === mode)
@@ -225,10 +243,11 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
 
   const generate = async () => {
     if (busy || modelLoading || novelId == null) return
-    if (isSelectionMode && !selection) {
+    if (isSelectionMode && !effectiveSelection) {
       notify('error', t('aiNeedSelection'))
       return
     }
+    if (!isSelectionMode) setHistoryEntry(null)
     setBusy(true)
     setPreview('')
     setError('')
@@ -243,7 +262,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
         mode,
         novelId,
         chapterId,
-        content: isSelectionMode ? selection.text : draft,
+        content: isSelectionMode ? effectiveSelection.text : draft,
         extra,
       }, (_delta, full) => setPreview(full), controller.signal)
       setPreview(result.text)
@@ -257,6 +276,8 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
           text: result.text,
           at: Date.now(),
           truncated: result.truncated === true,
+          complete: result.complete === true,
+          selection: isSelectionMode && effectiveSelection ? { chapterId, from: effectiveSelection.from, to: effectiveSelection.to, text: effectiveSelection.text } : null,
           forceRewrite: false,
         }))
       }
@@ -277,7 +298,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
 
   // 截断或中断后，把已生成部分当作当前正文继续续写，拼成完整草稿。
   const continueWriting = async () => {
-    if (busy || modelLoading || !preview.trim() || chapterId == null) return
+    if (busy || modelLoading || historyPreviewOnly || !preview.trim() || chapterId == null) return
     setBusy(true)
     setError('')
     const controller = new AbortController()
@@ -301,11 +322,13 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
       if (String(result.text ?? '').trim()) {
         setHistory(saveAiDraft(chapterId, {
           id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          mode: 'continue',
+          mode: isSelectionMode ? mode : 'continue',
           label: t('aiContinue'),
           text: merged,
           at: Date.now(),
           truncated: result.truncated === true,
+          complete: result.complete === true,
+          selection: isSelectionMode && effectiveSelection ? { chapterId, from: effectiveSelection.from, to: effectiveSelection.to, text: effectiveSelection.text } : null,
           forceRewrite: true,
         }))
       }
@@ -361,12 +384,14 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
         <div className="qibi-ai-note">{t('aiNoOutline')}</div>
       )}
 
-      {isSelectionMode && (
+      {isSelectionMode && effectiveSelection && (
         <div className="qibi-ai-selection">
           <span className="qibi-sub">{t('aiSelectionLabel')}</span>
-          <div className="qibi-ai-selected">“{selection.text.slice(0, 120)}{selection.text.length > 120 ? '…' : ''}”</div>
+          <div className="qibi-ai-selected">“{effectiveSelection.text.slice(0, 120)}{effectiveSelection.text.length > 120 ? '…' : ''}”</div>
         </div>
       )}
+      {isSelectionMode && !effectiveSelection && <div className="qibi-ai-note">{t('aiHistorySelectionMissing')}</div>}
+      {historyPreviewOnly && <div className="qibi-ai-note">{t('aiHistoryLegacyContinuation')}</div>}
 
       <div className="qibi-ai-modes">
         {['chapter', 'selection', 'report'].map(group => (
@@ -379,7 +404,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
                   key={row.id}
                   className={`qibi-btn small${mode === row.id ? ' primary' : ''}`}
                   disabled={busy || (row.group === 'selection' && !selection)}
-                  onClick={() => { setMode(row.id); setPreview(''); setError('') }}
+                  onClick={() => { setMode(row.id); setHistoryEntry(null); setPreview(''); setError('') }}
                 >{row.label}</button>
               ))}
             </div>
@@ -403,11 +428,11 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
       </div>
 
       <div className="qibi-actions">
-        <button type="button" className="qibi-btn small primary" disabled={busy || modelLoading || !info?.available} onClick={() => void generate()}>
+        <button type="button" className="qibi-btn small primary" disabled={busy || modelLoading || !info?.available || (isSelectionMode && !effectiveSelection)} onClick={() => void generate()}>
           {busy ? t('aiGenerating') : t('aiGenerate')}
         </button>
         {busy && <button type="button" className="qibi-btn small" onClick={cancel}>{t('cancel')}</button>}
-        {preview && !busy && !complete && (
+        {preview && !busy && !complete && !historyPreviewOnly && (
           <button type="button" className="qibi-btn small" disabled={modelLoading} onClick={() => void continueWriting()}>{t('aiContinue')}</button>
         )}
         {preview && !busy && (
@@ -417,7 +442,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
               ? (modeInfo?.saveAsOutline === false
                 ? null
                 : <button type="button" className="qibi-btn small" disabled={!writable || !complete} onClick={() => onApply({ mode, modeLabel: modeInfo?.label, text: preview, report: true })}>{t('aiSaveOutline')}</button>)
-              : <button type="button" className="qibi-btn small primary" disabled={!writable || !complete || (isSelectionMode && !selection)} onClick={() => onApply({ mode, modeLabel: modeInfo?.label, text: preview, rewrite: forceRewrite ? true : modeInfo?.rewrite !== false, selection })}>{t('aiApply')}</button>}
+              : <button type="button" className="qibi-btn small primary" disabled={!writable || !complete || historyPreviewOnly || (isSelectionMode && !effectiveSelection) || (historyEntry && !modes.some(row => row.id === historyEntry.mode))} onClick={() => onApply({ mode, modeLabel: modeInfo?.label, text: preview, rewrite: forceRewrite ? true : modeInfo?.rewrite !== false, selection: isSelectionMode ? effectiveSelection : null })}>{t('aiApply')}</button>}
           </>
         )}
         <span className="qibi-spacer" />
@@ -425,7 +450,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
       </div>
 
       {!info?.available && <div className="qibi-error-text">{t('aiUnavailable')}</div>}
-      {preview && !busy && !complete && (
+      {preview && !busy && !complete && !historyPreviewOnly && (
         <div className="qibi-error-text">{truncated ? t('aiTruncated') : t('aiIncomplete')}</div>
       )}
       {error && <div className="qibi-error-text">{error}</div>}
@@ -452,12 +477,14 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
               <button
                 type="button"
                 className="qibi-draft-main"
+                disabled={busy}
                 title={t('aiHistoryLoad')}
                 onClick={() => {
                   if (modes.some(row => row.id === item.mode)) setMode(item.mode)
+                  setHistoryEntry(item)
                   setPreview(item.text)
                   setError('')
-                  setComplete(item.truncated !== true)
+                  setComplete(item.complete !== false && item.truncated !== true)
                   setTruncated(item.truncated === true)
                   setForceRewrite(item.forceRewrite === true)
                 }}
@@ -527,13 +554,19 @@ const AI_DRAFTS_TOTAL = 40
 /** 面板内 AI 生成历史：按章节存在本机，关闭抽屉也不丢。 */
 function loadDraftStore() {
   const value = readJson(AI_DRAFTS_KEY, {})
-  return value && typeof value === 'object' ? value : {}
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
+  return Object.fromEntries(Object.entries(value).filter(([, rows]) => Array.isArray(rows)).map(([key, rows]) => [key,
+    rows.filter(row => row && typeof row.id === 'string' && typeof row.mode === 'string' && typeof row.text === 'string').map(row => ({
+      ...row, label: typeof row.label === 'string' ? row.label : row.mode,
+      at: typeof row.at === 'number' && Number.isFinite(row.at) ? row.at : 0,
+    })),
+  ]))
 }
 
 export function listAiDrafts(chapterId) {
   if (chapterId == null) return []
   const rows = loadDraftStore()[String(chapterId)]
-  return Array.isArray(rows) ? rows : []
+  return Array.isArray(rows) ? rows.filter(row => row && typeof row.id === 'string' && typeof row.mode === 'string' && typeof row.text === 'string') : []
 }
 
 export function saveAiDraft(chapterId, entry) {
@@ -901,8 +934,9 @@ function OutlineTab({ call, novelId, chapters, writable, active, notify, t }) {
 }
 
 /** 人物：设定卡 + 动态账本。 */
-function CharactersTab({ call, novelId, writable, active, notify, t }) {
+function CharactersTab({ call, novelId, chapterId, writable, active, notify, t, guard }) {
   const [characters, setCharacters] = useState(null)
+  const [aiAction, setAiAction] = useState(null)
   const [dialog, setDialog] = useState(null)
   const [error, setError] = useState(null)
 
@@ -919,13 +953,21 @@ function CharactersTab({ call, novelId, writable, active, notify, t }) {
 
   useEffect(() => {
     setCharacters(null)
+    setAiAction(null)
     setDialog(null)
     setError(null)
   }, [novelId])
 
+  useEffect(() => { if (!active) setAiAction(null) }, [active])
+
   useEffect(() => {
     if (active) void load()
   }, [active, load])
+
+  const openCharacterAi = async action => {
+    if (guard && !(await guard())) return
+    setAiAction(action)
+  }
 
   const openCreate = () => {
     setDialog({ id: null, token: null, stateToken: null, form: emptyCharacter(), state: emptyCharacterState(), stateExists: false, loadingState: false, busy: false })
@@ -1013,6 +1055,8 @@ function CharactersTab({ call, novelId, writable, active, notify, t }) {
       <div className="qibi-row">
         <span className="qibi-section-title">{t('tabCharacters')}</span>
         <span className="qibi-spacer" />
+        <button type="button" className="qibi-btn small" onClick={() => void openCharacterAi('extract')}>{t('characterAiExtractTitle')}</button>
+        <button type="button" className="qibi-btn small" onClick={() => void openCharacterAi('generate')}>{t('characterAiGenerateTitle')}</button>
         <button type="button" className="qibi-btn small" disabled={!writable} onClick={openCreate}>＋ {t('characterNew')}</button>
       </div>
 
@@ -1044,6 +1088,19 @@ function CharactersTab({ call, novelId, writable, active, notify, t }) {
           {(row.location || row.realm) && <p>{t('stateSection')}：{[row.location, row.realm].filter(Boolean).join(' · ')}</p>}
         </div>
       ))}
+
+      {aiAction && (
+        <CharacterAiDialog
+          key={`${novelId}:${chapterId ?? 'all'}:${aiAction}`}
+          call={call} novelId={novelId} chapterId={chapterId} characters={characters ?? []}
+          writable={writable} initialAction={aiAction} t={t}
+          onClose={() => setAiAction(null)}
+          onImported={async result => {
+            setCharacters(result.characters)
+            notify('info', `${t('characterAiCreated')} ${result.created} · ${t('characterAiSkipped')} ${result.skipped}`)
+          }}
+        />
+      )}
 
       {dialog && (
         <Dialog
@@ -3815,7 +3872,7 @@ function Workbench({ call, t }) {
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-characters" role="tabpanel" aria-labelledby="qibi-tab-characters" style={{ display: tab === 'characters' ? 'flex' : 'none' }}>
-            <CharactersTab call={call} novelId={novelId} writable={writable} active={tab === 'characters'} notify={notify} t={t} />
+            <CharactersTab call={call} novelId={novelId} chapterId={chapterId} writable={writable} active={tab === 'characters'} notify={notify} t={t} guard={guardDirty} />
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-distill" role="tabpanel" aria-labelledby="qibi-tab-distill" style={{ display: tab === 'distill' ? 'flex' : 'none' }}>
@@ -3933,7 +3990,7 @@ export function apply(ctx) {
     const t = ctx.locale.bind(NS)
     ctx.effect(installStyles, 'qibi: styles')
 
-    const call = (endpoint, payload) => callHost(endpoint, payload)
+    const call = (endpoint, payload, options) => callHost(endpoint, payload, options)
 
     ctx.effect(() => ctx.slots.inject('main', () => ctx.slots.register({
       name: 'main',

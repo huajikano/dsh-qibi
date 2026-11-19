@@ -69,17 +69,17 @@ DSH 左侧栏出现一枚「起笔」图标，点开是 DSH 原生面板（不�
 
 > **运行要求**：已验证 DSH `0.2.2-rc.3` · Node.js ≥ 24。首次使用自动准备空白数据库；也可主动连接原起笔数据库，无须运行起笔桌面程序。
 
-推荐从 [v1.0.0 Release](https://github.com/huajikano/dsh-qibi/releases/tag/v1.0.0) 安装预构建包，已包含 `client.js`，不需要本机构建前端：
+推荐从 [v1.1.0 Release](https://github.com/huajikano/dsh-qibi/releases/tag/v1.1.0) 安装预构建包，已包含 `client.js`，不需要本机构建前端：
 
 ```sh
-dsh plugin --profile web add -w https://github.com/huajikano/dsh-qibi/releases/download/v1.0.0/dsh-qibi-1.0.0.tgz
+dsh plugin --profile web add -w https://github.com/huajikano/dsh-qibi/releases/download/v1.1.0/dsh-qibi-1.1.0.tgz
 dsh web
 ```
 
 也可从固定 GitHub 标签安装源码包：
 
 ```sh
-dsh plugin --profile web add -w github:huajikano/dsh-qibi#v1.0.0
+dsh plugin --profile web add -w github:huajikano/dsh-qibi#v1.1.0
 ```
 
 桌面版可在 **设置 → 插件 → 添加插件** 中粘贴上述 `.tgz` 下载地址，或选择解压后的本地目录。
@@ -107,6 +107,7 @@ dsh plugin --profile web add -w github:huajikano/dsh-qibi#v1.0.0
 | **并发保护** | 保存带 `updated_at + 正文哈希` 的令牌，校验与写入在同一个 `BEGIN IMMEDIATE` 事务内完成；大纲/人物/分卷/摘要/写作状态亦有字段级令牌 |
 | **写入护栏** | 已有正文必须带令牌才能写；空内容覆盖、疑似「截断成前缀」的写回默认拒绝；读取被截断时不发放令牌 |
 | **检索** | 与起笔同源的 BM25（`kb_chunks`、同一套分词与打分），写入时同步重建该章分块 |
+| **AI 人物** | “人物”页可从当前章或全书已保存正文提取候选，也可用一句话构想生成一个角色；先勾选编辑再确认导入，同名跳过不覆盖。全书分析默认有章节与字符上限，超出会提示 |
 | **蒸馏作者** | 上传 TXT / MD / HTML / JSON / EPUB 样章解析成素材；把 Agent 产出的三段结果存为版本，可回滚、可绑定到作品；绑定后生成时遵循该版本的写作 Skill |
 | **导出** | 整本 Markdown / TXT，返回文本与建议文件名（落盘交给 DSH 的文件工具） |
 | **不重复造轮子** | 插件不内置模型调用层：AI 走 DSH 自己的 `ctx.llm`，用你当前默认模型，因此不需要在插件里另配 Key |
@@ -125,7 +126,7 @@ dsh plugin --profile web add -w github:huajikano/dsh-qibi#v1.0.0
 | `qibi_chapter` | `list` `read` `write` `create` `update` `delete` `move` | 章节读写与增删；完整 `read` 返回 `token`，写入时带 `expectedToken` |
 | `qibi_revision` | `list` `restore` | 章节版本历史与恢复 |
 | `qibi_outline` | `list` `create` `update` `delete` | 总纲与章节细纲 |
-| `qibi_character` | `list` `create` `update` `delete` `state` `set_state` | 人物设定与动态账本 |
+| `qibi_character` | `list` `create` `update` `delete` `state` `set_state` `ai_extract` `ai_generate` `import_candidates` | 人物设定与动态账本；AI 只生成候选，确认导入时同名跳过 |
 | `qibi_continuity` | `volumes` `create_volume` `update_volume` `summary` `set_summary` `writer_state` `set_writer_state` | 分卷、章节摘要、写作状态与伏笔账本 |
 | `qibi_kb` | `query` `stats` `reindex` | 起笔自带 BM25 检索与索引维护 |
 | `qibi_search` | — | 章节标题/正文 + 人物关键词检索 |
