@@ -33,7 +33,7 @@ function drawerHarness(entries, selection = null) {
     writable: true, info: { available: true, model: 'fixture', modes: [{ id: 'draft', group: 'chapter' }, { id: 'continue', group: 'chapter' }, { id: 'polish-selection', group: 'selection' }] },
     t: key => key, notify() {}, onApply() {}, onClose() {},
   }
-  return { render() { index = 0; return module.exports.AiDrawer(props) }, module: module.exports, storage }
+  return { render() { index = 0; return module.exports.AiDrawer(props) }, module: module.exports, storage, props }
 }
 function find(node, predicate) {
   if (Array.isArray(node)) { for (const child of node) { const result = find(child, predicate); if (result) return result } }
@@ -79,4 +79,18 @@ assert.doesNotThrow(() => malformed.module.removeAiDraft(1, fixture.id))
 assert.doesNotThrow(() => malformed.module.saveAiDraft(1, { ...fixture, id: 'new' }))
 assert.equal(malformed.module.listAiDrafts(1).length, 1)
 assert.equal(typeof malformed.module.listAiDrafts(3)[0].label, 'string')
-console.log('PASS: actual history click/rerender stays safe; only matching original ranges can replace selections; ambiguous legacy continuations are read-only; malformed histories support safe read/save/delete.')
+const scoped = drawerHarness([fixture])
+scoped.module.saveAiDraft(1, { ...valid, id: 'scope-a', at: 2 }, 'library-a/author-1')
+scoped.module.saveAiDraft(1, { ...valid, id: 'scope-b', at: 3 }, 'library-b/author-2')
+const a = scoped.module.listAiDrafts(1, 'library-a/author-1')
+assert.ok(a.some(row => row.id === 'scope-a'))
+assert.ok(!a.some(row => row.id === 'scope-b'))
+assert.equal(a.find(row => row.id === fixture.id).previewOnly, true)
+scoped.module.clearAiDrafts(1, 'library-a/author-1')
+assert.ok(scoped.module.listAiDrafts(1, 'library-b/author-2').some(row => row.id === 'scope-b'))
+let applied
+restored.props.onApply = input => { applied = input }
+find(restored.render(), node => node.type === 'button' && node.props.children.flat().includes('aiApply')).props.onClick()
+assert.equal(applied.sourceNovelId, 1)
+assert.equal(applied.sourceChapterId, 1)
+console.log('PASS: history clicks, stale selections, ambiguous continuations, damaged records, library/author isolation and apply provenance.')

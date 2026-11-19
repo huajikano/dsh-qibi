@@ -185,6 +185,7 @@ export const STYLES = `
 .qibi-section-title { display: block; font-weight: 600; font-size: 12px; margin: 16px 0 8px 0; }
 .qibi-pane > .qibi-section-title:first-child { margin-top: 0; }
 .qibi-form-title { margin: 10px 0 0 0; font-size: 12px; }
+.qibi-form-lock { display: block; min-width: 0; margin: 0; padding: 0; border: 0; }
 .qibi-form { display: flex; flex-direction: column; gap: 10px; margin: 10px 0 14px 0; }
 .qibi-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 0 0 auto; }
 .qibi-row > .qibi-field { flex: 1 1 160px; }

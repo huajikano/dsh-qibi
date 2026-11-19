@@ -10,11 +10,13 @@
  * 3. 写入开关只能收窄：config.allowWrite=false 时界面上的开关与全部写操作都不可用。
  */
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { NS, dictionaries } from './i18n.js'
 import { STYLES } from './styles.js'
 import CharacterAiDialog from './CharacterAiDialog.jsx'
 import { AppearanceFrame, ThemeButton } from './Appearance.jsx'
+import { runSerializedSave, flushDraft } from './draft-save.js'
+import { saveCharacterEditor } from './character-editor.js'
 
 /** 面板 id：侧栏图标与中央面板必须用同一个。 */
 const PANEL_ID = 'qibi'
@@ -185,7 +187,7 @@ export function previewOnlyHistory(entry) {
 }
 
 /** 面板内 AI 抽屉：模式、补充要求、流式预览与应用。 */
-function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, writable, info, modelLoading = false, hasOutline, t, notify, onApply, onClose }) {
+function AiDrawer({ call, novelId, chapterId, historyScope, draft, selection, initialMode, writable, info, modelLoading = false, hasOutline, t, notify, onApply, onClose }) {
   const [reasoningEffort, setReasoningEffort] = useState(() => validReasoningPreference(info, readJson(AI_REASONING_KEY, {})?.[info?.model]))
   const [mode, setMode] = useState('draft')
   const [extra, setExtra] = useState('')
@@ -195,7 +197,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
   const [complete, setComplete] = useState(false)
   const [truncated, setTruncated] = useState(false)
   const [forceRewrite, setForceRewrite] = useState(false)
-  const [history, setHistory] = useState(() => listAiDrafts(chapterId))
+  const [history, setHistory] = useState(() => listAiDrafts(chapterId, historyScope))
   const [historyEntry, setHistoryEntry] = useState(null)
   const effectiveSelection = historyEntry ? restoreHistorySelection(historyEntry, draft, chapterId) : selection
   const historyPreviewOnly = previewOnlyHistory(historyEntry)
@@ -227,7 +229,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
 
   useEffect(() => () => { abortRef.current?.abort?.() }, [])
 
-  useEffect(() => { setHistory(listAiDrafts(chapterId)) }, [chapterId])
+  useEffect(() => { setHistory(listAiDrafts(chapterId, historyScope)) }, [chapterId, historyScope])
 
   const closeRef = useRef(onClose)
   closeRef.current = onClose
@@ -280,7 +282,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
           complete: result.complete === true,
           selection: isSelectionMode && effectiveSelection ? { chapterId, from: effectiveSelection.from, to: effectiveSelection.to, text: effectiveSelection.text } : null,
           forceRewrite: false,
-        }))
+        }, historyScope))
       }
     } catch (cause) {
       if (controller.signal.aborted) setError(t('aiCancelled'))
@@ -331,7 +333,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
           complete: result.complete === true,
           selection: isSelectionMode && effectiveSelection ? { chapterId, from: effectiveSelection.from, to: effectiveSelection.to, text: effectiveSelection.text } : null,
           forceRewrite: true,
-        }))
+        }, historyScope))
       }
     } catch (cause) {
       if (controller.signal.aborted) setError(t('aiCancelled'))
@@ -392,7 +394,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
         </div>
       )}
       {isSelectionMode && !effectiveSelection && <div className="qibi-ai-note">{t('aiHistorySelectionMissing')}</div>}
-      {historyPreviewOnly && <div className="qibi-ai-note">{t('aiHistoryLegacyContinuation')}</div>}
+      {historyPreviewOnly && <div className="qibi-ai-note">{t(historyEntry?.legacyScope ? 'aiHistoryLegacyScope' : 'aiHistoryLegacyContinuation')}</div>}
 
       <div className="qibi-ai-modes">
         {['chapter', 'selection', 'report'].map(group => (
@@ -442,8 +444,8 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
             {isReportMode
               ? (modeInfo?.saveAsOutline === false
                 ? null
-                : <button type="button" className="qibi-btn small" disabled={!writable || !complete} onClick={() => onApply({ mode, modeLabel: modeInfo?.label, text: preview, report: true })}>{t('aiSaveOutline')}</button>)
-              : <button type="button" className="qibi-btn small primary" disabled={!writable || !complete || historyPreviewOnly || (isSelectionMode && !effectiveSelection) || (historyEntry && !modes.some(row => row.id === historyEntry.mode))} onClick={() => onApply({ mode, modeLabel: modeInfo?.label, text: preview, rewrite: forceRewrite ? true : modeInfo?.rewrite !== false, selection: isSelectionMode ? effectiveSelection : null })}>{t('aiApply')}</button>}
+                : <button type="button" className="qibi-btn small" disabled={!writable || !complete || historyPreviewOnly} onClick={() => onApply({ sourceNovelId: novelId, sourceChapterId: chapterId, mode, modeLabel: modeInfo?.label, text: preview, report: true })}>{t('aiSaveOutline')}</button>)
+              : <button type="button" className="qibi-btn small primary" disabled={!writable || !complete || historyPreviewOnly || (isSelectionMode && !effectiveSelection) || (historyEntry && !modes.some(row => row.id === historyEntry.mode))} onClick={() => onApply({ sourceNovelId: novelId, sourceChapterId: chapterId, mode, modeLabel: modeInfo?.label, text: preview, rewrite: forceRewrite ? true : modeInfo?.rewrite !== false, selection: isSelectionMode ? effectiveSelection : null })}>{t('aiApply')}</button>}
           </>
         )}
         <span className="qibi-spacer" />
@@ -470,7 +472,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
             <button
               type="button"
               className="qibi-btn small"
-              onClick={() => { clearAiDrafts(chapterId); setHistory([]) }}
+              onClick={() => { clearAiDrafts(chapterId, historyScope); setHistory([]) }}
             >{t('aiHistoryClear')}</button>
           </div>
           {history.map(item => (
@@ -497,7 +499,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
                 type="button"
                 className="qibi-btn small"
                 aria-label={t('delete')}
-                onClick={() => setHistory(removeAiDraft(chapterId, item.id))}
+                onClick={() => setHistory(removeAiDraft(chapterId, item.id, historyScope))}
               >×</button>
             </div>
           ))}
@@ -564,17 +566,24 @@ function loadDraftStore() {
   ]))
 }
 
-export function listAiDrafts(chapterId) {
-  if (chapterId == null) return []
-  const rows = loadDraftStore()[String(chapterId)]
-  return Array.isArray(rows) ? rows.filter(row => row && typeof row.id === 'string' && typeof row.mode === 'string' && typeof row.text === 'string') : []
+function draftBucket(chapterId, scope) {
+  return scope ? JSON.stringify([String(scope), chapterId]) : String(chapterId)
 }
 
-export function saveAiDraft(chapterId, entry) {
+export function listAiDrafts(chapterId, scope) {
   if (chapterId == null) return []
   const store = loadDraftStore()
-  const key = String(chapterId)
-  const list = Array.isArray(store[key]) ? store[key] : []
+  const current = store[draftBucket(chapterId, scope)] ?? []
+  if (!scope) return current
+  const legacy = (store[String(chapterId)] ?? []).map(row => ({ ...row, previewOnly: true, legacyScope: true }))
+  return [...current, ...legacy]
+}
+
+export function saveAiDraft(chapterId, entry, scope) {
+  if (chapterId == null) return []
+  const store = loadDraftStore()
+  const key = draftBucket(chapterId, scope)
+  const list = store[key] ?? []
   store[key] = [entry, ...list].slice(0, AI_DRAFTS_PER_CHAPTER)
   const all = []
   for (const [chapterKey, rows] of Object.entries(store)) {
@@ -585,22 +594,24 @@ export function saveAiDraft(chapterId, entry) {
     store[extra.chapterKey] = (store[extra.chapterKey] ?? []).filter(row => row.id !== extra.id)
   }
   writeJson(AI_DRAFTS_KEY, store)
-  return store[key]
+  return listAiDrafts(chapterId, scope)
 }
 
-export function removeAiDraft(chapterId, id) {
+export function removeAiDraft(chapterId, id, scope) {
   if (chapterId == null) return []
   const store = loadDraftStore()
-  const key = String(chapterId)
-  store[key] = (store[key] ?? []).filter(row => row.id !== id)
-  if (store[key].length === 0) delete store[key]
+  for (const key of new Set([draftBucket(chapterId, scope), String(chapterId)])) {
+    store[key] = (store[key] ?? []).filter(row => row.id !== id)
+    if (store[key].length === 0) delete store[key]
+  }
   writeJson(AI_DRAFTS_KEY, store)
-  return store[key] ?? []
+  return listAiDrafts(chapterId, scope)
 }
 
-export function clearAiDrafts(chapterId) {
+export function clearAiDrafts(chapterId, scope) {
   if (chapterId == null) return
   const store = loadDraftStore()
+  delete store[draftBucket(chapterId, scope)]
   delete store[String(chapterId)]
   writeJson(AI_DRAFTS_KEY, store)
 }
@@ -722,33 +733,35 @@ function Field({ label, children }) {
 }
 
 /** 面板内模态框。 */
-function Dialog({ title, onClose, children, footer }) {
+function Dialog({ title, onClose, children, footer, busy = false }) {
+  const element = useRef(null)
+  const close = useRef(onClose)
+  const locked = useRef(busy)
+  close.current = onClose
+  locked.current = busy
+  const titleId = useId()
   useEffect(() => {
+    const trigger = document.activeElement
+    element.current?.focus()
     const onKey = event => {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); if (!locked.current) close.current() }
+      if (event.key !== 'Tab' || !element.current) return
+      const controls = Array.from(element.current.querySelectorAll('button, input, textarea, select, [tabindex="0"]')).filter(node => !node.matches(':disabled') && node.getClientRects().length)
+      const first = controls[0], last = controls[controls.length - 1]
+      if (!first) { event.preventDefault(); element.current.focus() }
+      else if (event.shiftKey && (document.activeElement === first || !controls.includes(document.activeElement))) { event.preventDefault(); last.focus() }
+      else if (!event.shiftKey && (document.activeElement === last || !controls.includes(document.activeElement))) { event.preventDefault(); first.focus() }
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
-  return (
-    <div
-      className="qibi-overlay"
-      onMouseDown={event => {
-        if (event.target === event.currentTarget) onClose()
-      }}
-    >
-      <div className="qibi-dialog" role="dialog" aria-modal="true">
-        <div className="qibi-dialog-head">
-          <strong>{title}</strong>
-          <span className="qibi-spacer" />
-          <button type="button" className="qibi-btn small" onClick={onClose}>×</button>
-        </div>
-        <div className="qibi-dialog-body">{children}</div>
-        {footer ? <div className="qibi-dialog-foot">{footer}</div> : null}
-      </div>
+    document.addEventListener('keydown', onKey, true)
+    return () => { document.removeEventListener('keydown', onKey, true); if (trigger?.isConnected) trigger.focus() }
+  }, [])
+  return <div className="qibi-overlay" onMouseDown={event => { if (event.target === event.currentTarget && !busy) onClose() }}>
+    <div ref={element} className="qibi-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-busy={busy} tabIndex={-1}>
+      <div className="qibi-dialog-head"><strong id={titleId}>{title}</strong><span className="qibi-spacer" /><button type="button" className="qibi-btn small" disabled={busy} aria-label={title + ' · 关闭'} onClick={onClose}>×</button></div>
+      <div className="qibi-dialog-body"><fieldset className="qibi-form-lock" disabled={busy}>{children}</fieldset></div>
+      {footer ? <div className="qibi-dialog-foot">{footer}</div> : null}
     </div>
-  )
+  </div>
 }
 
 /** 页签加载失败：说明 + 重试，避免一直停在「加载中」。 */
@@ -839,8 +852,7 @@ function OutlineTab({ call, novelId, chapters, writable, active, notify, t }) {
     } catch (cause) {
       if (cause?.code === 'ENTITY_CONFLICT') {
         notify('error', t('entityConflict'))
-        cancel()
-        void load()
+        // Keep the local form so it can be copied or explicitly discarded.
       } else {
         notify('error', causeText(cause))
       }
@@ -867,11 +879,11 @@ function OutlineTab({ call, novelId, chapters, writable, active, notify, t }) {
       <div className="qibi-row">
         <span className="qibi-section-title">{t('tabOutline')}</span>
         <span className="qibi-spacer" />
-        <button type="button" className="qibi-btn small" disabled={!writable} onClick={startNew}>＋ {t('outlineNew')}</button>
+        <button type="button" className="qibi-btn small" disabled={!writable || busy} onClick={startNew}>＋ {t('outlineNew')}</button>
       </div>
 
       {editing !== null && (
-        <div className="qibi-form">
+        <fieldset className="qibi-form-lock" disabled={busy || !writable}><div className="qibi-form">
           <Field label={t('outlineTarget')}>
             <select
               className="qibi-select"
@@ -902,7 +914,7 @@ function OutlineTab({ call, novelId, chapters, writable, active, notify, t }) {
             <button type="button" className="qibi-btn small primary" disabled={busy} onClick={() => void submit()}>{t('save')}</button>
             <button type="button" className="qibi-btn small" onClick={cancel}>{t('cancel')}</button>
           </div>
-        </div>
+        </div></fieldset>
       )}
 
       {error && <LoadError message={error} onRetry={() => void load()} t={t} />}
@@ -924,8 +936,8 @@ function OutlineTab({ call, novelId, chapters, writable, active, notify, t }) {
             <h4>{row.title || t('untitled')}</h4>
             <span className="qibi-tag">{row.chapterId === null ? t('outlineMaster') : chapterLabel(row.chapterId)}</span>
             <span className="qibi-spacer" />
-            <button type="button" className="qibi-btn small" disabled={!writable} onClick={() => startEdit(row)}>{t('edit')}</button>
-            <button type="button" className="qibi-btn small danger" disabled={!writable} onClick={() => void remove(row)}>{t('delete')}</button>
+            <button type="button" className="qibi-btn small" disabled={!writable || busy} onClick={() => startEdit(row)}>{t('edit')}</button>
+            <button type="button" className="qibi-btn small danger" disabled={!writable || busy} onClick={() => void remove(row)}>{t('delete')}</button>
           </div>
           <p>{row.content || '—'}</p>
         </div>
@@ -971,19 +983,19 @@ function CharactersTab({ call, novelId, chapterId, writable, active, notify, t, 
   }
 
   const openCreate = () => {
-    setDialog({ id: null, token: null, stateToken: null, form: emptyCharacter(), state: emptyCharacterState(), stateExists: false, loadingState: false, busy: false })
+    setDialog({ id: null, token: null, stateToken: null, form: emptyCharacter(), state: emptyCharacterState(), stateExists: false, loadingState: false, stateLoadError: false, busy: false })
   }
 
   const openEdit = async row => {
-    setDialog({ id: row.id, token: row.token ?? null, stateToken: null, form: { ...emptyCharacter(), ...pick(row) }, state: emptyCharacterState(), stateExists: false, loadingState: true, busy: false })
+    setDialog({ id: row.id, token: row.token ?? null, stateToken: null, form: { ...emptyCharacter(), ...pick(row) }, state: emptyCharacterState(), stateExists: false, loadingState: true, stateLoadError: false, busy: false })
     try {
       const state = await call('characterState', { characterId: row.id })
       setDialog(current => (current && current.id === row.id
-        ? { ...current, state: stateToForm(state), stateToken: state.token ?? null, stateExists: state.exists === true, loadingState: false }
+        ? { ...current, state: stateToForm(state), stateToken: state.token ?? null, stateExists: state.exists === true, loadingState: false, stateLoadError: false }
         : current))
     } catch (cause) {
       notify('error', causeText(cause))
-      setDialog(current => (current ? { ...current, loadingState: false } : current))
+      setDialog(current => (current?.id === row.id ? { ...current, loadingState: false, stateLoadError: true } : current))
     }
   }
 
@@ -996,34 +1008,14 @@ function CharactersTab({ call, novelId, chapterId, writable, active, notify, t, 
     : current))
 
   const save = async () => {
-    if (!dialog || dialog.busy || dialog.loadingState) return
+    if (!dialog || dialog.busy || dialog.loadingState || dialog.stateLoadError) return
     if (!dialog.form.name.trim()) {
       notify('error', t('nameRequired'))
       return
     }
     setDialog(current => (current ? { ...current, busy: true } : current))
     try {
-      let characterId = dialog.id
-      if (dialog.id === null) {
-        const payload = { novelId }
-        for (const [key, value] of Object.entries(dialog.form)) {
-          if (value.trim()) payload[key] = value.trim()
-        }
-        const created = await call('createCharacter', payload)
-        characterId = created.id
-      } else {
-        await call('updateCharacter', { characterId: dialog.id, ...dialog.form, expectedToken: dialog.token ?? undefined })
-      }
-
-      const statePayload = {}
-      for (const [key, value] of Object.entries(dialog.state)) {
-        if (dialog.id === null && !value.trim()) continue
-        statePayload[key] = value
-      }
-      const hasState = Object.keys(statePayload).length > 0
-      if (hasState && (dialog.id === null || dialog.stateExists || Object.values(dialog.state).some(value => value.trim()))) {
-        await call('updateCharacterState', { characterId, ...statePayload, expectedToken: dialog.stateToken ?? undefined })
-      }
+      await saveCharacterEditor({ call, novelId, dialog, onProgress: next => setDialog(previous => previous ? { ...next, busy: true } : previous) })
 
       await load()
       setDialog(null)
@@ -1031,8 +1023,7 @@ function CharactersTab({ call, novelId, chapterId, writable, active, notify, t, 
     } catch (cause) {
       if (cause?.code === 'ENTITY_CONFLICT') {
         notify('error', t('entityConflict'))
-        setDialog(null)
-        void load()
+        setDialog(current => current ? { ...current, busy: false } : current)
       } else {
         notify('error', causeText(cause))
         setDialog(current => (current ? { ...current, busy: false } : current))
@@ -1106,12 +1097,13 @@ function CharactersTab({ call, novelId, chapterId, writable, active, notify, t, 
       {dialog && (
         <Dialog
           title={dialog.id === null ? t('characterNew') : t('edit')}
+          busy={dialog.busy}
           onClose={() => { if (!dialog.busy) setDialog(null) }}
           footer={(
             <>
               <span className="qibi-spacer" />
               <button type="button" className="qibi-btn small" disabled={dialog.busy} onClick={() => setDialog(null)}>{t('cancel')}</button>
-              <button type="button" className="qibi-btn small primary" disabled={dialog.busy || dialog.loadingState} onClick={() => void save()}>{t('save')}</button>
+              <button type="button" className="qibi-btn small primary" disabled={dialog.busy || dialog.loadingState || dialog.stateLoadError} onClick={() => void save()}>{t('save')}</button>
             </>
           )}
         >
@@ -1137,6 +1129,7 @@ function CharactersTab({ call, novelId, chapterId, writable, active, notify, t, 
               </Field>
             ))}
             <h4 className="qibi-form-title">{t('stateSection')}</h4>
+            {dialog.stateLoadError && <div className="qibi-error-text" role="alert">{t('characterStateReadFailed')} <button type="button" className="qibi-btn small" onClick={() => void openEdit({ ...dialog.form, id: dialog.id, token: dialog.token })}>{t('retry')}</button></div>}
             {dialog.loadingState
               ? <div className="qibi-sub">{t('loading')}</div>
               : STATE_FIELDS.map(key => (
@@ -1162,6 +1155,7 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
   const [authorId, setAuthorId] = useState(null)
   const [detail, setDetail] = useState(null)
   const [binding, setBinding] = useState(null)
+  const [detailError, setDetailError] = useState('')
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState('')
   const [pasteOpen, setPasteOpen] = useState(false)
@@ -1171,6 +1165,9 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
   const [uploading, setUploading] = useState(null)
   const [preview, setPreview] = useState(null)
   const fileRef = useRef(null)
+  const detailSeq = useRef(0)
+  const authorRef = useRef(authorId)
+  authorRef.current = authorId
 
   const loadAuthors = useCallback(async () => {
     try {
@@ -1184,14 +1181,17 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
   }, [call, notify])
 
   const loadDetail = useCallback(async id => {
-    if (id == null) {
+    const sequence = ++detailSeq.current
+    setDetailError('')
+    if (id == null || id !== authorRef.current) {
       setDetail(null)
       return
     }
     try {
-      setDetail(await call('distilledAuthor', { authorId: id }))
+      const result = await call('distilledAuthor', { authorId: id })
+      if (sequence === detailSeq.current && authorRef.current === id) setDetail(result)
     } catch (cause) {
-      notify('error', causeText(cause))
+      if (sequence === detailSeq.current && authorRef.current === id) setDetailError(causeText(cause))
     }
   }, [call, notify])
 
@@ -1214,6 +1214,7 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
 
   useEffect(() => {
     if (!active) return
+    setDetail(null)
     setPreview(null)
     void loadDetail(authorId)
   }, [active, authorId, loadDetail])
@@ -1258,7 +1259,7 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
 
   const uploadFiles = async fileList => {
     const files = [...(fileList ?? [])]
-    if (!files.length || authorId == null || busy) return
+    if (!files.length || authorId == null || detail?.id !== authorId || busy) return
     setBusy(true)
     try {
       for (const file of files) {
@@ -1299,7 +1300,7 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
   }
 
   const addPaste = async () => {
-    if (!pasteText.trim() || authorId == null || busy) return
+    if (!pasteText.trim() || authorId == null || detail?.id !== authorId || busy) return
     setBusy(true)
     try {
       await call('addDistilledText', {
@@ -1393,7 +1394,7 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
           <button
             type="button"
             className="qibi-btn small"
-            disabled={!writable}
+            disabled={!writable || busy}
             title={t('distillNew')}
             onClick={() => { setCreating(value => !value); setNewName('') }}
           >＋</button>
@@ -1403,7 +1404,7 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
             <input
               autoFocus
               className="qibi-input"
-              value={newName}
+              value={newName} disabled={busy}
               placeholder={t('distillNamePlaceholder')}
               onChange={event => setNewName(event.target.value)}
               onKeyDown={event => {
@@ -1422,7 +1423,8 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
               type="button"
               key={author.id}
               className={`qibi-author-btn${author.id === authorId ? ' active' : ''}`}
-              onClick={() => setAuthorId(author.id)}
+              disabled={busy}
+              onClick={() => { setDetail(null); setAuthorId(author.id) }}
             >
               <span className="qibi-author-name">{author.name}</span>
               <span className="qibi-author-meta">{author.sourceCount} {t('distillSourceCount')} · {author.currentVersion ? `v${author.currentVersion.version}` : t('distillNoVersion')}</span>
@@ -1432,13 +1434,14 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
       </div>
 
       <div className="qibi-distill-main">
-        {!detail && (
+        {detailError && <LoadError message={detailError} onRetry={() => void loadDetail(authorId)} t={t} />}
+        {!detailError && (!detail || detail.id !== authorId) && (
           <div className="qibi-empty">
-            <strong>{t('distillEmpty')}</strong>
+            <strong>{t(authorId == null ? 'distillEmpty' : 'loading')}</strong>
             <span>{t('distillStartHint')}</span>
           </div>
         )}
-        {detail && (
+        {detail && detail.id === authorId && (
           <>
             <div className="qibi-row">
               <h3 className="qibi-distill-title">{detail.name}</h3>
@@ -1491,7 +1494,7 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
             )}
 
             {pasteOpen && (
-              <div className="qibi-form">
+              <fieldset className="qibi-form-lock" disabled={busy || !writable}><div className="qibi-form">
                 <Field label={t('distillPasteName')}>
                   <input className="qibi-input" value={pasteName} placeholder="材料.txt" onChange={event => setPasteName(event.target.value)} />
                 </Field>
@@ -1502,7 +1505,7 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
                   <button type="button" className="qibi-btn small primary" disabled={busy || !pasteText.trim()} onClick={() => void addPaste()}>{t('distillAdd')}</button>
                   <button type="button" className="qibi-btn small" onClick={() => setPasteOpen(false)}>{t('cancel')}</button>
                 </div>
-              </div>
+              </div></fieldset>
             )}
 
             {detail.sources.length === 0 && <div className="qibi-sub">{t('distillNoSources')}</div>}
@@ -1593,6 +1596,8 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
   const summarySeq = useRef(0)
   const writerSeq = useRef(0)
   const volumeSeq = useRef(0)
+  const scopeRef = useRef({ novelId, chapterId })
+  scopeRef.current = { novelId, chapterId }
   const loadedSummaryFor = useRef(undefined)
   const loadedWriterFor = useRef(undefined)
 
@@ -1609,6 +1614,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
   }, [call, novelId, notify])
 
   const loadSummary = useCallback(async () => {
+    if (scopeRef.current.chapterId !== chapterId) return
     if (chapterId === null) {
       loadedSummaryFor.current = null
       setSummary(null)
@@ -1621,7 +1627,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
     try {
       const result = await call('chapterSummary', { chapterId: target })
       // 切章后旧响应不能覆盖新章的表单，否则保存会把 A 章摘要写进 B 章。
-      if (seq !== summarySeq.current) return
+      if (seq !== summarySeq.current || scopeRef.current.chapterId !== target) return
       setSummary(result.summary)
       setSummaryForm({
         summary: result.summary.summary ?? '',
@@ -1637,13 +1643,14 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
   }, [call, chapterId, notify])
 
   const loadWriter = useCallback(async () => {
+    if (scopeRef.current.novelId !== novelId) return
     if (novelId === null) return
     const target = novelId
     const seq = ++writerSeq.current
     setLoadingWriter(true)
     try {
       const result = await call('writerState', { novelId: target })
-      if (seq !== writerSeq.current) return
+      if (seq !== writerSeq.current || scopeRef.current.novelId !== target) return
       setWriterState(result.writerState)
       setWriterForm({
         progress: result.writerState.progress ?? '',
@@ -1714,8 +1721,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
     } catch (cause) {
       if (cause?.code === 'ENTITY_CONFLICT') {
         notify('error', t('entityConflict'))
-        setVolumeForm(null)
-        void loadVolumes()
+        // Preserve the conflicted local volume draft.
       } else {
         notify('error', causeText(cause))
       }
@@ -1734,7 +1740,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
     } catch (cause) {
       if (cause?.code === 'ENTITY_CONFLICT') {
         notify('error', t('entityConflict'))
-        void loadSummary()
+        // Preserve the conflicted local chapter summary.
       } else {
         notify('error', causeText(cause))
       }
@@ -1759,7 +1765,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
     } catch (cause) {
       if (cause?.code === 'ENTITY_CONFLICT') {
         notify('error', t('entityConflict'))
-        void loadWriter()
+        // Preserve the conflicted local writer-state draft.
       } else {
         notify('error', causeText(cause))
       }
@@ -1773,7 +1779,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
       <div className="qibi-row">
         <span className="qibi-section-title">{t('volumes')}</span>
         <span className="qibi-spacer" />
-        <button type="button" className="qibi-btn small" disabled={!writable} onClick={() => startVolume(null)}>＋ {t('volumeNew')}</button>
+        <button type="button" className="qibi-btn small" disabled={!writable || busy} onClick={() => startVolume(null)}>＋ {t('volumeNew')}</button>
       </div>
       {volumes === null && <div className="qibi-sub">{t('loading')}</div>}
       {volumes !== null && volumes.length === 0 && <div className="qibi-sub">{t('emptyVolumes')}</div>}
@@ -1782,7 +1788,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
           <div className="qibi-row">
             <h4>{row.title}</h4>
             <span className="qibi-spacer" />
-            <button type="button" className="qibi-btn small" disabled={!writable} onClick={() => startVolume(row)}>{t('edit')}</button>
+            <button type="button" className="qibi-btn small" disabled={!writable || busy} onClick={() => startVolume(row)}>{t('edit')}</button>
           </div>
           {row.summary && <p>{row.summary}</p>}
           {row.coreConflict && <p>{t('volumeConflict')}：{row.coreConflict}</p>}
@@ -1790,7 +1796,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
       ))}
 
       {volumeForm && (
-        <div className="qibi-form">
+        <fieldset className="qibi-form-lock" disabled={busy || !writable}><div className="qibi-form">
           <Field label={t('volumeTitle')}>
             <input className="qibi-input" value={volumeForm.title} onChange={event => setVolumeForm(current => ({ ...current, title: event.target.value }))} />
           </Field>
@@ -1804,14 +1810,14 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
             <button type="button" className="qibi-btn small primary" disabled={busy} onClick={() => void submitVolume()}>{t('save')}</button>
             <button type="button" className="qibi-btn small" onClick={() => setVolumeForm(null)}>{t('cancel')}</button>
           </div>
-        </div>
+        </div></fieldset>
       )}
 
       <div className="qibi-section-title">{t('chapterSummary')}</div>
       {chapterId === null
         ? <div className="qibi-sub">{t('noChapterHint')}</div>
         : (
-          <div className="qibi-form">
+          <fieldset className="qibi-form-lock" disabled={busy || !writable || loadingSummary}><div className="qibi-form">
             <Field label={t('summaryText')}>
               <textarea className="qibi-textarea" rows={3} value={summaryForm.summary} onChange={event => setSummaryForm(current => ({ ...current, summary: event.target.value }))} />
             </Field>
@@ -1823,13 +1829,14 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
             </Field>
             <div className="qibi-actions">
               <button type="button" className="qibi-btn small primary" disabled={!writable || busy || loadingSummary} onClick={() => void submitSummary()}>{t('save')}</button>
+              <button type="button" className="qibi-btn small" disabled={busy || loadingSummary} onClick={() => { if (window.confirm(t('discardInfoDraftConfirm'))) void loadSummary() }}>{t('reload')}</button>
               {summary?.exists && <span className="qibi-sub">{t('updatedAt')} {summary.updatedAt}</span>}
             </div>
-          </div>
+          </div></fieldset>
         )}
 
       <div className="qibi-section-title">{t('writerState')}</div>
-      <div className="qibi-form">
+      <fieldset className="qibi-form-lock" disabled={busy || !writable || loadingWriter}><div className="qibi-form">
         <Field label={t('progress')}>
           <textarea className="qibi-textarea" rows={3} value={writerForm.progress} onChange={event => setWriterForm(current => ({ ...current, progress: event.target.value }))} />
         </Field>
@@ -1838,9 +1845,10 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
         </Field>
         <div className="qibi-actions">
           <button type="button" className="qibi-btn small primary" disabled={!writable || busy || loadingWriter} onClick={() => void submitWriter()}>{t('save')}</button>
+          <button type="button" className="qibi-btn small" disabled={busy || loadingWriter} onClick={() => { if (window.confirm(t('discardInfoDraftConfirm'))) void loadWriter() }}>{t('reload')}</button>
           {writerState?.exists && <span className="qibi-sub">{t('updatedAt')} {writerState.updatedAt}</span>}
         </div>
-      </div>
+      </div></fieldset>
     </div>
   )
 }
@@ -2135,7 +2143,7 @@ export function dataSettingsPayload({ dataDir, mode, userId }, info) {
 }
 
 /** 数据位置：读取/切换起笔数据目录，不直接搬移或覆盖旧书稿。 */
-function DataSettings({ call, t, initialSettings, onBeforeSave, onSaved, onCancel }) {
+function DataSettings({ call, t, initialSettings, onBeforeSave, onSaved, onCancel, onBusyChange }) {
   const [info, setInfo] = useState(() => initialSettings ?? null)
   const [dataDir, setDataDir] = useState(() => initialSettings?.dataDir || initialSettings?.defaultDataDir || '')
   const [mode, setMode] = useState(() => initialSettings?.exists === true ? 'existing' : 'create')
@@ -2179,6 +2187,7 @@ function DataSettings({ call, t, initialSettings, onBeforeSave, onSaved, onCance
   const save = async () => {
     if (busy || !info?.canSave || !dataDir.trim()) return
     setBusy(true)
+    onBusyChange?.(true)
     setError('')
     try {
       if (onBeforeSave && !(await onBeforeSave())) return
@@ -2189,6 +2198,7 @@ function DataSettings({ call, t, initialSettings, onBeforeSave, onSaved, onCance
       setError(causeText(cause))
     } finally {
       setBusy(false)
+      onBusyChange?.(false)
     }
   }
 
@@ -2285,6 +2295,7 @@ function Workbench({ call, t, appearance }) {
   const [error, setError] = useState(null)
   const [loadEpoch, setLoadEpoch] = useState(0)
   const [dataSettingsOpen, setDataSettingsOpen] = useState(false)
+  const [dataSettingsBusy, setDataSettingsBusy] = useState(false)
 
   const [novels, setNovels] = useState([])
   const [novelId, setNovelId] = useState(null)
@@ -2302,6 +2313,8 @@ function Workbench({ call, t, appearance }) {
   const [tab, setTab] = useState('body')
   const [writable, setWritable] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [transitioning, setTransitioning] = useState(false)
+  const transitionRef = useRef(false)
   const [newTitle, setNewTitle] = useState('')
   const [notice, setNotice] = useState(null)
   const [novelDialog, setNovelDialog] = useState(null)
@@ -2490,6 +2503,9 @@ function Workbench({ call, t, appearance }) {
   }, [chapterMenu])
 
   const adoptChapter = useCallback(next => {
+    chapterRef.current = next
+    draftRef.current = next.content
+    dirtyRef.current = false
     setChapter(next)
     setDraft(next.content)
     setDirty(false)
@@ -2535,6 +2551,16 @@ function Workbench({ call, t, appearance }) {
     })
     return result.chapters
   }, [call, novelId])
+
+  useEffect(() => {
+    const beforeUnload = event => {
+      if (!dirtyRef.current && !saveInFlightRef.current) return
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', beforeUnload)
+    return () => window.removeEventListener('beforeunload', beforeUnload)
+  }, [])
 
   // ---- 首屏：状态 + 作品 ----
   useEffect(() => {
@@ -2607,83 +2633,58 @@ function Workbench({ call, t, appearance }) {
           call('select', { novelId, chapterId }).catch(() => null),
         ])
         if (cancelled) return
-        setChapter(loaded.chapter)
-        setDraft(loaded.chapter.content)
-        setDirty(false)
-        setSaveState('idle')
-        setConflict(null)
+        adoptChapter(loaded.chapter)
       } catch (cause) {
         if (!cancelled) notify('error', causeText(cause))
       }
     })()
     return () => { cancelled = true }
-  }, [call, chapterId, novelId, notify])
+  }, [adoptChapter, call, chapterId, novelId, notify])
 
   // ---- 保存 ----
-  const save = useCallback(async (options = {}) => {
-    // 同一草稿的 blur / 防抖 / guardDirty 可能同时触发；复用同一个在途请求，
-    // 避免两个旧令牌互相踩出假的 CHAPTER_CONFLICT。
-    if (options.force !== true && saveInFlightRef.current) {
-      const previous = await saveInFlightRef.current.catch(() => false)
-      if (!previous) return false
-      if (!dirtyRef.current) return true
-    }
+  const save = useCallback((options = {}) => runSerializedSave(saveInFlightRef, options.force === true, async () => {
     const current = chapterRef.current
     if (!current || !writable) return false
     const content = draftRef.current
+    if (options.force !== true && content === current.content) {
+      dirtyRef.current = false
+      setDirty(false)
+      return true
+    }
     setSaveState('saving')
-    const task = (async () => {
-      try {
-        const result = await call('save', {
-          chapterId: current.id,
-          content,
-          // 强乐观锁：内容+时间戳的令牌；同一秒内的并发覆盖也能发现。
-          expectedToken: options.force === true ? undefined : current.token,
-        })
-        const unchanged = draftRef.current === content
-        if (chapterIdRef.current === result.chapter.id) {
-          // 立即刷新令牌；排队中的下一次保存必须使用新令牌。
-          chapterRef.current = result.chapter
-          setChapter(result.chapter)
-          if (unchanged) {
-            setDirty(false)
-            setConflict(null)
-            setSaveState('saved')
-          } else {
-            // 保存期间又输入了：保留脏标记，让下一轮防抖继续落盘。
-            setSaveState('idle')
-          }
-        } else {
-          // 已经切到别的章节：列表照常更新，但不要覆盖新章节的编辑器状态。
-          setSaveState('idle')
-        }
-        setChapters(previous => previous.map(row => (row.id === result.chapter.id
-          ? { ...row, title: result.chapter.title, status: result.chapter.status, wordCount: result.chapter.wordCount, updatedAt: result.chapter.updatedAt }
-          : row)))
-        setNovels(previous => previous.map(row => (row.id === current.novelId
-          ? { ...row, wordCount: row.wordCount - current.wordCount + result.chapter.wordCount }
-          : row)))
-        return true
-      } catch (cause) {
-        if (cause?.code === 'CHAPTER_CONFLICT') {
-          if (chapterIdRef.current === current.id) {
-            setConflict({ currentUpdatedAt: cause.details?.currentUpdatedAt ?? null })
-          }
-          setSaveState('idle')
-          return false
-        }
+    try {
+      const result = await call('save', {
+        chapterId: current.id, content,
+        expectedToken: options.force === true ? undefined : current.token,
+      })
+      if (chapterIdRef.current === result.chapter.id) {
+        chapterRef.current = result.chapter
+        setChapter(result.chapter)
+        const hasEdits = draftRef.current !== result.chapter.content
+        dirtyRef.current = hasEdits
+        setDirty(hasEdits)
+        setConflict(null)
+        setSaveState(hasEdits ? 'idle' : 'saved')
+      }
+      setChapters(previous => previous.map(row => (row.id === result.chapter.id
+        ? { ...row, title: result.chapter.title, status: result.chapter.status, wordCount: result.chapter.wordCount, updatedAt: result.chapter.updatedAt }
+        : row)))
+      setNovels(previous => previous.map(row => (row.id === current.novelId
+        ? { ...row, wordCount: row.wordCount - current.wordCount + result.chapter.wordCount }
+        : row)))
+      return true
+    } catch (cause) {
+      if (chapterIdRef.current !== current.id) return false
+      if (cause?.code === 'CHAPTER_CONFLICT') {
+        setConflict({ currentUpdatedAt: cause.details?.currentUpdatedAt ?? null })
+        setSaveState('idle')
+      } else {
         setSaveState('error')
         notify('error', causeText(cause))
-        return false
       }
-    })()
-    saveInFlightRef.current = task
-    try {
-      return await task
-    } finally {
-      if (saveInFlightRef.current === task) saveInFlightRef.current = null
+      return false
     }
-  }, [call, notify, writable])
+  }), [call, notify, writable])
 
   // ---- 防抖自动保存 ----
   useEffect(() => {
@@ -2720,6 +2721,7 @@ function Workbench({ call, t, appearance }) {
         setNovels(novelList.novels)
         const target = chapterRef.current?.id ?? chapterId
         if (target && !list.chapters.some(row => row.id === target)) {
+          if (dirtyRef.current) { notify('error', t('chapterRemovedDraftKept')); return }
           chapterRef.current = null
           chapterIdRef.current = null
           setChapterId(null)
@@ -2750,14 +2752,26 @@ function Workbench({ call, t, appearance }) {
   }, [adoptChapter, call, chapterId, notify, novelId, t])
 
   // ---- 交互 ----
-  const guardDirty = useCallback(async () => {
-    if (saveInFlightRef.current) {
-      const ok = await saveInFlightRef.current.catch(() => false)
-      if (!ok) return false
-    }
-    if (!dirtyRef.current) return true
-    return save()
+  const guardDirty = useCallback(() => {
+    const target = chapterIdRef.current
+    return flushDraft({
+      isCurrent: () => chapterIdRef.current === target,
+      isDirty: () => dirtyRef.current,
+      isSaving: () => Boolean(saveInFlightRef.current),
+      save,
+    })
   }, [save])
+
+  const runTransition = useCallback(async action => {
+    if (transitionRef.current) return false
+    transitionRef.current = true
+    setTransitioning(true)
+    try {
+      if (!(await guardDirty())) return false
+      await action()
+      return true
+    } finally { transitionRef.current = false; setTransitioning(false) }
+  }, [guardDirty])
 
   const beforeDataSettingsSave = useCallback(async () => {
     const ok = await guardDirty()
@@ -2776,7 +2790,7 @@ function Workbench({ call, t, appearance }) {
   const chooseNovel = useCallback(async id => {
     if (id === novelId) return
     const ok = await guardDirty()
-    if (!ok) return
+    if (!ok || transitionRef.current) return
     chapterRef.current = null
     chapterIdRef.current = null
     draftRef.current = ''
@@ -2793,7 +2807,7 @@ function Workbench({ call, t, appearance }) {
   const chooseChapter = useCallback(async id => {
     if (id === chapterId) return
     const ok = await guardDirty()
-    if (!ok) return
+    if (!ok || transitionRef.current) return
     // 先把旧章节从可编辑状态里摘掉，加载期间不允许把输入写回上一章。
     chapterRef.current = null
     chapterIdRef.current = id
@@ -2807,39 +2821,37 @@ function Workbench({ call, t, appearance }) {
   }, [chapterId, guardDirty])
 
   const reload = useCallback(async (options = {}) => {
-    if (chapterId === null) return
-    if (options.force !== true) {
-      const ok = await guardDirty()
-      if (!ok) return
-    }
-    setConflict(null)
-    setNotice(null)
+    if (chapterId === null || transitionRef.current) return
+    transitionRef.current = true
+    setTransitioning(true)
     try {
+      if (options.force !== true && !(await guardDirty())) return
+      setNotice(null)
       const loaded = await call('chapter', { chapterId })
-      adoptChapter(loaded.chapter)
-      await refreshChapters(novelId, chapterId)
-    } catch (cause) {
-      notify('error', causeText(cause))
-    }
-  }, [adoptChapter, call, chapterId, guardDirty, novelId, notify, refreshChapters])
+      if (chapterIdRef.current === chapterId) adoptChapter(loaded.chapter)
+    } catch (cause) { notify('error', causeText(cause)) }
+    finally { transitionRef.current = false; setTransitioning(false) }
+  }, [adoptChapter, call, chapterId, guardDirty, notify])
 
   const toggleWritable = useCallback(async () => {
+    if (!writable) {
+      try { const result = await call('writable', { writable: true }); setWritable(result.writable) }
+      catch (cause) { notify('error', causeText(cause)) }
+      return
+    }
     // 关闭写入前先把当前草稿落盘，否则 dirty 会在只读状态下把切换章节卡住。
-    if (writable && dirtyRef.current) {
-      const ok = await save()
-      if (!ok) return
-    }
-    try {
-      const result = await call('writable', { writable: !writable })
-      setWritable(result.writable)
-    } catch (cause) {
-      notify('error', causeText(cause))
-    }
-  }, [call, notify, save, writable])
+    await runTransition(async () => {
+      try {
+        const result = await call('writable', { writable: !writable })
+        setWritable(result.writable)
+      } catch (cause) { notify('error', causeText(cause)) }
+    })
+  }, [call, notify, runTransition, writable])
 
   const createChapter = useCallback(async () => {
     const title = newTitle.trim()
     if (!title || novelId === null) return
+    await runTransition(async () => {
     try {
       const result = await call('createChapter', { novelId, title })
       setCreating(false)
@@ -2850,18 +2862,21 @@ function Workbench({ call, t, appearance }) {
     } catch (cause) {
       notify('error', causeText(cause))
     }
-  }, [call, newTitle, novelId, notify, refreshChapters, refreshNovels])
+    })
+  }, [runTransition, call, newTitle, novelId, notify, refreshChapters, refreshNovels])
 
   const moveChapter = useCallback(async direction => {
     const current = chapterRef.current
     if (!current) return
+    await runTransition(async () => {
     try {
       await call('moveChapter', { chapterId: current.id, direction })
       await refreshChapters(novelId, current.id)
     } catch (cause) {
       notify('error', causeText(cause))
     }
-  }, [call, novelId, notify, refreshChapters])
+    })
+  }, [runTransition, call, novelId, notify, refreshChapters])
 
   const openChapterEdit = useCallback(async () => {
     const current = chapterRef.current
@@ -2900,6 +2915,7 @@ function Workbench({ call, t, appearance }) {
     const ok = await guardDirty()
     if (!ok) return
     if (!window.confirm(t('confirmDeleteChapter'))) return
+    await runTransition(async () => {
     try {
       setChapterDialog(null)
       const result = await call('deleteChapter', { chapterId: current.id, confirm: true })
@@ -2914,7 +2930,8 @@ function Workbench({ call, t, appearance }) {
     } catch (cause) {
       notify('error', causeText(cause))
     }
-  }, [call, guardDirty, novelId, notify, refreshChapters, refreshNovels, t])
+    })
+  }, [runTransition, call, guardDirty, novelId, notify, refreshChapters, refreshNovels, t])
 
   const openNovelCreate = useCallback(() => {
     setNovelDialog({
@@ -2944,6 +2961,12 @@ function Workbench({ call, t, appearance }) {
       notify('error', t('titleRequired'))
       return
     }
+    if (novelDialog.mode === 'create') {
+      if (transitionRef.current) return
+      transitionRef.current = true
+      setTransitioning(true)
+      if (!(await guardDirty())) { transitionRef.current = false; setTransitioning(false); return }
+    }
     setNovelDialog(previous => (previous ? { ...previous, busy: true } : previous))
     try {
       if (novelDialog.mode === 'create') {
@@ -2963,14 +2986,17 @@ function Workbench({ call, t, appearance }) {
     } catch (cause) {
       notify('error', causeText(cause))
       setNovelDialog(previous => (previous ? { ...previous, busy: false } : previous))
+    } finally {
+      if (novelDialog.mode === 'create') { transitionRef.current = false; setTransitioning(false) }
     }
-  }, [call, novelDialog, novelId, notify, refreshNovels, t])
+  }, [guardDirty, call, novelDialog, novelId, notify, refreshNovels, t])
 
   const deleteNovel = useCallback(async () => {
     if (novelId === null || !writable) return
     const ok = await guardDirty()
     if (!ok) return
     if (!window.confirm(t('confirmDeleteNovel'))) return
+    await runTransition(async () => {
     try {
       await call('deleteNovel', { novelId, confirm: true })
       setNovelDialog(null)
@@ -2983,11 +3009,13 @@ function Workbench({ call, t, appearance }) {
     } catch (cause) {
       notify('error', causeText(cause))
     }
-  }, [call, guardDirty, novelId, notify, refreshNovels, t, writable])
+    })
+  }, [runTransition, call, guardDirty, novelId, notify, refreshNovels, t, writable])
 
   const openChapterFromSearch = useCallback(async (targetNovelId, targetChapterId) => {
+    if (targetNovelId === novelId && targetChapterId === chapterIdRef.current) { setTab('body'); return }
     const ok = await guardDirty()
-    if (!ok) return
+    if (!ok || transitionRef.current) return
     chapterRef.current = null
     chapterIdRef.current = targetChapterId
     draftRef.current = ''
@@ -3001,17 +3029,15 @@ function Workbench({ call, t, appearance }) {
     setTab('body')
   }, [guardDirty, novelId])
 
-  const onChapterRestored = useCallback(async () => {
-    if (chapterId === null) return
-    try {
-      const loaded = await call('chapter', { chapterId })
-      adoptChapter(loaded.chapter)
-      await refreshChapters(novelId, chapterId)
-      await refreshNovels(novelId)
-    } catch (cause) {
-      notify('error', causeText(cause))
+  const onChapterRestored = useCallback(async restored => {
+    if (!restored || chapterIdRef.current !== restored.id) return
+    if (dirtyRef.current) {
+      setConflict({ currentUpdatedAt: restored.updatedAt })
+      notify('info', t('externalChange'))
+      return
     }
-  }, [adoptChapter, call, chapterId, novelId, notify, refreshChapters, refreshNovels])
+    adoptChapter(restored)
+  }, [adoptChapter, notify, t])
 
   // ---- 查找替换 ----
   const findMatches = useMemo(() => {
@@ -3030,9 +3056,11 @@ function Workbench({ call, t, appearance }) {
 
   // 不经历史栈的写入：撤销/重做与内部恢复用。
   const applyDraft = useCallback(next => {
+    if (transitionRef.current) return
     draftRef.current = next
+    dirtyRef.current = next !== (chapterRef.current?.content ?? '')
     setDraft(next)
-    setDirty(next !== (chapterRef.current?.content ?? ''))
+    setDirty(dirtyRef.current)
   }, [])
 
   // 用户可见的改写（AI、排版、查找替换、插入人物）：先记一份历史再写入。
@@ -3042,18 +3070,20 @@ function Workbench({ call, t, appearance }) {
   }, [applyDraft])
 
   const undo = useCallback(() => {
+    if (transitionRef.current || !writable) return false
     const previous = undoHistory(historyRef.current, draftRef.current)
     if (previous === null) return false
     applyDraft(previous)
     return true
-  }, [applyDraft])
+  }, [applyDraft, writable])
 
   const redo = useCallback(() => {
+    if (transitionRef.current || !writable) return false
     const next = redoHistory(historyRef.current, draftRef.current)
     if (next === null) return false
     applyDraft(next)
     return true
-  }, [applyDraft])
+  }, [applyDraft, writable])
 
   // ---- 一键排版：与起笔一致，每段首行清掉前导空白再补两个全角空格 ----
   const autoFormat = useCallback(() => {
@@ -3181,7 +3211,8 @@ function Workbench({ call, t, appearance }) {
     }).catch(cause => notify('error', causeText(cause)))
   }, [call, notify])
 
-  const applyAi = useCallback(async ({ mode, modeLabel, text, rewrite, report, selection }) => {
+  const applyAi = useCallback(async ({ mode, modeLabel, text, rewrite, report, selection, sourceNovelId, sourceChapterId }) => {
+    if (!writable || transitionRef.current || sourceNovelId !== novelId || sourceChapterId !== chapterIdRef.current) { notify('error', t('aiSourceChanged')); return }
     const result = String(text ?? '').trim()
     if (!result) return
     if (report) {
@@ -3218,7 +3249,7 @@ function Workbench({ call, t, appearance }) {
     recordAiRevision(result, modeLabel)
     setAiOpen(false)
     showUndo(current, chapterIdRef.current, 'aiAppliedHint')
-  }, [call, chapterId, editDraft, novelId, notify, recordAiRevision, showUndo, t])
+  }, [call, chapterId, editDraft, novelId, notify, recordAiRevision, showUndo, t, writable])
 
   const copySelection = useCallback(async () => {
     if (!contextMenu) return
@@ -3245,7 +3276,7 @@ function Workbench({ call, t, appearance }) {
   // ---- 渲染 ----
   const activeNovel = novels.find(row => row.id === novelId) ?? null
   const wordCount = draft.length
-  const editable = writable && conflict === null && chapter !== null
+  const editable = writable && !transitioning && conflict === null && chapter !== null
   const saveLabel = saveState === 'saving'
     ? t('saving')
     : saveState === 'error'
@@ -3354,6 +3385,7 @@ function Workbench({ call, t, appearance }) {
   const novelDialogNode = novelDialog ? (
     <Dialog
       title={novelDialog.mode === 'create' ? t('newNovel') : t('novelSettings')}
+      busy={novelDialog.busy}
       onClose={() => { if (!novelDialog.busy) setNovelDialog(null) }}
       footer={(
         <>
@@ -3391,6 +3423,7 @@ function Workbench({ call, t, appearance }) {
   const chapterDialogNode = chapterDialog && chapter ? (
     <Dialog
       title={t('chapterSettings')}
+      busy={chapterDialog.busy}
       onClose={() => { if (!chapterDialog.busy) setChapterDialog(null) }}
       footer={(
         <>
@@ -3422,7 +3455,7 @@ function Workbench({ call, t, appearance }) {
   ) : null
 
   const dataSettingsDialogNode = dataSettingsOpen ? (
-    <Dialog title={t('dataSettingsTitle')} onClose={() => setDataSettingsOpen(false)}>
+    <Dialog title={t('dataSettingsTitle')} busy={dataSettingsBusy} onClose={() => { if (!dataSettingsBusy) setDataSettingsOpen(false) }}>
       <DataSettings
         key={`data-settings-${loadEpoch}`}
         call={call}
@@ -3430,6 +3463,7 @@ function Workbench({ call, t, appearance }) {
         onBeforeSave={beforeDataSettingsSave}
         onSaved={finishDataSettingsSave}
         onCancel={() => setDataSettingsOpen(false)}
+        onBusyChange={setDataSettingsBusy}
       />
     </Dialog>
   ) : null
@@ -3831,11 +3865,13 @@ function Workbench({ call, t, appearance }) {
                     spellCheck={false}
                     placeholder={t('emptyBody')}
                     onChange={event => {
+                      if (transitionRef.current) return
                       const next = event.target.value
                       pushTypingHistory(historyRef.current, draftRef.current, next, Date.now())
                       draftRef.current = next
                       setDraft(next)
-                      setDirty(next !== (chapterRef.current?.content ?? ''))
+                      dirtyRef.current = next !== (chapterRef.current?.content ?? '')
+                      setDirty(dirtyRef.current)
                     }}
                     onBlur={() => { if (dirtyRef.current && !conflict) void save() }}
                     onContextMenu={onEditorContextMenu}
@@ -3877,23 +3913,23 @@ function Workbench({ call, t, appearance }) {
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-outline" role="tabpanel" aria-labelledby="qibi-tab-outline" style={{ display: tab === 'outline' ? 'flex' : 'none' }}>
-            <OutlineTab call={call} novelId={novelId} chapters={chapters} writable={writable} active={tab === 'outline'} notify={notify} t={t} />
+            <OutlineTab key={novelId} call={call} novelId={novelId} chapters={chapters} writable={writable} active={tab === 'outline'} notify={notify} t={t} />
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-characters" role="tabpanel" aria-labelledby="qibi-tab-characters" style={{ display: tab === 'characters' ? 'flex' : 'none' }}>
-            <CharactersTab call={call} novelId={novelId} chapterId={chapterId} writable={writable} active={tab === 'characters'} notify={notify} t={t} guard={guardDirty} />
+            <CharactersTab key={novelId} call={call} novelId={novelId} chapterId={chapterId} writable={writable} active={tab === 'characters'} notify={notify} t={t} guard={guardDirty} />
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-distill" role="tabpanel" aria-labelledby="qibi-tab-distill" style={{ display: tab === 'distill' ? 'flex' : 'none' }}>
-            <DistillTab call={call} novelId={novelId} writable={writable} active={tab === 'distill'} notify={notify} t={t} />
+            <DistillTab key={novelId} call={call} novelId={novelId} writable={writable} active={tab === 'distill'} notify={notify} t={t} />
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-continuity" role="tabpanel" aria-labelledby="qibi-tab-continuity" style={{ display: tab === 'continuity' ? 'flex' : 'none' }}>
-            <ContinuityTab call={call} novelId={novelId} chapterId={chapterId} writable={writable} active={tab === 'continuity'} notify={notify} t={t} />
+            <ContinuityTab key={novelId} call={call} novelId={novelId} chapterId={chapterId} writable={writable} active={tab === 'continuity'} notify={notify} t={t} />
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-search" role="tabpanel" aria-labelledby="qibi-tab-search" style={{ display: tab === 'search' ? 'flex' : 'none' }}>
-            <SearchTab call={call} novelId={novelId} writable={writable} active={tab === 'search'} notify={notify} onOpenChapter={openChapterFromSearch} t={t} />
+            <SearchTab key={novelId} call={call} novelId={novelId} writable={writable} active={tab === 'search'} notify={notify} onOpenChapter={openChapterFromSearch} t={t} />
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-revisions" role="tabpanel" aria-labelledby="qibi-tab-revisions" style={{ display: tab === 'revisions' ? 'flex' : 'none' }}>
@@ -3901,7 +3937,7 @@ function Workbench({ call, t, appearance }) {
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-export" role="tabpanel" aria-labelledby="qibi-tab-export" style={{ display: tab === 'export' ? 'flex' : 'none' }}>
-            <ExportTab call={call} novelId={novelId} notify={notify} t={t} />
+            <ExportTab key={novelId} call={call} novelId={novelId} notify={notify} t={t} />
           </div>
         </div>
       </div>
@@ -3942,6 +3978,8 @@ function Workbench({ call, t, appearance }) {
 
       {aiOpen && (
         <AiDrawer
+          key={`${status?.dbPath}:${novelId}:${chapterId}`}
+          historyScope={JSON.stringify([status?.dbPath, status?.user?.id, novelId])}
           call={call}
           novelId={novelId}
           chapterId={chapterId}
@@ -3986,7 +4024,7 @@ function installStyles() {
 export const inject = ['slots', 'locale', 'layout']
 
 /** 供 scripts/render-check.mjs 做真实渲染自检。 */
-export { AiDrawer, DataSettings }
+export { AiDrawer, DataSettings, OutlineTab, CharactersTab, ContinuityTab, DistillTab, Dialog, Workbench }
 
 /**
  * 注册左侧栏图标与中央写作台。
