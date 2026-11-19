@@ -68,10 +68,10 @@ const PROPS = {
 }
 
 /** 渲染 AI 抽屉，返回 HTML。 */
-export async function renderAiDrawer() {
+export async function renderAiDrawer(overrides = {}) {
   const module = await loadPanel()
   if (typeof module.AiDrawer !== 'function') throw new Error('panel.jsx 未导出 AiDrawer')
-  return renderToStaticMarkup(React.createElement(module.AiDrawer, PROPS))
+  return renderToStaticMarkup(React.createElement(module.AiDrawer, { ...PROPS, ...overrides }))
 }
 
 /** 细纲锚点规则：只匹配当前章、自定义 marker 优先、未写到的标为待写。 */
@@ -125,6 +125,71 @@ export async function checkUndoHistory() {
   return true
 }
 
+/** Data-location controls must remain usable even without any novel or chapter. */
+export async function checkStorageForm() {
+  const module = await loadPanel()
+  if (typeof module.DataSettings !== 'function') throw new Error('panel.jsx 未导出 DataSettings')
+  const info = {
+    dataDir: 'D:\\dsh-qibi\\data', dbPath: 'D:\\dsh-qibi\\data\\novelforge.db',
+    defaultDataDir: 'D:\\dsh-qibi\\data', exists: true, canSave: true, canPick: false,
+    userId: null, users: [],
+  }
+  const render = initialSettings => renderToStaticMarkup(React.createElement(module.DataSettings, {
+    call: async () => ({}), t: key => key, initialSettings, onSaved: () => {},
+  }))
+  const html = render(info)
+  for (const marker of ['for="qibi-data-directory"', 'id="qibi-data-directory"', 'D:\\dsh-qibi\\data', 'dataSettingsCreate', 'dataSettingsExisting', 'dataSettingsSave']) {
+    if (!html.includes(marker)) throw new Error(`数据位置表单缺少可操作项：${marker}`)
+  }
+  if (html.includes('dataSettingsBrowse')) throw new Error('没有目录选择器时不应显示无效浏览按钮')
+  const readonly = render({ ...info, canSave: false, reason: 'fixture: unavailable editor' })
+  if (!readonly.includes('fixture: unavailable editor')) throw new Error('没有保存服务时必须显示原因')
+  if (!/<button\b[^>]*disabled=""[^>]*>dataSettingsSave<\/button>/.test(readonly)) throw new Error('没有保存服务时必须禁用保存按钮')
+  const picker = render({ ...info, canPick: true })
+  if (!picker.includes('dataSettingsBrowse')) throw new Error('有目录选择器时应有浏览入口')
+  const authorInfo = { ...info, users: [{ id: 7, username: 'fixture', disabled: false }] }
+  const selected = module.dataSettingsPayload({ dataDir: info.dataDir, mode: 'existing', userId: '7' }, authorInfo)
+  if (selected.userId !== 7) throw new Error('当前库有效作者应能被选择')
+  const different = module.dataSettingsPayload({ dataDir: 'D:\\another-fixture', mode: 'existing', userId: '7' }, authorInfo)
+  if ('userId' in different) throw new Error('换目录后重试不得携带旧库作者 ID')
+  return true
+}
+
+/** Thinking controls must match capabilities rather than expose a hard-coded level list. */
+export async function checkReasoningControls() {
+  const module = await loadPanel()
+  const info = {
+    ...PROPS.info,
+    model: 'fixture/writer-model',
+    reasoning: {
+      known: true, supported: true, selectedEffort: 'high', defaultEffort: 'low',
+      efforts: [{ id: 'low', name: 'Low' }, { id: 'high', name: 'High' }, { id: 'adaptive', name: 'Adaptive' }],
+    },
+  }
+  const html = await renderAiDrawer({ info })
+  const select = html.match(/<select\b[^>]*aria-label="aiReasoning"[^>]*>[\s\S]*?<\/select>/)?.[0]
+  if (!select || select.includes('disabled=""')) throw new Error('模型支持思考档位时必须显示可用选择器')
+  for (const value of ['low', 'high', 'adaptive']) {
+    if (!select.includes(`value="${value}"`)) throw new Error(`缺少模型支持的思考档位：${value}`)
+  }
+  if (select.includes('value="medium"') || select.includes('value="max"')) throw new Error('界面不能虚构模型未支持的档位')
+  if (!select.includes('aiReasoningFollow') || !select.includes('aiReasoningHigh')) throw new Error('必须能看到默认跟随及有效的当前强度')
+  if (module.aiReasoningRequest(info, 'high').reasoningEffort !== 'high') throw new Error('手选强度必须进入写作请求')
+  if (module.aiReasoningRequest(info, '').reasoningEffort !== '') throw new Error('默认项不得强制覆盖宿主强度')
+  if (module.aiReasoningRequest(info, 'max').reasoningEffort !== '') throw new Error('过期偏好必须回到跟随模式')
+  if (module.aiReasoningRequest(info, 'high').modelKey !== info.model) throw new Error('请求必须绑定界面显示的模型')
+  for (const known of [true, false]) {
+    const unsupported = await renderAiDrawer({ info: { ...info, reasoning: { known, supported: false, efforts: [] } } })
+    const control = unsupported.match(/<select\b[^>]*aria-label="aiReasoning"[^>]*>/)?.[0]
+    if (!control?.includes('disabled=""')) throw new Error('不能调整档位时选择器应禁用')
+    if (!unsupported.includes(known ? 'aiReasoningUnsupported' : 'aiReasoningUnknown')) throw new Error('必须解释思考档位不可用的原因')
+  }
+  const loading = await renderAiDrawer({ info, modelLoading: true })
+  if (!loading.includes('aiModelLoading') || !loading.includes('aria-busy="true"')) throw new Error('刷新能力期间必须有可见等待反馈')
+  if (!/<button\b[^>]*disabled=""[^>]*>aiGenerate<\/button>/.test(loading)) throw new Error('刷新模型期间不应提交旧档位')
+  return true
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const html = await renderAiDrawer()
@@ -133,7 +198,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     if (missing.length > 0) throw new Error(`缺少渲染标记：${missing.join(', ')}`)
     await checkOutlineAnchors()
     await checkUndoHistory()
-    console.log(`AI 抽屉渲染正常（${html.length} 字符）；细纲锚点与撤销规则正常`)
+    await checkStorageForm()
+    await checkReasoningControls()
+    console.log(`AI 抽屉渲染正常（${html.length} 字符）；思考档位、细纲锚点、撤销规则与数据位置表单正常`)
   } catch (error) {
     console.error(`浏览器半边自检失败：${error.message}`)
     process.exit(1)

@@ -6,7 +6,8 @@
 #
 # config 可改项：
 #   allowWrite  是否允许插件写入起笔数据库（默认 true；每次覆盖前自动备份到 chapter_revisions）
-#   dataDir     必须明确指定起笔数据目录；未配置时不自动打开本机已有书稿。
+#   dataDir     默认 Windows D:\dsh-qibi\data；没有 D 盘时使用用户目录下的 dsh-qibi/data。
+#               可从面板“数据位置”修改，首次新建为空库，不导入已有测试书稿。
 #   userId      固定使用哪个起笔用户（默认取第一个拥有作品的未禁用用户）
 
 - insert:

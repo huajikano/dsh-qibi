@@ -153,8 +153,24 @@ async function streamAi(payload, onDelta, signal) {
   }
 }
 
+const AI_REASONING_KEY = 'qibi:ai-reasoning'
+
+export function validReasoningPreference(info, value) {
+  return typeof value === 'string' && info?.reasoning?.efforts?.some(row => row.id === value) ? value : ''
+}
+
+export function aiReasoningRequest(info, value) {
+  return { modelKey: info?.model ?? '', reasoningEffort: validReasoningPreference(info, value) }
+}
+
+function reasoningLabel(row, t) {
+  const keys = { none: 'aiReasoningNone', off: 'aiReasoningNone', minimal: 'aiReasoningMinimal', low: 'aiReasoningLow', medium: 'aiReasoningMedium', high: 'aiReasoningHigh', xhigh: 'aiReasoningXhigh', max: 'aiReasoningMax' }
+  return keys[row.id] ? t(keys[row.id]) : row.name || row.id
+}
+
 /** 面板内 AI 抽屉：模式、补充要求、流式预览与应用。 */
-function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, writable, info, hasOutline, t, notify, onApply, onClose }) {
+function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, writable, info, modelLoading = false, hasOutline, t, notify, onApply, onClose }) {
+  const [reasoningEffort, setReasoningEffort] = useState(() => validReasoningPreference(info, readJson(AI_REASONING_KEY, {})?.[info?.model]))
   const [mode, setMode] = useState('draft')
   const [extra, setExtra] = useState('')
   const [busy, setBusy] = useState(false)
@@ -169,6 +185,19 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
   const modeInfo = modes.find(row => row.id === mode)
   const isSelectionMode = modeInfo?.group === 'selection'
   const isReportMode = modeInfo?.group === 'report'
+  const reasoning = info?.reasoning
+  const inheritedEffort = reasoning?.selectedEffort ?? reasoning?.defaultEffort
+  const inheritedRow = reasoning?.efforts?.find(row => row.id === inheritedEffort)
+
+  useEffect(() => {
+    setReasoningEffort(validReasoningPreference(info, readJson(AI_REASONING_KEY, {})?.[info?.model]))
+  }, [info])
+
+  const chooseReasoning = event => {
+    const next = validReasoningPreference(info, event.target.value)
+    setReasoningEffort(next)
+    if (info?.model) writeJson(AI_REASONING_KEY, { ...readJson(AI_REASONING_KEY, {}), [info.model]: next })
+  }
 
   useEffect(() => {
     if (selection) setMode(initialMode || 'polish-selection')
@@ -195,7 +224,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
   }, [])
 
   const generate = async () => {
-    if (busy || novelId == null) return
+    if (busy || modelLoading || novelId == null) return
     if (isSelectionMode && !selection) {
       notify('error', t('aiNeedSelection'))
       return
@@ -210,6 +239,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
     abortRef.current = controller
     try {
       const result = await streamAi({
+        ...aiReasoningRequest(info, reasoningEffort),
         mode,
         novelId,
         chapterId,
@@ -247,7 +277,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
 
   // 截断或中断后，把已生成部分当作当前正文继续续写，拼成完整草稿。
   const continueWriting = async () => {
-    if (busy || !preview.trim() || chapterId == null) return
+    if (busy || modelLoading || !preview.trim() || chapterId == null) return
     setBusy(true)
     setError('')
     const controller = new AbortController()
@@ -256,6 +286,7 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
     const join = value => `${base}${base.endsWith('\n') || !value ? '' : '\n'}${value}`
     try {
       const result = await streamAi({
+        ...aiReasoningRequest(info, reasoningEffort),
         mode: 'continue',
         novelId,
         chapterId,
@@ -309,10 +340,22 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
     >
       <div className="qibi-ai-head">
         <strong>{t('aiTitle')}</strong>
-        <span className="qibi-sub">{info?.model ?? ''}</span>
         <span className="qibi-spacer" />
         <button type="button" className="qibi-btn small qibi-ai-close" onClick={onClose} title={t('close')} aria-label={t('close')}>{t('close')}</button>
       </div>
+
+      <div className="qibi-row qibi-ai-model-settings" aria-busy={modelLoading}>
+        <Field label={t('aiGenerationModel')}>
+          <span className="qibi-sub qibi-ai-model" title={info?.model ?? ''}>{modelLoading ? t('aiModelLoading') : info?.model || t('aiUnavailable')}</span>
+        </Field>
+        <Field label={t('aiReasoning')}>
+          <select className="qibi-select" aria-label={t('aiReasoning')} value={validReasoningPreference(info, reasoningEffort)} onChange={chooseReasoning} disabled={busy || modelLoading || !reasoning?.supported}>
+            <option value="">{t('aiReasoningFollow')}{inheritedRow ? ` · ${reasoningLabel(inheritedRow, t)}` : ''}</option>
+            {(reasoning?.efforts ?? []).map(row => <option key={row.id} value={row.id} title={row.description}>{reasoningLabel(row, t)}</option>)}
+          </select>
+        </Field>
+      </div>
+      {!modelLoading && <div className="qibi-sub">{reasoning?.supported ? t('aiReasoningHint') : reasoning?.known ? t('aiReasoningUnsupported') : t('aiReasoningUnknown')}</div>}
 
       {chapterId != null && hasOutline === false && (
         <div className="qibi-ai-note">{t('aiNoOutline')}</div>
@@ -360,12 +403,12 @@ function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, wri
       </div>
 
       <div className="qibi-actions">
-        <button type="button" className="qibi-btn small primary" disabled={busy || !info?.available} onClick={() => void generate()}>
+        <button type="button" className="qibi-btn small primary" disabled={busy || modelLoading || !info?.available} onClick={() => void generate()}>
           {busy ? t('aiGenerating') : t('aiGenerate')}
         </button>
         {busy && <button type="button" className="qibi-btn small" onClick={cancel}>{t('cancel')}</button>}
         {preview && !busy && !complete && (
-          <button type="button" className="qibi-btn small" onClick={() => void continueWriting()}>{t('aiContinue')}</button>
+          <button type="button" className="qibi-btn small" disabled={modelLoading} onClick={() => void continueWriting()}>{t('aiContinue')}</button>
         )}
         {preview && !busy && (
           <>
@@ -2021,11 +2064,165 @@ function ExportTab({ call, novelId, notify, t }) {
   )
 }
 
+
+/** Only submit an author ID that was listed for the exact selected database. */
+export function dataSettingsPayload({ dataDir, mode, userId }, info) {
+  const target = String(dataDir ?? '').trim()
+  const payload = { dataDir: target, mode }
+  const sameDirectory = target === String(info?.dataDir ?? '').trim()
+  const id = Number(userId)
+  if (mode === 'existing' && sameDirectory && Array.isArray(info?.users)
+    && info.users.some(row => row.id === id && !row.disabled)) payload.userId = id
+  return payload
+}
+
+/** 数据位置：读取/切换起笔数据目录，不直接搬移或覆盖旧书稿。 */
+function DataSettings({ call, t, initialSettings, onBeforeSave, onSaved, onCancel }) {
+  const [info, setInfo] = useState(() => initialSettings ?? null)
+  const [dataDir, setDataDir] = useState(() => initialSettings?.dataDir || initialSettings?.defaultDataDir || '')
+  const [mode, setMode] = useState(() => initialSettings?.exists === true ? 'existing' : 'create')
+  const [userId, setUserId] = useState(() => initialSettings?.userId == null ? '' : String(initialSettings.userId))
+  const [loading, setLoading] = useState(() => !initialSettings)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const result = await call('dataSettings', {})
+      setInfo(result)
+      setDataDir(previous => previous || result?.dataDir || result?.defaultDataDir || '')
+      if (typeof result?.exists === 'boolean') setMode(result.exists ? 'existing' : 'create')
+      setUserId(previous => previous || (result?.userId == null ? '' : String(result.userId)))
+    } catch (cause) {
+      setError(causeText(cause))
+    } finally {
+      setLoading(false)
+    }
+  }, [call])
+
+  useEffect(() => { if (!initialSettings) void load() }, [initialSettings, load])
+
+  const pick = async () => {
+    if (!info?.canPick || busy) return
+    setError('')
+    try {
+      const result = await call('pickDataDir', {})
+      if (result?.path) {
+        setDataDir(result.path)
+        setUserId('')
+      }
+    } catch (cause) {
+      setError(causeText(cause))
+    }
+  }
+
+  const save = async () => {
+    if (busy || !info?.canSave || !dataDir.trim()) return
+    setBusy(true)
+    setError('')
+    try {
+      if (onBeforeSave && !(await onBeforeSave())) return
+      const payload = dataSettingsPayload({ dataDir, mode, userId }, info)
+      const result = await call('saveDataSettings', payload)
+      if (onSaved) await onSaved(result)
+    } catch (cause) {
+      setError(causeText(cause))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const users = Array.isArray(info?.users) ? info.users : []
+  const sameDirectory = Boolean(info?.dataDir) && dataDir.trim() === String(info.dataDir).trim()
+  const availableUsers = sameDirectory ? users : []
+  const currentPath = info?.dbPath || info?.dataDir || ''
+  const cannotSaveReason = info?.canSaveReason || info?.reason || info?.error || t('dataSettingsCannotSave')
+
+  return (
+    <div className="qibi-form qibi-data-settings">
+      {loading && <div className="qibi-sub">{t('loading')}</div>}
+      {!loading && (
+        <>
+          <div className="qibi-field">
+            <label className="qibi-label" htmlFor="qibi-data-directory">{t('dataSettingsDirectory')}</label>
+            <div className="qibi-row">
+              <input
+                id="qibi-data-directory"
+                className="qibi-input"
+                value={dataDir}
+                onChange={event => {
+                  setDataDir(event.target.value)
+                  setUserId('')
+                }}
+                placeholder={info?.defaultDataDir || ''}
+                disabled={busy}
+              />
+              {info?.canPick && (
+                <button type="button" className="qibi-btn small" disabled={busy} onClick={() => void pick()}>{t('dataSettingsBrowse')}</button>
+              )}
+            </div>
+          </div>
+
+          <div className="qibi-field">
+            <span className="qibi-label">{t('dataSettingsMode')}</span>
+            <label className="qibi-check">
+              <input type="radio" name="qibi-data-mode" value="create" checked={mode === 'create'} disabled={busy} onChange={() => setMode('create')} />
+              {t('dataSettingsCreate')}
+            </label>
+            {mode === 'create' && <span className="qibi-sub">{t('dataSettingsModeHintCreate')}</span>}
+            <label className="qibi-check">
+              <input type="radio" name="qibi-data-mode" value="existing" checked={mode === 'existing'} disabled={busy} onChange={() => setMode('existing')} />
+              {t('dataSettingsExisting')}
+            </label>
+            {mode === 'existing' && <span className="qibi-sub">{t('dataSettingsModeHintExisting')}</span>}
+          </div>
+
+          {mode === 'existing' && availableUsers.length > 0 && (
+            <Field label={t('dataSettingsUser')}>
+              <select className="qibi-select" value={userId} disabled={busy} onChange={event => setUserId(event.target.value)}>
+                <option value="">{t('dataSettingsUserDefault')}</option>
+                {availableUsers.map(user => <option key={user.id} value={String(user.id)}>{user.username || user.name || `#${user.id}`}</option>)}
+              </select>
+            </Field>
+          )}
+
+          <div className="qibi-card qibi-data-settings-current">
+            <strong>{t('dataSettingsCurrent')}</strong>
+            <span>{currentPath || t('dataSettingsNoCurrent')}</span>
+            <span className="qibi-sub">{t('dataSettingsNoMove')}</span>
+          </div>
+
+          {info?.canSave === false && <div className="qibi-error-text">{cannotSaveReason}</div>}
+          {error && (
+            <div className="qibi-error-text">
+              {error}
+              <button type="button" className="qibi-btn small" disabled={busy} onClick={() => void load()}>{t('retry')}</button>
+            </div>
+          )}
+
+          <div className="qibi-actions">
+            {onCancel && <button type="button" className="qibi-btn small" disabled={busy} onClick={onCancel}>{t('cancel')}</button>}
+            <span className="qibi-spacer" />
+            <button type="button" className="qibi-btn small primary" disabled={busy || loading || info?.canSave !== true || !dataDir.trim()} onClick={() => void save()}>
+              {busy ? t('saving') : t('dataSettingsSave')}
+            </button>
+          </div>
+        </>
+      )}
+      {!loading && !info && !error && <div className="qibi-error-text">{t('dataSettingsLoadFailed')}</div>}
+    </div>
+  )
+}
+
 /** 主面板组件。`call` 与 `t` 由 apply 通过 inject 提供。 */
 function Workbench({ call, t }) {
   const [status, setStatus] = useState(null)
   const [phase, setPhase] = useState('loading')
   const [error, setError] = useState(null)
+  const [loadEpoch, setLoadEpoch] = useState(0)
+  const [dataSettingsOpen, setDataSettingsOpen] = useState(false)
 
   const [novels, setNovels] = useState([])
   const [novelId, setNovelId] = useState(null)
@@ -2048,6 +2245,8 @@ function Workbench({ call, t }) {
   const [novelDialog, setNovelDialog] = useState(null)
   const [chapterDialog, setChapterDialog] = useState(null)
   const [aiInfo, setAiInfo] = useState(null)
+  const [aiInfoLoading, setAiInfoLoading] = useState(false)
+  const aiInfoSequence = useRef(0)
   const [aiOpen, setAiOpen] = useState(false)
   const [aiSelection, setAiSelection] = useState(null)
   const [aiInitialMode, setAiInitialMode] = useState(null)
@@ -2083,6 +2282,27 @@ function Workbench({ call, t }) {
   useEffect(() => { tabRef.current = tab }, [tab])
 
   const notify = useCallback((kind, text) => setNotice({ kind, text }), [])
+
+  const retryStatus = useCallback(() => {
+    // Re-query status/novels in this Workbench; never reload the host page/session.
+    chapterRef.current = null
+    chapterIdRef.current = null
+    draftRef.current = ''
+    dirtyRef.current = false
+    setStatus(null)
+    setError(null)
+    setNovels([])
+    setNovelId(null)
+    setChapters([])
+    setChapterId(null)
+    setChapter(null)
+    setDraft('')
+    setDirty(false)
+    setConflict(null)
+    setSaveState('idle')
+    setPhase('loading')
+    setLoadEpoch(value => value + 1)
+  }, [])
 
   useEffect(() => {
     if (!notice || notice.kind === 'error') return undefined
@@ -2278,7 +2498,7 @@ function Workbench({ call, t }) {
       }
     })()
     return () => { cancelled = true }
-  }, [call])
+  }, [call, loadEpoch])
 
   // ---- 作品变化：拉章节 ----
   useEffect(() => {
@@ -2476,6 +2696,20 @@ function Workbench({ call, t }) {
     if (!dirtyRef.current) return true
     return save()
   }, [save])
+
+  const beforeDataSettingsSave = useCallback(async () => {
+    const ok = await guardDirty()
+    if (!ok) return false
+    if (['outline', 'characters', 'continuity'].includes(tab)) {
+      return window.confirm(t('dataSettingsInfoPageConfirm'))
+    }
+    return true
+  }, [guardDirty, tab, t])
+
+  const finishDataSettingsSave = useCallback(() => {
+    setDataSettingsOpen(false)
+    retryStatus()
+  }, [retryStatus])
 
   const chooseNovel = useCallback(async id => {
     if (id === novelId) return
@@ -2841,7 +3075,19 @@ function Workbench({ call, t }) {
     setAiInitialMode(initialMode ?? null)
     setAiOpen(true)
     setContextMenu(null)
-  }, [])
+    const sequence = ++aiInfoSequence.current
+    setAiInfoLoading(true)
+    void call('aiInfo', {}).then(next => {
+      if (sequence === aiInfoSequence.current) setAiInfo(next)
+    }).catch(cause => {
+      if (sequence === aiInfoSequence.current) {
+        setAiInfo(null)
+        notify('error', causeText(cause))
+      }
+    }).finally(() => {
+      if (sequence === aiInfoSequence.current) setAiInfoLoading(false)
+    })
+  }, [call, notify])
 
   // AI 写回后给一次「撤销」出口：记住写回前的正文与所属章节。
   const showUndo = useCallback((previous, appliedChapterId, messageKey) => {
@@ -3113,18 +3359,42 @@ function Workbench({ call, t }) {
     </Dialog>
   ) : null
 
+  const dataSettingsDialogNode = dataSettingsOpen ? (
+    <Dialog title={t('dataSettingsTitle')} onClose={() => setDataSettingsOpen(false)}>
+      <DataSettings
+        key={`data-settings-${loadEpoch}`}
+        call={call}
+        t={t}
+        onBeforeSave={beforeDataSettingsSave}
+        onSaved={finishDataSettingsSave}
+        onCancel={() => setDataSettingsOpen(false)}
+      />
+    </Dialog>
+  ) : null
+
   if (phase === 'loading') {
     return <div className="qibi-root"><div className="qibi-empty">{t('loading')}</div></div>
   }
 
   if (phase === 'nodb') {
     return (
-      <div className="qibi-root">
+      <div className="qibi-root qibi-setup-root">
         <div className="qibi-empty">
           <strong>{t('noDb')}</strong>
-          <span>{t('noDbHint').replace('{path}', status?.dbPath ?? '')}</span>
+          <span>{t('noDbHint').replace('{path}', status?.dbPath ?? status?.dataDir ?? '')}</span>
           <code className="qibi-code">{status?.dbPath}</code>
         </div>
+        <div className="qibi-card">
+          <strong>{t('dataSettingsTitle')}</strong>
+          <DataSettings
+            key={`data-settings-inline-${loadEpoch}`}
+            call={call}
+            t={t}
+            onBeforeSave={beforeDataSettingsSave}
+            onSaved={finishDataSettingsSave}
+          />
+        </div>
+        {dataSettingsDialogNode}
       </div>
     )
   }
@@ -3135,10 +3405,12 @@ function Workbench({ call, t }) {
         <div className="qibi-empty">
           <strong>{t('error')}</strong>
           <span>{error?.message ?? ''}</span>
-          <div style={{ marginTop: 12 }}>
-            <button type="button" className="qibi-btn" onClick={() => window.location.reload()}>{t('retry')}</button>
+          <div className="qibi-actions" style={{ marginTop: 12 }}>
+            <button type="button" className="qibi-btn" onClick={retryStatus}>{t('retry')}</button>
+            <button type="button" className="qibi-btn primary" onClick={() => setDataSettingsOpen(true)}>{t('dataSettingsOpen')}</button>
           </div>
         </div>
+        {dataSettingsDialogNode}
       </div>
     )
   }
@@ -3160,6 +3432,7 @@ function Workbench({ call, t }) {
             <span className={`qibi-chip-dot${writable ? ' on' : ''}`} />
             {writable ? t('writeOn') : t('writeOff')}
           </button>
+          <button type="button" className="qibi-btn small" onClick={() => setDataSettingsOpen(true)}>{t('dataSettingsOpen')}</button>
           <button type="button" className="qibi-btn small" disabled={!writable} onClick={openNovelCreate}>＋ {t('newNovel')}</button>
         </div>
         <div className="qibi-empty">
@@ -3170,6 +3443,7 @@ function Workbench({ call, t }) {
           </div>
         </div>
         {novelDialogNode}
+        {dataSettingsDialogNode}
       </div>
     )
   }
@@ -3180,6 +3454,7 @@ function Workbench({ call, t }) {
         <span className="qibi-title">{t('panel')}</span>
         <span className="qibi-sub">{activeNovel ? `《${activeNovel.title}》· ${activeNovel.chapterCount} ${t('chapters')} · ${formatWords(activeNovel.wordCount)} ${t('words')}` : ''}</span>
         <span className="qibi-spacer" />
+        <button type="button" className="qibi-btn small" onClick={async () => { if (await guardDirty()) setDataSettingsOpen(true) }}>{t('dataSettingsOpen')}</button>
         <button type="button" className="qibi-btn small" disabled={!activeNovel} onClick={openNovelEdit}>{t('novelSettings')}</button>
         <button
           type="button"
@@ -3609,6 +3884,7 @@ function Workbench({ call, t }) {
           initialMode={aiInitialMode}
           writable={writable}
           info={aiInfo}
+          modelLoading={aiInfoLoading}
           hasOutline={outlines.some(row => row.chapterId === chapterId)}
           t={t}
           notify={notify}
@@ -3619,6 +3895,7 @@ function Workbench({ call, t }) {
 
       {novelDialogNode}
       {chapterDialogNode}
+      {dataSettingsDialogNode}
     </div>
   )
 }
@@ -3643,7 +3920,7 @@ function installStyles() {
 export const inject = ['slots', 'locale', 'layout']
 
 /** 供 scripts/render-check.mjs 做真实渲染自检。 */
-export { AiDrawer }
+export { AiDrawer, DataSettings }
 
 /**
  * 注册左侧栏图标与中央写作台。

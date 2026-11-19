@@ -1,7 +1,7 @@
 {
   "name": "dsh-qibi",
-  "version": "0.1.0",
-  "description": "QiBi writing desk for DeepSeek Harness: a native sidebar panel and 11 qibi_* tools over your local novelforge.db.",
+  "version": "1.0.0",
+  "description": "QiBi writing desk for DeepSeek Harness: a native sidebar panel and 12 qibi_* tools with independent local SQLite storage.",
   "type": "module",
   "main": "index.js",
   "exports": {
@@ -21,6 +21,7 @@
     "assets",
     "icon.svg",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "dsh": {
@@ -67,7 +68,7 @@
   },
   "scripts": {
     "build": "node build.mjs",
-    "test:release": "node scripts/release-check.mjs && node scripts/render-check.mjs",
+    "test:release": "node scripts/database-check.mjs && node scripts/release-check.mjs && node scripts/storage-settings-check.mjs && node scripts/ai-reasoning-check.mjs && node scripts/render-check.mjs",
     "test:local": "node scripts/selftest.mjs"
   },
   "dependencies": {

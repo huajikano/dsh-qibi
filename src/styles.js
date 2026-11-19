@@ -103,6 +103,7 @@ export const STYLES = `
 .qibi-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
 .qibi-main-head {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  flex: 0 0 auto;
   padding: 10px 16px; border-bottom: 1px solid var(--dsw-alias-border-l1);
 }
 .qibi-chapter-title { font-weight: 600; font-size: 14px; }
@@ -123,8 +124,14 @@ export const STYLES = `
 }
 .qibi-card h4 { margin: 0 0 4px 0; font-size: 13px; }
 .qibi-card p { margin: 0; color: var(--dsw-alias-label-secondary); white-space: pre-wrap; font-size: 12px; line-height: 1.7; }
-.qibi-tabs { display: flex; gap: 2px; padding: 6px 16px 0 16px; border-bottom: 1px solid var(--dsw-alias-border-l1); }
+.qibi-tabs {
+  box-sizing: border-box;
+  display: flex; flex: 0 0 auto; min-height: 35px; gap: 2px;
+  padding: 6px 16px 0; border-bottom: 1px solid var(--dsw-alias-border-l1);
+  overflow-x: auto; overflow-y: hidden; white-space: nowrap;
+}
 .qibi-tab {
+  box-sizing: border-box; flex: 0 0 auto; min-height: 28px;
   height: 28px; padding: 0 10px; border: 0; border-bottom: 2px solid transparent;
   background: transparent; color: var(--dsw-alias-label-secondary); cursor: pointer; font: inherit;
 }
@@ -140,6 +147,14 @@ export const STYLES = `
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px;
   word-break: break-all;
 }
+.qibi-setup-root { overflow: auto; }
+.qibi-setup-root > .qibi-card {
+  box-sizing: border-box; flex: 0 0 auto;
+  width: min(560px, calc(100% - 32px)); margin: 0 auto 16px;
+}
+.qibi-data-settings { min-width: 0; }
+.qibi-data-settings-current { display: flex; flex-direction: column; gap: 6px; }
+.qibi-data-settings-current > span { overflow-wrap: anywhere; }
 .qibi-banner {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   margin: 8px 16px 0 16px; padding: 8px 10px; border-radius: 8px;
@@ -164,7 +179,9 @@ export const STYLES = `
 .qibi-pane > .qibi-section-title:first-child { margin-top: 0; }
 .qibi-form-title { margin: 10px 0 0 0; font-size: 12px; }
 .qibi-form { display: flex; flex-direction: column; gap: 10px; margin: 10px 0 14px 0; }
-.qibi-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 160px; }
+.qibi-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 0 0 auto; }
+.qibi-row > .qibi-field { flex: 1 1 160px; }
+.qibi-field > .qibi-input, .qibi-field > .qibi-select { flex: 0 0 auto; }
 .qibi-label { color: var(--dsw-alias-label-secondary); font-size: 11px; }
 .qibi-select, .qibi-textarea {
   width: 100%; box-sizing: border-box; padding: 5px 8px; border-radius: 6px;
@@ -198,8 +215,8 @@ export const STYLES = `
   color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 1.6;
   white-space: pre-wrap; max-height: 4.8em; overflow: hidden;
 }
-.qibi-tabs { overflow-x: auto; white-space: nowrap; }
-.qibi-tabpane { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+/* The selected pane gets the remaining height; its inner .qibi-pane owns scrolling. */
+.qibi-tabpane { flex: 1 1 0; min-height: 0; min-width: 0; display: flex; flex-direction: column; }
 .qibi-overlay {
   position: absolute; top: var(--dsh-frame-top-clearance, 0px); left: 0; right: 0; bottom: 0; z-index: 1000;
   display: flex; align-items: center; justify-content: center;
@@ -316,6 +333,8 @@ export const STYLES = `
   border-bottom: 1px solid var(--dsw-alias-border-l1);
 }
 .qibi-ai-close { min-width: 44px; }
+.qibi-ai-model-settings { align-items: flex-start; flex: 0 0 auto; }
+.qibi-ai-model { display: block; min-width: 0; overflow-wrap: anywhere; line-height: 1.6; }
 .qibi-ai-selection {
   padding: 8px 10px; border-radius: 8px;
   border: 1px solid var(--dsw-alias-border-l1);

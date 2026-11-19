@@ -36,10 +36,13 @@ window.__ModuleLoader__.load({
       var panel_exports = {};
       __export(panel_exports, {
         AiDrawer: () => AiDrawer,
+        DataSettings: () => DataSettings,
         QibiIcon: () => QibiIcon,
+        aiReasoningRequest: () => aiReasoningRequest,
         apply: () => apply,
         clearAiDrafts: () => clearAiDrafts,
         createHistory: () => createHistory,
+        dataSettingsPayload: () => dataSettingsPayload,
         inject: () => inject,
         listAiDrafts: () => listAiDrafts,
         matchOutlineAnchors: () => matchOutlineAnchors,
@@ -48,7 +51,8 @@ window.__ModuleLoader__.load({
         redoHistory: () => redoHistory,
         removeAiDraft: () => removeAiDraft,
         saveAiDraft: () => saveAiDraft,
-        undoHistory: () => undoHistory
+        undoHistory: () => undoHistory,
+        validReasoningPreference: () => validReasoningPreference
       });
       module.exports = __toCommonJS(panel_exports);
       var import_react = __toESM(require("react"), 1);
@@ -57,16 +61,34 @@ window.__ModuleLoader__.load({
       var en_default = {
         meta: {
           title: "QiBi writing desk",
-          description: "QiBi writing desk: read and write QiBi manuscripts from the DSH sidebar, with 11 tools, 13 AI writing actions and pre-write revision backups.",
+          description: "QiBi writing desk: read and write QiBi manuscripts from the DSH sidebar, with 12 tools, 13 AI writing actions and pre-write revision backups.",
           detail: "docs/DETAIL.md"
         },
         ui: {
           panel: "QiBi",
           loading: "Reading QiBi data\u2026",
           noDb: "QiBi database not connected",
-          noDbHint: "No manuscripts are loaded on first use. Explicitly set dataDir in the plugin config or QIBI_DATA_DIR; the suggested database file is {path}.",
+          noDbHint: "Choose a data location below and save. Create an empty database or connect an existing one; old manuscripts are never imported automatically. Tried: {path}",
+          dataSettingsOpen: "Data location",
+          dataSettingsTitle: "Set data location",
+          dataSettingsDirectory: "Data directory",
+          dataSettingsBrowse: "Choose folder",
+          dataSettingsMode: "How to use this folder",
+          dataSettingsCreate: "Create an empty database",
+          dataSettingsModeHintCreate: "Initialize a folder without a database. No sample novels are added, and existing files are never overwritten.",
+          dataSettingsExisting: "Connect an existing database",
+          dataSettingsModeHintExisting: "Choose the folder containing novelforge.db to read its manuscripts. Files remain where they are.",
+          dataSettingsUser: "Author in the current database",
+          dataSettingsUserDefault: "Choose an available author automatically",
+          dataSettingsCurrent: "Current database",
+          dataSettingsNoCurrent: "Not created or connected yet",
+          dataSettingsNoMove: "Saving changes the active location without moving, copying or overwriting old manuscripts.",
+          dataSettingsCannotSave: "This host has no configuration editor, so it cannot save the data location.",
+          dataSettingsSave: "Save and use this location",
+          dataSettingsLoadFailed: "Could not read data location settings. Retry to continue.",
+          dataSettingsInfoPageConfirm: "Changing data location reloads the workbench. Save changes on the current reference page first. Continue?",
           emptyNovel: "No novels in QiBi yet",
-          emptyNovelHint: "Create a novel in QiBi first, or create one here.",
+          emptyNovelHint: "Create a novel here, or connect an existing database from Data location.",
           emptyChapter: "This novel has no chapters",
           emptyChapterHint: "Create the first chapter here, or ask the agent to write it.",
           emptyBody: "This chapter has no prose yet.",
@@ -244,6 +266,20 @@ window.__ModuleLoader__.load({
           cutSelection: "Cut selection",
           aiButton: "AI",
           aiTitle: "AI writing",
+          aiGenerationModel: "Generation model",
+          aiModelLoading: "Reading model settings\u2026",
+          aiReasoning: "Thinking effort",
+          aiReasoningFollow: "Follow current settings",
+          aiReasoningHint: "Applies to generation and continuation in this panel. Remembered per model, without changing global DSH settings.",
+          aiReasoningUnsupported: "This model declares no adjustable thinking levels. Current defaults will be used.",
+          aiReasoningUnknown: "Thinking levels are temporarily unavailable. Current defaults will be used; reopen the panel to retry.",
+          aiReasoningNone: "Off (none)",
+          aiReasoningMinimal: "Minimal",
+          aiReasoningLow: "Low",
+          aiReasoningMedium: "Medium",
+          aiReasoningHigh: "High",
+          aiReasoningXhigh: "Extra high (xhigh)",
+          aiReasoningMax: "Maximum",
           aiSelectionLabel: "Working on the selected text",
           aiGroupChapter: "Chapter",
           aiGroupSelection: "Selection",
@@ -319,16 +355,34 @@ window.__ModuleLoader__.load({
       var zh_default = {
         meta: {
           title: "\u8D77\u7B14\u5199\u4F5C\u53F0",
-          description: "\u8D77\u7B14\u5199\u4F5C\u53F0\uFF1A\u5728 DSH \u4FA7\u680F\u8BFB\u5199\u8D77\u7B14\u4E66\u7A3F\uFF0C\u542B 11 \u4E2A\u5DE5\u5177\u300113 \u79CD AI \u5199\u4F5C\u52A8\u4F5C\u4E0E\u5199\u524D\u7248\u672C\u5907\u4EFD\u3002",
+          description: "\u8D77\u7B14\u5199\u4F5C\u53F0\uFF1A\u5728 DSH \u4FA7\u680F\u8BFB\u5199\u8D77\u7B14\u4E66\u7A3F\uFF0C\u542B 12 \u4E2A\u5DE5\u5177\u300113 \u79CD AI \u5199\u4F5C\u52A8\u4F5C\u4E0E\u5199\u524D\u7248\u672C\u5907\u4EFD\u3002",
           detail: "docs/DETAIL.md"
         },
         ui: {
           panel: "\u8D77\u7B14",
           loading: "\u6B63\u5728\u8BFB\u53D6\u8D77\u7B14\u6570\u636E\u2026",
           noDb: "\u5C1A\u672A\u8FDE\u63A5\u8D77\u7B14\u6570\u636E\u5E93",
-          noDbHint: "\u9996\u6B21\u4F7F\u7528\u4E0D\u4F1A\u81EA\u52A8\u8F7D\u5165\u4E66\u7A3F\u3002\u8BF7\u5728\u63D2\u4EF6 config \u4E2D\u660E\u786E\u8BBE\u7F6E dataDir\uFF0C\u6216\u8BBE\u7F6E QIBI_DATA_DIR\uFF1B\u5EFA\u8BAE\u7684\u5E93\u6587\u4EF6\u4F4D\u7F6E\u4E3A {path}\u3002",
+          noDbHint: "\u5728\u4E0B\u65B9\u9009\u62E9\u6570\u636E\u4F4D\u7F6E\u5E76\u4FDD\u5B58\uFF0C\u53EF\u65B0\u5EFA\u7A7A\u767D\u5E93\u6216\u8FDE\u63A5\u5DF2\u6709\u5E93\u3002\u4E0D\u4F1A\u81EA\u52A8\u5BFC\u5165\u65E7\u4E66\u7A3F\u3002\u5F53\u524D\u5C1D\u8BD5\u4F4D\u7F6E\uFF1A{path}",
+          dataSettingsOpen: "\u6570\u636E\u4F4D\u7F6E",
+          dataSettingsTitle: "\u8BBE\u7F6E\u6570\u636E\u4F4D\u7F6E",
+          dataSettingsDirectory: "\u6570\u636E\u76EE\u5F55",
+          dataSettingsBrowse: "\u9009\u62E9\u6587\u4EF6\u5939",
+          dataSettingsMode: "\u4F7F\u7528\u65B9\u5F0F",
+          dataSettingsCreate: "\u65B0\u5EFA\u7A7A\u767D\u5E93",
+          dataSettingsModeHintCreate: "\u5728\u6CA1\u6709\u6570\u636E\u5E93\u7684\u76EE\u5F55\u65B0\u5EFA\u7A7A\u5E93\uFF0C\u4E0D\u751F\u6210\u793A\u4F8B\u5C0F\u8BF4\uFF1B\u5DF2\u6709\u6587\u4EF6\u4E0D\u4F1A\u88AB\u8986\u76D6\u3002",
+          dataSettingsExisting: "\u8FDE\u63A5\u5DF2\u6709\u5E93",
+          dataSettingsModeHintExisting: "\u9009\u62E9\u542B novelforge.db \u7684\u6587\u4EF6\u5939\uFF0C\u8BFB\u53D6\u5176\u4E2D\u7684\u4F5C\u54C1\uFF1B\u539F\u6587\u4EF6\u4FDD\u6301\u5728\u539F\u4F4D\u7F6E\u3002",
+          dataSettingsUser: "\u5F53\u524D\u5E93\u4E2D\u7684\u4F5C\u8005",
+          dataSettingsUserDefault: "\u81EA\u52A8\u9009\u62E9\u53EF\u7528\u4F5C\u8005",
+          dataSettingsCurrent: "\u5F53\u524D\u6570\u636E\u5E93",
+          dataSettingsNoCurrent: "\u5C1A\u672A\u521B\u5EFA\u6216\u8FDE\u63A5",
+          dataSettingsNoMove: "\u4FDD\u5B58\u53EA\u5207\u6362\u4F7F\u7528\u4F4D\u7F6E\uFF0C\u4E0D\u4F1A\u642C\u79FB\u3001\u590D\u5236\u6216\u8986\u76D6\u65E7\u4E66\u7A3F\u3002",
+          dataSettingsCannotSave: "\u5F53\u524D\u5BBF\u4E3B\u6CA1\u6709\u63D0\u4F9B\u914D\u7F6E\u4FDD\u5B58\u670D\u52A1\uFF0C\u65E0\u6CD5\u4FDD\u5B58\u6570\u636E\u4F4D\u7F6E\u3002",
+          dataSettingsSave: "\u4FDD\u5B58\u5E76\u4F7F\u7528\u6B64\u4F4D\u7F6E",
+          dataSettingsLoadFailed: "\u65E0\u6CD5\u8BFB\u53D6\u6570\u636E\u4F4D\u7F6E\u8BBE\u7F6E\uFF0C\u8BF7\u91CD\u8BD5\u3002",
+          dataSettingsInfoPageConfirm: "\u5207\u6362\u6570\u636E\u4F4D\u7F6E\u4F1A\u91CD\u65B0\u52A0\u8F7D\u5DE5\u4F5C\u533A\u3002\u8BF7\u5148\u4FDD\u5B58\u5F53\u524D\u8D44\u6599\u9875\u7684\u4FEE\u6539\uFF0C\u662F\u5426\u7EE7\u7EED\uFF1F",
           emptyNovel: "\u8D77\u7B14\u91CC\u8FD8\u6CA1\u6709\u4F5C\u54C1",
-          emptyNovelHint: "\u5148\u6253\u5F00\u8D77\u7B14\u65B0\u5EFA\u4E00\u90E8\u4F5C\u54C1\uFF0C\u6216\u76F4\u63A5\u5728\u8FD9\u91CC\u65B0\u5EFA\u3002",
+          emptyNovelHint: "\u70B9\u51FB\u65B0\u5EFA\u4F5C\u54C1\u5F00\u59CB\u5199\u4F5C\uFF0C\u6216\u4ECE\u201C\u6570\u636E\u4F4D\u7F6E\u201D\u8FDE\u63A5\u5DF2\u6709\u6570\u636E\u5E93\u3002",
           emptyChapter: "\u8FD9\u90E8\u4F5C\u54C1\u8FD8\u6CA1\u6709\u7AE0\u8282",
           emptyChapterHint: "\u53EF\u4EE5\u76F4\u63A5\u5728\u8FD9\u91CC\u65B0\u5EFA\u7B2C\u4E00\u7AE0\uFF0C\u6216\u8BA9 Agent \u6765\u5199\u3002",
           emptyBody: "\u8FD9\u4E00\u7AE0\u8FD8\u6CA1\u6709\u6B63\u6587\u3002",
@@ -506,6 +560,20 @@ window.__ModuleLoader__.load({
           cutSelection: "\u526A\u5207\u9009\u533A",
           aiButton: "AI \u751F\u6210",
           aiTitle: "AI \u5199\u4F5C",
+          aiGenerationModel: "\u751F\u6210\u6A21\u578B",
+          aiModelLoading: "\u6B63\u5728\u8BFB\u53D6\u6A21\u578B\u8BBE\u7F6E\u2026",
+          aiReasoning: "\u601D\u8003\u5F3A\u5EA6",
+          aiReasoningFollow: "\u8DDF\u968F\u5F53\u524D\u8BBE\u7F6E",
+          aiReasoningHint: "\u4EC5\u4F5C\u7528\u4E8E\u672C\u9762\u677F\u7684\u751F\u6210\u4E0E\u7EE7\u7EED\u751F\u6210\uFF0C\u6309\u6A21\u578B\u8BB0\u4F4F\u9009\u62E9\uFF0C\u4E0D\u66F4\u6539 DSH \u5168\u5C40\u8BBE\u7F6E\u3002",
+          aiReasoningUnsupported: "\u6B64\u6A21\u578B\u672A\u58F0\u660E\u53EF\u8C03\u601D\u8003\u6863\u4F4D\uFF0C\u5C06\u4F7F\u7528\u5F53\u524D\u9ED8\u8BA4\u8BBE\u7F6E\u3002",
+          aiReasoningUnknown: "\u6682\u65F6\u65E0\u6CD5\u8BFB\u53D6\u601D\u8003\u6863\u4F4D\uFF0C\u5C06\u4F7F\u7528\u5F53\u524D\u9ED8\u8BA4\u8BBE\u7F6E\uFF1B\u53EF\u91CD\u65B0\u6253\u5F00\u9762\u677F\u91CD\u8BD5\u3002",
+          aiReasoningNone: "\u5173\u95ED\uFF08none\uFF09",
+          aiReasoningMinimal: "\u6700\u4F4E\uFF08minimal\uFF09",
+          aiReasoningLow: "\u4F4E\uFF08low\uFF09",
+          aiReasoningMedium: "\u4E2D\uFF08medium\uFF09",
+          aiReasoningHigh: "\u9AD8\uFF08high\uFF09",
+          aiReasoningXhigh: "\u6781\u9AD8\uFF08xhigh\uFF09",
+          aiReasoningMax: "\u6700\u9AD8\uFF08max\uFF09",
           aiSelectionLabel: "\u6B63\u5728\u5904\u7406\u9009\u4E2D\u6587\u672C",
           aiGroupChapter: "\u6574\u7AE0",
           aiGroupSelection: "\u9009\u533A",
@@ -685,6 +753,7 @@ window.__ModuleLoader__.load({
       .qibi-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
       .qibi-main-head {
         display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        flex: 0 0 auto;
         padding: 10px 16px; border-bottom: 1px solid var(--dsw-alias-border-l1);
       }
       .qibi-chapter-title { font-weight: 600; font-size: 14px; }
@@ -705,8 +774,14 @@ window.__ModuleLoader__.load({
       }
       .qibi-card h4 { margin: 0 0 4px 0; font-size: 13px; }
       .qibi-card p { margin: 0; color: var(--dsw-alias-label-secondary); white-space: pre-wrap; font-size: 12px; line-height: 1.7; }
-      .qibi-tabs { display: flex; gap: 2px; padding: 6px 16px 0 16px; border-bottom: 1px solid var(--dsw-alias-border-l1); }
+      .qibi-tabs {
+        box-sizing: border-box;
+        display: flex; flex: 0 0 auto; min-height: 35px; gap: 2px;
+        padding: 6px 16px 0; border-bottom: 1px solid var(--dsw-alias-border-l1);
+        overflow-x: auto; overflow-y: hidden; white-space: nowrap;
+      }
       .qibi-tab {
+        box-sizing: border-box; flex: 0 0 auto; min-height: 28px;
         height: 28px; padding: 0 10px; border: 0; border-bottom: 2px solid transparent;
         background: transparent; color: var(--dsw-alias-label-secondary); cursor: pointer; font: inherit;
       }
@@ -722,6 +797,14 @@ window.__ModuleLoader__.load({
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px;
         word-break: break-all;
       }
+      .qibi-setup-root { overflow: auto; }
+      .qibi-setup-root > .qibi-card {
+        box-sizing: border-box; flex: 0 0 auto;
+        width: min(560px, calc(100% - 32px)); margin: 0 auto 16px;
+      }
+      .qibi-data-settings { min-width: 0; }
+      .qibi-data-settings-current { display: flex; flex-direction: column; gap: 6px; }
+      .qibi-data-settings-current > span { overflow-wrap: anywhere; }
       .qibi-banner {
         display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
         margin: 8px 16px 0 16px; padding: 8px 10px; border-radius: 8px;
@@ -746,7 +829,9 @@ window.__ModuleLoader__.load({
       .qibi-pane > .qibi-section-title:first-child { margin-top: 0; }
       .qibi-form-title { margin: 10px 0 0 0; font-size: 12px; }
       .qibi-form { display: flex; flex-direction: column; gap: 10px; margin: 10px 0 14px 0; }
-      .qibi-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 160px; }
+      .qibi-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 0 0 auto; }
+      .qibi-row > .qibi-field { flex: 1 1 160px; }
+      .qibi-field > .qibi-input, .qibi-field > .qibi-select { flex: 0 0 auto; }
       .qibi-label { color: var(--dsw-alias-label-secondary); font-size: 11px; }
       .qibi-select, .qibi-textarea {
         width: 100%; box-sizing: border-box; padding: 5px 8px; border-radius: 6px;
@@ -780,8 +865,8 @@ window.__ModuleLoader__.load({
         color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 1.6;
         white-space: pre-wrap; max-height: 4.8em; overflow: hidden;
       }
-      .qibi-tabs { overflow-x: auto; white-space: nowrap; }
-      .qibi-tabpane { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+      /* The selected pane gets the remaining height; its inner .qibi-pane owns scrolling. */
+      .qibi-tabpane { flex: 1 1 0; min-height: 0; min-width: 0; display: flex; flex-direction: column; }
       .qibi-overlay {
         position: absolute; top: var(--dsh-frame-top-clearance, 0px); left: 0; right: 0; bottom: 0; z-index: 1000;
         display: flex; align-items: center; justify-content: center;
@@ -898,6 +983,8 @@ window.__ModuleLoader__.load({
         border-bottom: 1px solid var(--dsw-alias-border-l1);
       }
       .qibi-ai-close { min-width: 44px; }
+      .qibi-ai-model-settings { align-items: flex-start; flex: 0 0 auto; }
+      .qibi-ai-model { display: block; min-width: 0; overflow-wrap: anywhere; line-height: 1.6; }
       .qibi-ai-selection {
         padding: 8px 10px; border-radius: 8px;
         border: 1px solid var(--dsw-alias-border-l1);
@@ -1142,7 +1229,19 @@ window.__ModuleLoader__.load({
           truncated: meta?.truncated === true
         };
       }
-      function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, writable, info, hasOutline, t, notify, onApply, onClose }) {
+      var AI_REASONING_KEY = "qibi:ai-reasoning";
+      function validReasoningPreference(info, value) {
+        return typeof value === "string" && info?.reasoning?.efforts?.some((row) => row.id === value) ? value : "";
+      }
+      function aiReasoningRequest(info, value) {
+        return { modelKey: info?.model ?? "", reasoningEffort: validReasoningPreference(info, value) };
+      }
+      function reasoningLabel(row, t) {
+        const keys = { none: "aiReasoningNone", off: "aiReasoningNone", minimal: "aiReasoningMinimal", low: "aiReasoningLow", medium: "aiReasoningMedium", high: "aiReasoningHigh", xhigh: "aiReasoningXhigh", max: "aiReasoningMax" };
+        return keys[row.id] ? t(keys[row.id]) : row.name || row.id;
+      }
+      function AiDrawer({ call, novelId, chapterId, draft, selection, initialMode, writable, info, modelLoading = false, hasOutline, t, notify, onApply, onClose }) {
+        const [reasoningEffort, setReasoningEffort] = (0, import_react.useState)(() => validReasoningPreference(info, readJson(AI_REASONING_KEY, {})?.[info?.model]));
         const [mode, setMode] = (0, import_react.useState)("draft");
         const [extra, setExtra] = (0, import_react.useState)("");
         const [busy, setBusy] = (0, import_react.useState)(false);
@@ -1157,6 +1256,17 @@ window.__ModuleLoader__.load({
         const modeInfo = modes.find((row) => row.id === mode);
         const isSelectionMode = modeInfo?.group === "selection";
         const isReportMode = modeInfo?.group === "report";
+        const reasoning = info?.reasoning;
+        const inheritedEffort = reasoning?.selectedEffort ?? reasoning?.defaultEffort;
+        const inheritedRow = reasoning?.efforts?.find((row) => row.id === inheritedEffort);
+        (0, import_react.useEffect)(() => {
+          setReasoningEffort(validReasoningPreference(info, readJson(AI_REASONING_KEY, {})?.[info?.model]));
+        }, [info]);
+        const chooseReasoning = (event) => {
+          const next = validReasoningPreference(info, event.target.value);
+          setReasoningEffort(next);
+          if (info?.model) writeJson(AI_REASONING_KEY, { ...readJson(AI_REASONING_KEY, {}), [info.model]: next });
+        };
         (0, import_react.useEffect)(() => {
           if (selection) setMode(initialMode || "polish-selection");
           else setMode((prev) => modes.some((row) => row.id === prev) ? prev : "draft");
@@ -1180,7 +1290,7 @@ window.__ModuleLoader__.load({
           return () => window.removeEventListener("keydown", onKey, true);
         }, []);
         const generate = async () => {
-          if (busy || novelId == null) return;
+          if (busy || modelLoading || novelId == null) return;
           if (isSelectionMode && !selection) {
             notify("error", t("aiNeedSelection"));
             return;
@@ -1195,6 +1305,7 @@ window.__ModuleLoader__.load({
           abortRef.current = controller;
           try {
             const result = await streamAi({
+              ...aiReasoningRequest(info, reasoningEffort),
               mode,
               novelId,
               chapterId,
@@ -1229,7 +1340,7 @@ window.__ModuleLoader__.load({
           setBusy(false);
         };
         const continueWriting = async () => {
-          if (busy || !preview.trim() || chapterId == null) return;
+          if (busy || modelLoading || !preview.trim() || chapterId == null) return;
           setBusy(true);
           setError("");
           const controller = new AbortController();
@@ -1238,6 +1349,7 @@ window.__ModuleLoader__.load({
           const join = (value) => `${base}${base.endsWith("\n") || !value ? "" : "\n"}${value}`;
           try {
             const result = await streamAi({
+              ...aiReasoningRequest(info, reasoningEffort),
               mode: "continue",
               novelId,
               chapterId,
@@ -1286,7 +1398,9 @@ window.__ModuleLoader__.load({
             "aria-label": t("aiTitle"),
             onClick: (event) => event.stopPropagation()
           },
-          /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-ai-head" }, /* @__PURE__ */ import_react.default.createElement("strong", null, t("aiTitle")), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-sub" }, info?.model ?? ""), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small qibi-ai-close", onClick: onClose, title: t("close"), "aria-label": t("close") }, t("close"))),
+          /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-ai-head" }, /* @__PURE__ */ import_react.default.createElement("strong", null, t("aiTitle")), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small qibi-ai-close", onClick: onClose, title: t("close"), "aria-label": t("close") }, t("close"))),
+          /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-row qibi-ai-model-settings", "aria-busy": modelLoading }, /* @__PURE__ */ import_react.default.createElement(Field, { label: t("aiGenerationModel") }, /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-sub qibi-ai-model", title: info?.model ?? "" }, modelLoading ? t("aiModelLoading") : info?.model || t("aiUnavailable"))), /* @__PURE__ */ import_react.default.createElement(Field, { label: t("aiReasoning") }, /* @__PURE__ */ import_react.default.createElement("select", { className: "qibi-select", "aria-label": t("aiReasoning"), value: validReasoningPreference(info, reasoningEffort), onChange: chooseReasoning, disabled: busy || modelLoading || !reasoning?.supported }, /* @__PURE__ */ import_react.default.createElement("option", { value: "" }, t("aiReasoningFollow"), inheritedRow ? ` \xB7 ${reasoningLabel(inheritedRow, t)}` : ""), (reasoning?.efforts ?? []).map((row) => /* @__PURE__ */ import_react.default.createElement("option", { key: row.id, value: row.id, title: row.description }, reasoningLabel(row, t)))))),
+          !modelLoading && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-sub" }, reasoning?.supported ? t("aiReasoningHint") : reasoning?.known ? t("aiReasoningUnsupported") : t("aiReasoningUnknown")),
           chapterId != null && hasOutline === false && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-ai-note" }, t("aiNoOutline")),
           isSelectionMode && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-ai-selection" }, /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-sub" }, t("aiSelectionLabel")), /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-ai-selected" }, "\u201C", selection.text.slice(0, 120), selection.text.length > 120 ? "\u2026" : "", "\u201D")),
           /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-ai-modes" }, ["chapter", "selection", "report"].map((group) => /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-ai-mode-group", key: group }, /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-sub" }, t(group === "chapter" ? "aiGroupChapter" : group === "selection" ? "aiGroupSelection" : "aiGroupReport")), /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-actions" }, modes.filter((row) => row.group === group).map((row) => /* @__PURE__ */ import_react.default.createElement(
@@ -1315,7 +1429,7 @@ window.__ModuleLoader__.load({
             },
             t(key)
           ))),
-          /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-actions" }, /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || !info?.available, onClick: () => void generate() }, busy ? t("aiGenerating") : t("aiGenerate")), busy && /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: cancel }, t("cancel")), preview && !busy && !complete && /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void continueWriting() }, t("aiContinue")), preview && !busy && /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void copy() }, t("exportCopy")), isReportMode ? modeInfo?.saveAsOutline === false ? null : /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || !complete, onClick: () => onApply({ mode, modeLabel: modeInfo?.label, text: preview, report: true }) }, t("aiSaveOutline")) : /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: !writable || !complete || isSelectionMode && !selection, onClick: () => onApply({ mode, modeLabel: modeInfo?.label, text: preview, rewrite: forceRewrite ? true : modeInfo?.rewrite !== false, selection }) }, t("aiApply"))), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-sub" }, preview ? `${preview.replace(/\s/g, "").length} ${t("words")}` : "")),
+          /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-actions" }, /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || modelLoading || !info?.available, onClick: () => void generate() }, busy ? t("aiGenerating") : t("aiGenerate")), busy && /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: cancel }, t("cancel")), preview && !busy && !complete && /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: modelLoading, onClick: () => void continueWriting() }, t("aiContinue")), preview && !busy && /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void copy() }, t("exportCopy")), isReportMode ? modeInfo?.saveAsOutline === false ? null : /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || !complete, onClick: () => onApply({ mode, modeLabel: modeInfo?.label, text: preview, report: true }) }, t("aiSaveOutline")) : /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: !writable || !complete || isSelectionMode && !selection, onClick: () => onApply({ mode, modeLabel: modeInfo?.label, text: preview, rewrite: forceRewrite ? true : modeInfo?.rewrite !== false, selection }) }, t("aiApply"))), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-sub" }, preview ? `${preview.replace(/\s/g, "").length} ${t("words")}` : "")),
           !info?.available && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-error-text" }, t("aiUnavailable")),
           preview && !busy && !complete && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-error-text" }, truncated ? t("aiTruncated") : t("aiIncomplete")),
           error && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-error-text" }, error),
@@ -2412,10 +2526,94 @@ window.__ModuleLoader__.load({
         };
         return /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-pane" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react.default.createElement(Field, { label: t("exportFormat") }, /* @__PURE__ */ import_react.default.createElement("select", { className: "qibi-select", value: format, onChange: (event) => setFormat(event.target.value) }, /* @__PURE__ */ import_react.default.createElement("option", { value: "markdown" }, "Markdown"), /* @__PURE__ */ import_react.default.createElement("option", { value: "txt" }, "TXT"))), /* @__PURE__ */ import_react.default.createElement("label", { className: "qibi-check" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "checkbox", checked: onlyPublished, onChange: (event) => setOnlyPublished(event.target.checked) }), t("exportOnlyPublished")), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || novelId === null, onClick: () => void generate() }, t("exportGenerate"))), result && /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-sub" }, result.filename, " \xB7 ", result.chapters, " ", t("chapters"), " \xB7 ", formatWords(result.wordCount), " ", t("words")), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void copy() }, t("exportCopy")), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small primary", onClick: download }, t("exportDownload"))), /* @__PURE__ */ import_react.default.createElement("textarea", { className: "qibi-textarea preview mono", readOnly: true, value: result.content })));
       }
+      function dataSettingsPayload({ dataDir, mode, userId }, info) {
+        const target = String(dataDir ?? "").trim();
+        const payload = { dataDir: target, mode };
+        const sameDirectory = target === String(info?.dataDir ?? "").trim();
+        const id = Number(userId);
+        if (mode === "existing" && sameDirectory && Array.isArray(info?.users) && info.users.some((row) => row.id === id && !row.disabled)) payload.userId = id;
+        return payload;
+      }
+      function DataSettings({ call, t, initialSettings, onBeforeSave, onSaved, onCancel }) {
+        const [info, setInfo] = (0, import_react.useState)(() => initialSettings ?? null);
+        const [dataDir, setDataDir] = (0, import_react.useState)(() => initialSettings?.dataDir || initialSettings?.defaultDataDir || "");
+        const [mode, setMode] = (0, import_react.useState)(() => initialSettings?.exists === true ? "existing" : "create");
+        const [userId, setUserId] = (0, import_react.useState)(() => initialSettings?.userId == null ? "" : String(initialSettings.userId));
+        const [loading, setLoading] = (0, import_react.useState)(() => !initialSettings);
+        const [busy, setBusy] = (0, import_react.useState)(false);
+        const [error, setError] = (0, import_react.useState)("");
+        const load = (0, import_react.useCallback)(async () => {
+          setLoading(true);
+          setError("");
+          try {
+            const result = await call("dataSettings", {});
+            setInfo(result);
+            setDataDir((previous) => previous || result?.dataDir || result?.defaultDataDir || "");
+            if (typeof result?.exists === "boolean") setMode(result.exists ? "existing" : "create");
+            setUserId((previous) => previous || (result?.userId == null ? "" : String(result.userId)));
+          } catch (cause) {
+            setError(causeText(cause));
+          } finally {
+            setLoading(false);
+          }
+        }, [call]);
+        (0, import_react.useEffect)(() => {
+          if (!initialSettings) void load();
+        }, [initialSettings, load]);
+        const pick2 = async () => {
+          if (!info?.canPick || busy) return;
+          setError("");
+          try {
+            const result = await call("pickDataDir", {});
+            if (result?.path) {
+              setDataDir(result.path);
+              setUserId("");
+            }
+          } catch (cause) {
+            setError(causeText(cause));
+          }
+        };
+        const save = async () => {
+          if (busy || !info?.canSave || !dataDir.trim()) return;
+          setBusy(true);
+          setError("");
+          try {
+            if (onBeforeSave && !await onBeforeSave()) return;
+            const payload = dataSettingsPayload({ dataDir, mode, userId }, info);
+            const result = await call("saveDataSettings", payload);
+            if (onSaved) await onSaved(result);
+          } catch (cause) {
+            setError(causeText(cause));
+          } finally {
+            setBusy(false);
+          }
+        };
+        const users = Array.isArray(info?.users) ? info.users : [];
+        const sameDirectory = Boolean(info?.dataDir) && dataDir.trim() === String(info.dataDir).trim();
+        const availableUsers = sameDirectory ? users : [];
+        const currentPath = info?.dbPath || info?.dataDir || "";
+        const cannotSaveReason = info?.canSaveReason || info?.reason || info?.error || t("dataSettingsCannotSave");
+        return /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-form qibi-data-settings" }, loading && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-sub" }, t("loading")), !loading && /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-field" }, /* @__PURE__ */ import_react.default.createElement("label", { className: "qibi-label", htmlFor: "qibi-data-directory" }, t("dataSettingsDirectory")), /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react.default.createElement(
+          "input",
+          {
+            id: "qibi-data-directory",
+            className: "qibi-input",
+            value: dataDir,
+            onChange: (event) => {
+              setDataDir(event.target.value);
+              setUserId("");
+            },
+            placeholder: info?.defaultDataDir || "",
+            disabled: busy
+          }
+        ), info?.canPick && /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy, onClick: () => void pick2() }, t("dataSettingsBrowse")))), /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-field" }, /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-label" }, t("dataSettingsMode")), /* @__PURE__ */ import_react.default.createElement("label", { className: "qibi-check" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "radio", name: "qibi-data-mode", value: "create", checked: mode === "create", disabled: busy, onChange: () => setMode("create") }), t("dataSettingsCreate")), mode === "create" && /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-sub" }, t("dataSettingsModeHintCreate")), /* @__PURE__ */ import_react.default.createElement("label", { className: "qibi-check" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "radio", name: "qibi-data-mode", value: "existing", checked: mode === "existing", disabled: busy, onChange: () => setMode("existing") }), t("dataSettingsExisting")), mode === "existing" && /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-sub" }, t("dataSettingsModeHintExisting"))), mode === "existing" && availableUsers.length > 0 && /* @__PURE__ */ import_react.default.createElement(Field, { label: t("dataSettingsUser") }, /* @__PURE__ */ import_react.default.createElement("select", { className: "qibi-select", value: userId, disabled: busy, onChange: (event) => setUserId(event.target.value) }, /* @__PURE__ */ import_react.default.createElement("option", { value: "" }, t("dataSettingsUserDefault")), availableUsers.map((user) => /* @__PURE__ */ import_react.default.createElement("option", { key: user.id, value: String(user.id) }, user.username || user.name || `#${user.id}`)))), /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-card qibi-data-settings-current" }, /* @__PURE__ */ import_react.default.createElement("strong", null, t("dataSettingsCurrent")), /* @__PURE__ */ import_react.default.createElement("span", null, currentPath || t("dataSettingsNoCurrent")), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-sub" }, t("dataSettingsNoMove"))), info?.canSave === false && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-error-text" }, cannotSaveReason), error && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-error-text" }, error, /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy, onClick: () => void load() }, t("retry"))), /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-actions" }, onCancel && /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy, onClick: onCancel }, t("cancel")), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || loading || info?.canSave !== true || !dataDir.trim(), onClick: () => void save() }, busy ? t("saving") : t("dataSettingsSave")))), !loading && !info && !error && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-error-text" }, t("dataSettingsLoadFailed")));
+      }
       function Workbench({ call, t }) {
         const [status, setStatus] = (0, import_react.useState)(null);
         const [phase, setPhase] = (0, import_react.useState)("loading");
         const [error, setError] = (0, import_react.useState)(null);
+        const [loadEpoch, setLoadEpoch] = (0, import_react.useState)(0);
+        const [dataSettingsOpen, setDataSettingsOpen] = (0, import_react.useState)(false);
         const [novels, setNovels] = (0, import_react.useState)([]);
         const [novelId, setNovelId] = (0, import_react.useState)(null);
         const [chapters, setChapters] = (0, import_react.useState)([]);
@@ -2435,6 +2633,8 @@ window.__ModuleLoader__.load({
         const [novelDialog, setNovelDialog] = (0, import_react.useState)(null);
         const [chapterDialog, setChapterDialog] = (0, import_react.useState)(null);
         const [aiInfo, setAiInfo] = (0, import_react.useState)(null);
+        const [aiInfoLoading, setAiInfoLoading] = (0, import_react.useState)(false);
+        const aiInfoSequence = (0, import_react.useRef)(0);
         const [aiOpen, setAiOpen] = (0, import_react.useState)(false);
         const [aiSelection, setAiSelection] = (0, import_react.useState)(null);
         const [aiInitialMode, setAiInitialMode] = (0, import_react.useState)(null);
@@ -2475,6 +2675,25 @@ window.__ModuleLoader__.load({
           tabRef.current = tab;
         }, [tab]);
         const notify = (0, import_react.useCallback)((kind, text) => setNotice({ kind, text }), []);
+        const retryStatus = (0, import_react.useCallback)(() => {
+          chapterRef.current = null;
+          chapterIdRef.current = null;
+          draftRef.current = "";
+          dirtyRef.current = false;
+          setStatus(null);
+          setError(null);
+          setNovels([]);
+          setNovelId(null);
+          setChapters([]);
+          setChapterId(null);
+          setChapter(null);
+          setDraft("");
+          setDirty(false);
+          setConflict(null);
+          setSaveState("idle");
+          setPhase("loading");
+          setLoadEpoch((value) => value + 1);
+        }, []);
         (0, import_react.useEffect)(() => {
           if (!notice || notice.kind === "error") return void 0;
           const timer = setTimeout(() => setNotice(null), 5e3);
@@ -2661,7 +2880,7 @@ window.__ModuleLoader__.load({
           return () => {
             cancelled = true;
           };
-        }, [call]);
+        }, [call, loadEpoch]);
         (0, import_react.useEffect)(() => {
           if (novelId === null) return;
           let cancelled = false;
@@ -2841,6 +3060,18 @@ window.__ModuleLoader__.load({
           if (!dirtyRef.current) return true;
           return save();
         }, [save]);
+        const beforeDataSettingsSave = (0, import_react.useCallback)(async () => {
+          const ok = await guardDirty();
+          if (!ok) return false;
+          if (["outline", "characters", "continuity"].includes(tab)) {
+            return window.confirm(t("dataSettingsInfoPageConfirm"));
+          }
+          return true;
+        }, [guardDirty, tab, t]);
+        const finishDataSettingsSave = (0, import_react.useCallback)(() => {
+          setDataSettingsOpen(false);
+          retryStatus();
+        }, [retryStatus]);
         const chooseNovel = (0, import_react.useCallback)(async (id) => {
           if (id === novelId) return;
           const ok = await guardDirty();
@@ -3168,7 +3399,19 @@ window.__ModuleLoader__.load({
           setAiInitialMode(initialMode ?? null);
           setAiOpen(true);
           setContextMenu(null);
-        }, []);
+          const sequence = ++aiInfoSequence.current;
+          setAiInfoLoading(true);
+          void call("aiInfo", {}).then((next) => {
+            if (sequence === aiInfoSequence.current) setAiInfo(next);
+          }).catch((cause) => {
+            if (sequence === aiInfoSequence.current) {
+              setAiInfo(null);
+              notify("error", causeText(cause));
+            }
+          }).finally(() => {
+            if (sequence === aiInfoSequence.current) setAiInfoLoading(false);
+          });
+        }, [call, notify]);
         const showUndo = (0, import_react.useCallback)((previous, appliedChapterId, messageKey) => {
           setNotice({
             kind: "info",
@@ -3374,14 +3617,34 @@ window.__ModuleLoader__.load({
             chapterStatusOptions(chapter.status).map((option) => /* @__PURE__ */ import_react.default.createElement("option", { key: option, value: option }, option))
           )))
         ) : null;
+        const dataSettingsDialogNode = dataSettingsOpen ? /* @__PURE__ */ import_react.default.createElement(Dialog, { title: t("dataSettingsTitle"), onClose: () => setDataSettingsOpen(false) }, /* @__PURE__ */ import_react.default.createElement(
+          DataSettings,
+          {
+            key: `data-settings-${loadEpoch}`,
+            call,
+            t,
+            onBeforeSave: beforeDataSettingsSave,
+            onSaved: finishDataSettingsSave,
+            onCancel: () => setDataSettingsOpen(false)
+          }
+        )) : null;
         if (phase === "loading") {
           return /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-root" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-empty" }, t("loading")));
         }
         if (phase === "nodb") {
-          return /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-root" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react.default.createElement("strong", null, t("noDb")), /* @__PURE__ */ import_react.default.createElement("span", null, t("noDbHint").replace("{path}", status?.dbPath ?? "")), /* @__PURE__ */ import_react.default.createElement("code", { className: "qibi-code" }, status?.dbPath)));
+          return /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-root qibi-setup-root" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react.default.createElement("strong", null, t("noDb")), /* @__PURE__ */ import_react.default.createElement("span", null, t("noDbHint").replace("{path}", status?.dbPath ?? status?.dataDir ?? "")), /* @__PURE__ */ import_react.default.createElement("code", { className: "qibi-code" }, status?.dbPath)), /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-card" }, /* @__PURE__ */ import_react.default.createElement("strong", null, t("dataSettingsTitle")), /* @__PURE__ */ import_react.default.createElement(
+            DataSettings,
+            {
+              key: `data-settings-inline-${loadEpoch}`,
+              call,
+              t,
+              onBeforeSave: beforeDataSettingsSave,
+              onSaved: finishDataSettingsSave
+            }
+          )), dataSettingsDialogNode);
         }
         if (phase === "error") {
-          return /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-root" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react.default.createElement("strong", null, t("error")), /* @__PURE__ */ import_react.default.createElement("span", null, error?.message ?? ""), /* @__PURE__ */ import_react.default.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn", onClick: () => window.location.reload() }, t("retry")))));
+          return /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-root" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react.default.createElement("strong", null, t("error")), /* @__PURE__ */ import_react.default.createElement("span", null, error?.message ?? ""), /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-actions", style: { marginTop: 12 } }, /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn", onClick: retryStatus }, t("retry")), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn primary", onClick: () => setDataSettingsOpen(true) }, t("dataSettingsOpen")))), dataSettingsDialogNode);
         }
         if (phase === "empty") {
           return /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-root" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-bar" }, /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-title" }, t("panel")), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react.default.createElement(
@@ -3396,9 +3659,11 @@ window.__ModuleLoader__.load({
             },
             /* @__PURE__ */ import_react.default.createElement("span", { className: `qibi-chip-dot${writable ? " on" : ""}` }),
             writable ? t("writeOn") : t("writeOff")
-          ), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable, onClick: openNovelCreate }, "\uFF0B ", t("newNovel"))), /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react.default.createElement("strong", null, t("emptyNovel")), /* @__PURE__ */ import_react.default.createElement("span", null, t("emptyNovelHint")), /* @__PURE__ */ import_react.default.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn", disabled: !writable, onClick: openNovelCreate }, t("newNovel")))), novelDialogNode);
+          ), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => setDataSettingsOpen(true) }, t("dataSettingsOpen")), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable, onClick: openNovelCreate }, "\uFF0B ", t("newNovel"))), /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react.default.createElement("strong", null, t("emptyNovel")), /* @__PURE__ */ import_react.default.createElement("span", null, t("emptyNovelHint")), /* @__PURE__ */ import_react.default.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn", disabled: !writable, onClick: openNovelCreate }, t("newNovel")))), novelDialogNode, dataSettingsDialogNode);
         }
-        return /* @__PURE__ */ import_react.default.createElement("div", { className: `qibi-root${zen ? " zen" : ""}` }, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-bar" }, /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-title" }, t("panel")), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-sub" }, activeNovel ? `\u300A${activeNovel.title}\u300B\xB7 ${activeNovel.chapterCount} ${t("chapters")} \xB7 ${formatWords(activeNovel.wordCount)} ${t("words")}` : ""), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !activeNovel, onClick: openNovelEdit }, t("novelSettings")), /* @__PURE__ */ import_react.default.createElement(
+        return /* @__PURE__ */ import_react.default.createElement("div", { className: `qibi-root${zen ? " zen" : ""}` }, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-bar" }, /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-title" }, t("panel")), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-sub" }, activeNovel ? `\u300A${activeNovel.title}\u300B\xB7 ${activeNovel.chapterCount} ${t("chapters")} \xB7 ${formatWords(activeNovel.wordCount)} ${t("words")}` : ""), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: async () => {
+          if (await guardDirty()) setDataSettingsOpen(true);
+        } }, t("dataSettingsOpen")), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !activeNovel, onClick: openNovelEdit }, t("novelSettings")), /* @__PURE__ */ import_react.default.createElement(
           "button",
           {
             type: "button",
@@ -3732,6 +3997,7 @@ window.__ModuleLoader__.load({
             initialMode: aiInitialMode,
             writable,
             info: aiInfo,
+            modelLoading: aiInfoLoading,
             hasOutline: outlines.some((row) => row.chapterId === chapterId),
             t,
             notify,
@@ -3742,7 +4008,7 @@ window.__ModuleLoader__.load({
               setAiInitialMode(null);
             }
           }
-        ), novelDialogNode, chapterDialogNode);
+        ), novelDialogNode, chapterDialogNode, dataSettingsDialogNode);
       }
       function installStyles() {
         if (typeof document === "undefined") return () => {

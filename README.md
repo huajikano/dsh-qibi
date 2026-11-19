@@ -6,7 +6,7 @@
 
 **起笔写作台 · DeepSeek Harness 原生小说工作台**
 
-把本机的起笔（QiBi）书稿接进 DSH：左侧栏一个面板、11 个工具、13 种 AI 写作动作。
+把本机的起笔（QiBi）书稿接进 DSH：左侧栏一个面板、12 个工具、13 种 AI 写作动作。
 
 <p>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0f766e?style=for-the-badge" alt="License" /></a>
@@ -30,7 +30,7 @@
 
 > **本地优先。** 书稿在你明确指定的本机数据库中读写，所有作品、正文与设定都留在你自己的磁盘上。首次安装不会自动连接旧库，发行包不含任何小说内容、用户数据库或备份。
 >
-> *Native QiBi writing desk for DeepSeek Harness: sidebar panel, 11 model tools, and 13 AI writing actions over your local `novelforge.db`.*
+> *Native QiBi writing desk for DeepSeek Harness: sidebar panel, 12 model tools, and 13 AI writing actions over your local `novelforge.db`.*
 
 起笔桌面版：[huajikano/qibi-desktop](https://github.com/huajikano/qibi-desktop)。本仓库提供独立的 DSH 插件，使用 DSH 原生界面。
 
@@ -46,13 +46,14 @@
 
 ## 工作台一览
 
-DSH 左侧栏出现一枚「起笔」图标，点开是 DSH 原生面板（不是 iframe）。左侧作品 → 章节树，右侧七个页签：
+DSH 左侧栏出现一枚「起笔」图标，点开是 DSH 原生面板（不是 iframe）。左侧作品 → 章节树，右侧八个页签：
 
 | 页签 | 做什么 |
 | :--- | :--- |
 | **正文** | 编辑当前章，停止输入后自动保存；本章出场人物可一键插入光标处；细纲锚点按标题前 8 字在正文定位，已写到的直接跳转；`Alt+F` 专注模式；`Ctrl+Z` / `Ctrl+Y` 撤销重做（含 AI 写入等程序化改动） |
 | **大纲** | 总纲与章节细纲的查看、新建、修改、删除（字段级乐观锁） |
 | **人物** | 人物设定卡与动态账本（位置 / 境界 / 道具 / 状态 / 近期事件 / 关键关系） |
+| **蒸馏** | 作者素材解析、生成提示、风格版本与作品绑定 |
 | **连续性** | 分卷、章节微摘要（关键事件 / 章末钩子）、作品写作状态与伏笔账本 |
 | **检索** | 关键词检索 + 起笔自带 BM25 知识库检索，可整本重建索引 |
 | **版本** | 章节历史版本列表与恢复（恢复前先把当前正文备份） |
@@ -66,16 +67,22 @@ DSH 左侧栏出现一枚「起笔」图标，点开是 DSH 原生面板（不�
 
 ## 快速安装
 
-> **运行要求**：已验证 DSH `0.2.2-rc.3` · Node.js ≥ 24 · 本机有你明确选择的起笔数据库 `novelforge.db`。起笔桌面程序无须运行。
+> **运行要求**：已验证 DSH `0.2.2-rc.3` · Node.js ≥ 24。首次使用自动准备空白数据库；也可主动连接原起笔数据库，无须运行起笔桌面程序。
 
-当前版本从 GitHub 安装，仓库已提交预构建的 `client.js`，安装不执行构建脚本：
+推荐从 [v1.0.0 Release](https://github.com/huajikano/dsh-qibi/releases/tag/v1.0.0) 安装预构建包，已包含 `client.js`，不需要本机构建前端：
 
 ```sh
-dsh plugin --profile web add -w github:huajikano/dsh-qibi
+dsh plugin --profile web add -w https://github.com/huajikano/dsh-qibi/releases/download/v1.0.0/dsh-qibi-1.0.0.tgz
 dsh web
 ```
 
-或在 **设置 → 插件 → 添加插件 → 本地目录**，选择本仓库根目录（含 `package.json` 的那一层）。
+也可从固定 GitHub 标签安装源码包：
+
+```sh
+dsh plugin --profile web add -w github:huajikano/dsh-qibi#v1.0.0
+```
+
+桌面版可在 **设置 → 插件 → 添加插件** 中粘贴上述 `.tgz` 下载地址，或选择解压后的本地目录。
 
 装好后**重启 DSH**，左侧栏出现「起笔」即为生效。
 
@@ -83,9 +90,9 @@ dsh web
 
 ## 三步开始
 
-1. **明确选择数据目录**。首次安装不自动打开任何已有书稿，先在配置里填写 `dataDir`，或设置 `QIBI_DATA_DIR`。Windows 起笔桌面版常见目录为 `%APPDATA%\desktop\data`，macOS 常见目录为 `~/Library/Application Support/desktop/data`；这些路径只作为提示，不会自动连接。
-2. **点开左侧栏「起笔」**。连接到你选择的数据库后，面板列出其中当前作者的作品；选中一章即可读写。发行包不含小说、用户库或测试备份。
-3. **让 Agent 参与**。直接说「写第五章」「把这一章润色一下」，或让 Agent 调用 `qibi_chapter`、`qibi_distill`；面板会自己发现磁盘上的变化。
+1. **直接开始**。Windows 首次使用默认在 `D:\dsh-qibi\data` 初始化空白库；没有 D 盘时使用用户目录下的独立 `dsh-qibi/data`。不读取旧的起笔测试库，也不附带示例小说。
+2. **按需更改位置**。面板提供“数据位置”按钮，可以填写或选择文件夹，选择“新建空白库”或“连接已有库”，点击保存即可。选择通过 DSH 配置服务持久化，重启后保留；已有书稿不会被搬移或覆盖。
+3. **创建作品或让 Agent 参与**。空白工作台可直接新建作品；连接已有库后会列出该作者的书稿。Agent 可以通过 `qibi_storage` 使用同一套目录设置操作。
 
 选中章节会同步给宿主：Agent 的系统提示里多一行「作者当前在 DSH 面板里选中了作品《X》·第 N 章」，于是「这一章」不需要再问是哪一章。
 
@@ -108,10 +115,11 @@ dsh web
 
 ## 工具参考
 
-11 个领域工具，每个用 `action` 区分动作。省略 `novelId` / `chapterId` 时默认取面板当前选中项。
+12 个领域工具，每个用 `action` 区分动作。省略 `novelId` / `chapterId` 时默认取面板当前选中项。
 
 | 工具 | 动作 | 说明 |
 | :--- | :--- | :--- |
+| `qibi_storage` | `info` `configure` | 查看或保存数据位置；新建空白库或连接已有库，通过 DSH 配置服务保留选择 |
 | `qibi_status` | — | 数据目录、当前作者、作品/章节/字数统计、写入是否开启、面板选中项 |
 | `qibi_novel` | `list` `get` `create` `update` `delete` | 作品增删改查；删除需 `confirm: true` |
 | `qibi_chapter` | `list` `read` `write` `create` `update` `delete` `move` | 章节读写与增删；完整 `read` 返回 `token`，写入时带 `expectedToken` |
@@ -132,6 +140,8 @@ dsh web
 
 面板内的 13 个动作全部通过 DSH 的 `ctx.llm` 发起，使用你当前的默认模型：
 
+AI 写作顶部“生成模型”旁提供“思考强度”选择，档位直接读取当前模型能力。默认“跟随当前设置”，手动选择会同时作用于生成和继续生成，并按模型在本机记忆；不会改动 DSH 全局设置。不支持调节的模型会显示原因，模型切换后重新打开抽屉即可刷新档位。
+
 - **选区（3）**：去 AI 味、润色、扩写——只替换选中文本。
 - **整章（5）**：起草、续写、润色、去 AI 味、扩写。
 - **分析（5）**：审稿、拆解、章节摘要、细纲、创作顾问。
@@ -144,21 +154,21 @@ dsh web
 
 ## 配置
 
-写在 DSH profile 的 `cordis.patch.yml`，覆盖 bundle 层的同一行：
+在面板点击“数据位置”即可更改并保存，不需要手工编辑配置文件。高级用户也可通过配置指定：
 
 ```yaml
 - id: qibi
   config:
-    allowWrite: true                                          # 关掉即全局只读
-    dataDir: 'C:\Users\你\AppData\Roaming\desktop\data'        # 必须明确指定自己的数据目录
-    userId: 2                                                  # 多用户时才需要
+    allowWrite: true
+    dataDir: 'D:\dsh-qibi\data'
+    userId: 1   # 可选：只在需要固定某个作者时填写
 ```
 
 | 键 | 默认 | 含义 |
 | :--- | :--- | :--- |
-| `allowWrite` | `true` | 硬开关。`false` 时面板与工具都拒绝一切写入，只保留读取 |
-| `dataDir` | 未连接 | 必须明确指定的起笔数据目录；也可用环境变量 `QIBI_DATA_DIR`。不自动读取已有书稿 |
-| `userId` | 第一个有作品的未禁用用户 | 多用户起笔里固定作者 |
+| `allowWrite` | `true` | 硬开关。`false` 时不创建新库，面板与工具只读取已有库 |
+| `dataDir` | Windows 优先 `D:\dsh-qibi\data` | 独立数据目录，可在界面保存；也支持 `QIBI_DATA_DIR`。不会自动连接旧起笔库 |
+| `userId` | 当前库中的可用作者 | 新库仅创建“本地作者”，没有小说内容 |
 
 面板右上角的写入开关只能在 `allowWrite: true` 的前提下临时收窄，不能放宽。
 
@@ -168,7 +178,7 @@ dsh web
 
 - **唯一数据通路**是本机的 `novelforge.db`（WAL 模式）。插件与 `起笔.exe` 没有进程关系，**不需要起笔正在运行**；两边同时开着也安全（`busy_timeout` + 短事务）。
 - **只动内容表**：`novels` / `chapters` / `outlines` / `characters` / `volumes` / `chapter_summaries` / `character_states` / `novel_writer_state` / `chapter_revisions` / `kb_chunks` / 蒸馏相关表。**绝不读取** `users.*_api_key_enc`（AES-GCM 密文，插件不需要密钥）。
-- **不改库结构**：不建表、不加列、不跑 DDL；列名先按 `PRAGMA table_info` 探测，缺列就降级，宁可只读也不动你的库。
+- **不改已有库结构**：新目录首次初始化空库结构；连接已有数据库时不建表、不加列、不迁移，缺少可选列时降级。
 - **不覆盖手稿**：写前备份 + 令牌乐观锁（见[核心能力](#核心能力)）。
 - **归属校验**：作品 / 章节 / 大纲 / 人物 / 分卷都按当前作者校验，换 `userId` 既看不到也写不了别人的作品。
 - 插件不经手任何 API Key；AI 请求由 DSH 宿主发起。
@@ -185,7 +195,7 @@ dsh web
 | 界面 | 自己的完整前端 | DSH 原生面板（`sidebar.panellist` + `main`） |
 | 关系 | — | 只通过磁盘上那一个 `novelforge.db` 与起笔相交 |
 
-因此：卸载插件不影响起笔；删掉起笔只是让面板显示「没有找到起笔数据库」；起笔升级改了表结构时，插件按缺列降级而不会写坏数据。
+因此：卸载插件不影响起笔桌面版；本插件可独立初始化空白库，不要求安装 exe。主动连接桌面版数据库时，两端共用该目录中的书稿。
 
 ---
 
@@ -203,7 +213,7 @@ dsh web
 | 现象 | 处理 |
 | :--- | :--- |
 | 左侧栏没有「起笔」图标 | 确认 DSH ≥ 0.2；**重启 DSH**；在「设置 → 插件」里确认 `qibi` 这一行是开启状态 |
-| 面板显示「没有找到起笔数据库」 | 面板会打印它找的完整路径；核对后改 `dataDir`（或环境变量 `QIBI_DATA_DIR`） |
+| 面板提示数据库无法连接 | 点击“数据位置”，选择或填写目录，按需新建空白库或连接已有库并保存 |
 | 保存提示「已被改动」 | 起笔或另一个窗口改过这一章。选择「重载」或「强制覆盖（先备份）」 |
 | 写入被拒绝 | 检查 `allowWrite` 与面板右上角写入开关；Agent 侧最常见原因是漏带 `expectedToken` |
 | 面板取数 401/403 | 刷新页面重新登录宿主的浏览器会话 |
@@ -222,7 +232,7 @@ npm run test:local        # 可选：针对本机已有起笔库的集成自检
 
 `test:release` 在临时目录模拟既有数据库，断言首次使用不打开它，作品与章节计数保持为零。`test:local` 只在临时副本执行写入，不会把数据库打包到发行物。
 
-自检覆盖：路由与工具契约、11 个工具的动作、只读拒写、正文保存的四处不变量（字数 / 版本备份 / 作品总字数 / 知识库分块）、令牌乐观锁、版本恢复、人物动态账本、章节摘要、写作状态、知识库重建与 BM25 检索、导出文本，以及 client.js 的 slot 渲染。
+自检覆盖：路由与工具契约、12 个工具的动作、只读拒写、正文保存的四处不变量（字数 / 版本备份 / 作品总字数 / 知识库分块）、令牌乐观锁、版本恢复、人物动态账本、章节摘要、写作状态、知识库重建与 BM25 检索、导出文本，以及 client.js 的 slot 渲染。
 
 写测试**只落临时副本**，并在结束时断言真实库没有任何改动。自检需要本机已有一份起笔数据库（只读取它）；`scripts/make-icon.py` 生成市场用位图（Pillow）。
 
@@ -247,4 +257,4 @@ npm run test:local        # 可选：针对本机已有起笔库的集成自检
 
 The panel follows the host language; switch at **Settings → General → Language**. Your manuscripts, outlines and assets keep whatever language they already use.
 
-dsh-qibi is a DeepSeek Harness plugin that reads and writes a local QiBi (起笔) desktop-app database (`novelforge.db`). It adds a native sidebar panel with seven tabs (prose, outline, characters, continuity, search, versions, export), 11 `qibi_*` model tools, and 13 AI writing actions routed through the harness's own `ctx.llm`. It never reads stored API keys, never runs DDL, takes a revision backup before every overwrite, and refuses to write without an optimistic-lock token. The QiBi desktop app does not need to be running; the only contract between the two is that one SQLite file.
+dsh-qibi is a DeepSeek Harness plugin with a native writing panel, eight tabs, 12 `qibi_*` tools and 13 AI writing actions routed through `ctx.llm`. A fresh Windows install prefers `D:\dsh-qibi\data` and initializes an empty compatible SQLite database with one local author and no novels. Use **Data location** to create a new empty library or explicitly connect an existing QiBi library; the host configuration editor saves the choice across restarts. Existing databases are never migrated or overwritten during setup. Chapter writes use revision backups and optimistic-lock tokens. The QiBi desktop app is optional and need not be running.

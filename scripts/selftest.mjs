@@ -165,8 +165,8 @@ check('export 可用', (await readOnly.call('export', { novelId: novel.id, forma
 check('pulse 可用', (await readOnly.call('pulse')).ok === true)
 
 const toolNames = readOnly.tools.map(tool => tool.name).sort()
-const expected = ['qibi_chapter', 'qibi_character', 'qibi_continuity', 'qibi_distill', 'qibi_export', 'qibi_kb', 'qibi_novel', 'qibi_outline', 'qibi_revision', 'qibi_search', 'qibi_status']
-check('注册了 11 个领域工具', JSON.stringify(toolNames) === JSON.stringify(expected), toolNames.join(','))
+const expected = ['qibi_chapter', 'qibi_character', 'qibi_continuity', 'qibi_distill', 'qibi_export', 'qibi_kb', 'qibi_novel', 'qibi_outline', 'qibi_revision', 'qibi_search', 'qibi_status', 'qibi_storage']
+check('注册了 12 个领域工具', JSON.stringify(toolNames) === JSON.stringify(expected), toolNames.join(','))
 
 /**
  * 校验工具 schema 的 OpenAPI 子集形状。
