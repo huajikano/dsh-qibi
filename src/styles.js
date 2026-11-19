@@ -1,10 +1,16 @@
 /**
  * 面板样式。
  *
- * 只用宿主的主题 token（--dsw-alias-*）与布局变量，因此浅色/深色自动跟随；
- * 类名统一 `qibi-` 前缀，避免与宿主样式互相污染。
+ * 控件使用语义主题 token（--dsw-alias-*）；局部主题仅在 .qibi-theme-scope 内绑定。
+ * 类名统一 `qibi-` 前缀，跟随宿主时不覆盖其令牌，也不改变 DSH 全局界面。
  */
 export const STYLES = `
+.qibi-theme-scope {
+  position: relative; display: flex; flex-direction: column;
+  width: 100%; height: 100%; min-width: 0; min-height: 0;
+  color: var(--dsw-alias-label-primary); background: var(--dsw-alias-bg-base); font-size: 13px;
+}
+.qibi-theme-scope > .qibi-root { flex: 1 1 auto; min-width: 0; }
 .qibi-root {
   box-sizing: border-box;
   position: relative;
@@ -19,7 +25,7 @@ export const STYLES = `
 }
 .qibi-bar {
   display: flex;
-  align-items: center;
+  align-items: center; flex-wrap: wrap;
   gap: 8px;
   padding: 10px 16px;
   border-bottom: 1px solid var(--dsw-alias-border-l1);
@@ -59,7 +65,8 @@ export const STYLES = `
 }
 .qibi-btn:hover:not(:disabled) { background: var(--dsw-alias-bg-layer-2); border-color: var(--dsw-alias-border-l2); }
 .qibi-btn:disabled { opacity: .45; cursor: default; }
-.qibi-btn.primary { background: var(--dsw-alias-brand-primary); border-color: transparent; color: #fff; }
+.qibi-btn.primary { background: var(--dsw-alias-brand-primary); border-color: transparent; color: var(--qibi-on-accent, #fff); }
+.qibi-btn.primary:hover:not(:disabled) { background: var(--dsw-alias-brand-primary); border-color: transparent; filter: brightness(.96); }
 .qibi-btn.small { height: 22px; padding: 0 8px; font-size: 11px; }
 .qibi-body { display: flex; flex: 1 1 auto; min-height: 0; }
 .qibi-side {
@@ -69,7 +76,7 @@ export const STYLES = `
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: var(--dsw-alias-bg-layer-1);
+  background: var(--dsw-specific-sidebar-fill, var(--dsw-alias-bg-layer-1));
 }
 .qibi-side-head {
   display: flex; align-items: center; gap: 6px;
@@ -480,6 +487,60 @@ export const STYLES = `
   padding: 6px 16px; font-size: 12px; color: var(--dsw-alias-label-secondary);
   background: var(--dsw-alias-bg-layer-1);
   border-bottom: 1px solid var(--dsw-alias-border-l1);
+}
+
+/* ---- Local appearance settings ---- */
+.qibi-theme-trigger { flex: 0 0 auto; }
+.qibi-theme-dialog {
+  box-sizing: border-box; width: min(780px, 100%); max-height: min(720px, 100%);
+  min-width: 0; min-height: 0; overflow: hidden; container: qibi-appearance / inline-size;
+}
+.qibi-theme-dialog > .qibi-dialog-head, .qibi-theme-dialog > .qibi-dialog-foot { flex: 0 0 auto; }
+.qibi-theme-content { display: grid; grid-template-columns: 184px minmax(0, 1fr); gap: 20px; padding: 16px; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.qibi-theme-options, .qibi-theme-mode-options { min-width: 0; margin: 0; padding: 0; border: 0; }
+.qibi-theme-options > legend, .qibi-theme-mode-options > legend { padding: 0; margin-bottom: 10px; color: var(--dsw-alias-label-secondary); font-size: 12px; }
+.qibi-theme-option {
+  display: flex; align-items: center; gap: 8px; box-sizing: border-box;
+  min-height: 57px; margin-bottom: 6px; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid transparent; cursor: pointer; background: transparent;
+}
+.qibi-theme-option:hover { background: var(--dsw-alias-bg-layer-1); }
+.qibi-theme-option.selected { background: var(--dsw-alias-bg-layer-2); border-color: var(--dsw-alias-border-l2); }
+.qibi-theme-option input, .qibi-theme-mode input { accent-color: var(--dsw-alias-brand-primary); flex: 0 0 auto; margin: 0; }
+.qibi-theme-option-content { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.qibi-theme-option-name { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.qibi-theme-default { color: var(--dsw-alias-label-secondary); font-size: 11px; }
+.qibi-theme-swatches { display: inline-flex; gap: 3px; }
+.qibi-theme-swatches > span { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--dsw-alias-border-l1); }
+.qibi-theme-host-mark { color: var(--dsw-alias-label-secondary); font-size: 10px; letter-spacing: .08em; }
+.qibi-theme-details { min-width: 0; }
+.qibi-theme-details > h3 { margin: 0 0 6px; font-size: 16px; }
+.qibi-theme-details > p { line-height: 1.7; margin: 0 0 16px; }
+.qibi-theme-mode-options { display: flex; flex-wrap: wrap; gap: 6px; margin: 18px 0; }
+.qibi-theme-mode { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; box-sizing: border-box; padding: 5px 9px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 6px; cursor: pointer; }
+.qibi-theme-mode.selected { background: var(--dsw-alias-bg-layer-2); border-color: var(--dsw-alias-border-l2); }
+.qibi-theme-mode-options[disabled] { opacity: .55; }
+.qibi-theme-mode-options[disabled] .qibi-theme-mode { cursor: default; }
+.qibi-theme-specimens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+.qibi-theme-specimen { min-width: 0; overflow: hidden; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; color: var(--dsw-alias-label-primary); background: var(--dsw-alias-bg-base); }
+.qibi-theme-specimen-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px; padding: 9px 10px; border-bottom: 1px solid var(--dsw-alias-border-l1); background: var(--dsw-specific-sidebar-fill); font-size: 11px; }
+.qibi-theme-specimen-state { color: var(--dsw-alias-label-secondary); }
+.qibi-theme-specimen-prose { padding: 16px 12px; line-height: 1.8; }
+.qibi-theme-specimen-prose > strong { font-size: 13px; }
+.qibi-theme-specimen-prose > p { font-size: 12px; margin: 6px 0 0; }
+.qibi-theme-specimen-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; padding: 0 10px 10px; font-size: 11px; }
+.qibi-theme-specimen-tag { padding: 3px 5px; border-radius: 4px; background: var(--dsw-alias-bg-layer-2); color: var(--dsw-alias-label-secondary); }
+.qibi-theme-specimen-primary { padding: 4px 8px; border-radius: 5px; background: var(--dsw-alias-brand-primary); color: var(--qibi-on-accent); }
+.qibi-theme-save-error { color: var(--dsw-alias-state-error-primary); }
+.qibi-theme-option:focus-within, .qibi-theme-mode:focus-within { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 2px; }
+@container qibi-appearance (max-width: 560px) {
+  .qibi-theme-content { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .qibi-theme-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 6px; }
+}
+@container qibi-appearance (max-width: 320px) {
+  .qibi-theme-content { padding: 12px; }
+  .qibi-theme-specimens { grid-template-columns: minmax(0, 1fr); }
+  .qibi-theme-options { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* ---- 专注模式（Alt+F） ---- */

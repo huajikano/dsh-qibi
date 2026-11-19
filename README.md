@@ -61,6 +61,18 @@ DSH 左侧栏出现一枚「起笔」图标，点开是 DSH 原生面板（不�
 
 保存状态在标题栏直接可见：`保存中… / 已保存 / 未保存 / 冲突`。**冲突**时不会静默覆盖，而是给出「重载起笔版本」与「强制覆盖（先备份）」两个出口。
 
+### 主题与明暗
+
+点击面板顶部 **主题 → 外观与主题**，选择后立即生效：
+
+- 默认 **经典白 / 浅色**，保留白色工作台、浅灰目录和近黑主按钮。
+- 另有 **Claude 暖色、羊皮纸、森林、暮色、蔷薇**，每套支持浅色、深色和跟随系统。
+- **跟随 DSH** 直接采用宿主当前主题，不单独覆盖起笔颜色。
+- 设置中可同时查看浅深色示例，也可一键 **恢复默认白色**。选择保存在当前浏览器；存储被禁用时会明确提示。
+- 主题只影响起笔及其弹窗，不改变 DSH 全局主题；切换不会重新加载章节或清空编辑状态。
+
+配色选择方式参考 [dsh-claude-style 的公开设计规范](https://github.com/Nwflower/dsh-claude-style/blob/master/docs/STYLE.md)，预设色值独立配置，不附带其专有字体、品牌标记或渲染引擎。
+
 <!-- 截图待补：面板需要以本机真实书稿取景，未随初始仓库提交，避免把作者正文带入公开仓库。 -->
 
 ---
@@ -69,17 +81,17 @@ DSH 左侧栏出现一枚「起笔」图标，点开是 DSH 原生面板（不�
 
 > **运行要求**：已验证 DSH `0.2.2-rc.3` · Node.js ≥ 24。首次使用自动准备空白数据库；也可主动连接原起笔数据库，无须运行起笔桌面程序。
 
-推荐从 [v1.1.0 Release](https://github.com/huajikano/dsh-qibi/releases/tag/v1.1.0) 安装预构建包，已包含 `client.js`，不需要本机构建前端：
+推荐从 [v1.2.0 Release](https://github.com/huajikano/dsh-qibi/releases/tag/v1.2.0) 安装预构建包，已包含 `client.js`，不需要本机构建前端：
 
 ```sh
-dsh plugin --profile web add -w https://github.com/huajikano/dsh-qibi/releases/download/v1.1.0/dsh-qibi-1.1.0.tgz
+dsh plugin --profile web add -w https://github.com/huajikano/dsh-qibi/releases/download/v1.2.0/dsh-qibi-1.2.0.tgz
 dsh web
 ```
 
 也可从固定 GitHub 标签安装源码包：
 
 ```sh
-dsh plugin --profile web add -w github:huajikano/dsh-qibi#v1.1.0
+dsh plugin --profile web add -w github:huajikano/dsh-qibi#v1.2.0
 ```
 
 桌面版可在 **设置 → 插件 → 添加插件** 中粘贴上述 `.tgz` 下载地址，或选择解压后的本地目录。

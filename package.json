@@ -1,6 +1,6 @@
 {
   "name": "dsh-qibi",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "QiBi writing desk for DeepSeek Harness: a native sidebar panel and 12 qibi_* tools with independent local SQLite storage.",
   "type": "module",
   "main": "index.js",
@@ -68,7 +68,7 @@
   },
   "scripts": {
     "build": "node build.mjs",
-    "test:release": "node scripts/database-check.mjs && node scripts/release-check.mjs && node scripts/storage-settings-check.mjs && node scripts/ai-reasoning-check.mjs && node scripts/history-check.mjs && node scripts/character-ai-check.mjs && node scripts/character-flow-check.mjs && node scripts/character-ui-check.mjs && node scripts/render-check.mjs",
+    "test:release": "node scripts/database-check.mjs && node scripts/release-check.mjs && node scripts/storage-settings-check.mjs && node scripts/ai-reasoning-check.mjs && node scripts/history-check.mjs && node scripts/character-ai-check.mjs && node scripts/character-flow-check.mjs && node scripts/character-ui-check.mjs && node scripts/theme-check.mjs && node scripts/render-check.mjs",
     "test:local": "node scripts/selftest.mjs"
   },
   "dependencies": {

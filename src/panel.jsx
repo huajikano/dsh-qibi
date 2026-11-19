@@ -14,6 +14,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { NS, dictionaries } from './i18n.js'
 import { STYLES } from './styles.js'
 import CharacterAiDialog from './CharacterAiDialog.jsx'
+import { AppearanceFrame, ThemeButton } from './Appearance.jsx'
 
 /** 面板 id：侧栏图标与中央面板必须用同一个。 */
 const PANEL_ID = 'qibi'
@@ -2273,8 +2274,12 @@ function DataSettings({ call, t, initialSettings, onBeforeSave, onSaved, onCance
   )
 }
 
-/** 主面板组件。`call` 与 `t` 由 apply 通过 inject 提供。 */
-function Workbench({ call, t }) {
+function ThemedWorkbench(props) {
+  return <AppearanceFrame t={props.t}>{appearance => <Workbench {...props} appearance={appearance} />}</AppearanceFrame>
+}
+
+/** 主面板组件。主题只改变父级样式，编辑与数据状态不被重新初始化。 */
+function Workbench({ call, t, appearance }) {
   const [status, setStatus] = useState(null)
   const [phase, setPhase] = useState('loading')
   const [error, setError] = useState(null)
@@ -3430,12 +3435,13 @@ function Workbench({ call, t }) {
   ) : null
 
   if (phase === 'loading') {
-    return <div className="qibi-root"><div className="qibi-empty">{t('loading')}</div></div>
+    return <div className="qibi-root"><div className="qibi-bar"><span className="qibi-title">{t('panel')}</span><span className="qibi-spacer" /><ThemeButton appearance={appearance} t={t} /></div><div className="qibi-empty">{t('loading')}</div></div>
   }
 
   if (phase === 'nodb') {
     return (
       <div className="qibi-root qibi-setup-root">
+        <div className="qibi-bar"><span className="qibi-title">{t('panel')}</span><span className="qibi-spacer" /><ThemeButton appearance={appearance} t={t} /></div>
         <div className="qibi-empty">
           <strong>{t('noDb')}</strong>
           <span>{t('noDbHint').replace('{path}', status?.dbPath ?? status?.dataDir ?? '')}</span>
@@ -3459,6 +3465,7 @@ function Workbench({ call, t }) {
   if (phase === 'error') {
     return (
       <div className="qibi-root">
+        <div className="qibi-bar"><span className="qibi-title">{t('panel')}</span><span className="qibi-spacer" /><ThemeButton appearance={appearance} t={t} /></div>
         <div className="qibi-empty">
           <strong>{t('error')}</strong>
           <span>{error?.message ?? ''}</span>
@@ -3489,6 +3496,7 @@ function Workbench({ call, t }) {
             <span className={`qibi-chip-dot${writable ? ' on' : ''}`} />
             {writable ? t('writeOn') : t('writeOff')}
           </button>
+          <ThemeButton appearance={appearance} t={t} />
           <button type="button" className="qibi-btn small" onClick={() => setDataSettingsOpen(true)}>{t('dataSettingsOpen')}</button>
           <button type="button" className="qibi-btn small" disabled={!writable} onClick={openNovelCreate}>＋ {t('newNovel')}</button>
         </div>
@@ -3511,6 +3519,7 @@ function Workbench({ call, t }) {
         <span className="qibi-title">{t('panel')}</span>
         <span className="qibi-sub">{activeNovel ? `《${activeNovel.title}》· ${activeNovel.chapterCount} ${t('chapters')} · ${formatWords(activeNovel.wordCount)} ${t('words')}` : ''}</span>
         <span className="qibi-spacer" />
+        <ThemeButton appearance={appearance} t={t} />
         <button type="button" className="qibi-btn small" onClick={async () => { if (await guardDirty()) setDataSettingsOpen(true) }}>{t('dataSettingsOpen')}</button>
         <button type="button" className="qibi-btn small" disabled={!activeNovel} onClick={openNovelEdit}>{t('novelSettings')}</button>
         <button
@@ -3997,7 +4006,7 @@ export function apply(ctx) {
       key: PANEL_ID,
       locale: NS,
       inject: () => ({ call, t }),
-    }, Workbench)), 'qibi: main panel')
+    }, ThemedWorkbench)), 'qibi: main panel')
 
     ctx.effect(() => ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({
       name: 'sidebar.panellist',
