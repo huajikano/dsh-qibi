@@ -57,7 +57,7 @@ window.__ModuleLoader__.load({
       var en_default = {
         meta: {
           title: "QiBi writing desk",
-          description: "Open your QiBi manuscripts from the DSH sidebar: browse novels and chapters, read and write prose, and let the agent write new chapters straight into your canon.",
+          description: "QiBi writing desk: read and write QiBi manuscripts from the DSH sidebar, with 11 tools, 13 AI writing actions and pre-write revision backups.",
           detail: "docs/DETAIL.md"
         },
         ui: {
@@ -319,7 +319,7 @@ window.__ModuleLoader__.load({
       var zh_default = {
         meta: {
           title: "\u8D77\u7B14\u5199\u4F5C\u53F0",
-          description: "\u5728 DSH \u5DE6\u4FA7\u680F\u6253\u5F00\u8D77\u7B14\u4E66\u7A3F\uFF1A\u6D4F\u89C8\u4F5C\u54C1\u4E0E\u7AE0\u8282\u3001\u8BFB\u5199\u6B63\u6587\uFF0C\u8BA9 Agent \u628A\u65B0\u7AE0\u76F4\u63A5\u5199\u8FDB\u4F60\u7684\u6B63\u5178\u3002",
+          description: "\u8D77\u7B14\u5199\u4F5C\u53F0\uFF1A\u5728 DSH \u4FA7\u680F\u8BFB\u5199\u8D77\u7B14\u4E66\u7A3F\uFF0C\u542B 11 \u4E2A\u5DE5\u5177\u300113 \u79CD AI \u5199\u4F5C\u52A8\u4F5C\u4E0E\u5199\u524D\u7248\u672C\u5907\u4EFD\u3002",
           detail: "docs/DETAIL.md"
         },
         ui: {

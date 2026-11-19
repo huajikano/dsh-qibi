@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "QiBi writing desk",
-    "description": "Open your QiBi manuscripts from the DSH sidebar: browse novels and chapters, read and write prose, and let the agent write new chapters straight into your canon.",
+    "description": "QiBi writing desk: read and write QiBi manuscripts from the DSH sidebar, with 11 tools, 13 AI writing actions and pre-write revision backups.",
     "detail": "docs/DETAIL.md"
   },
   "ui": {

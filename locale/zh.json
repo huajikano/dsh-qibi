@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "起笔写作台",
-    "description": "在 DSH 左侧栏打开起笔书稿：浏览作品与章节、读写正文，让 Agent 把新章直接写进你的正典。",
+    "description": "起笔写作台：在 DSH 侧栏读写起笔书稿，含 11 个工具、13 种 AI 写作动作与写前版本备份。",
     "detail": "docs/DETAIL.md"
   },
   "ui": {
