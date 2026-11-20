@@ -41,7 +41,8 @@ window.__ModuleLoader__.load({
         DataSettings: () => DataSettings,
         Dialog: () => Dialog,
         DistillTab: () => DistillTab,
-        OutlineTab: () => OutlineTab,
+        NovelSettingsFields: () => NovelSettingsFields,
+        OutlineTab: () => OutlineWorkspace,
         QibiIcon: () => QibiIcon,
         Workbench: () => Workbench,
         aiReasoningRequest: () => aiReasoningRequest,
@@ -63,7 +64,7 @@ window.__ModuleLoader__.load({
         validReasoningPreference: () => validReasoningPreference
       });
       module.exports = __toCommonJS(panel_exports);
-      var import_react5 = __toESM(require("react"), 1);
+      var import_react7 = __toESM(require("react"), 1);
 
       // locale/en.json
       var en_default = {
@@ -503,7 +504,65 @@ window.__ModuleLoader__.load({
           characterAiResetKeep: "Keep current preview",
           characterAiSelectionLimit: "Import up to 30 characters at a time. Unselected candidates are kept.",
           characterAiBatchInvalid: "The batch response was invalid. Retry this batch.",
-          characterAiBatchMerged: "Batch candidates merged."
+          characterAiBatchMerged: "Batch candidates merged.",
+          charactersCount: "characters",
+          novelCreateLead: "Start a new novel",
+          novelCreateHint: "Add a title first. You can fill in the other details later.",
+          novelSettingsHint: "Edit the novel details and save to apply them. Manage prose and chapters in the writing desk.",
+          novelReadOnlyHint: "Read-only mode lets you view and copy details. Enable writing to save changes.",
+          novelBasicSection: "Basic information",
+          novelRequiredHint: "Only the title is required",
+          novelTitlePlaceholder: "Give your novel a title",
+          novelAuthorHint: "The pen name displayed on this novel can differ from the account name.",
+          novelAuthorPlaceholder: "Author or pen name",
+          novelCustomValueHint: "Choose a suggestion or enter your own value.",
+          novelGenrePlaceholder: "For example: mystery, sci-fi, contemporary",
+          novelIntroSection: "Synopsis",
+          novelIntroHint: "Summarize the setting, central characters and main conflict, or leave this blank.",
+          novelIntroPlaceholder: "Where does the story happen? What does the protagonist want, and what stands in the way?",
+          novelDangerSection: "Danger zone",
+          novelDeleteHint: "Deleting the novel also deletes its chapters, outlines, characters and continuity data. This cannot be undone here. Export anything you need to keep first.",
+          novelDeleteAction: "Delete this novel",
+          novelDeleteConfirm: "Delete \u201C{title}\u201D and all of its chapters and settings? This cannot be undone.",
+          novelDiscardChanges: "Discard unsaved changes to these novel settings and close?",
+          novelNameRequired: "Enter a novel title containing more than whitespace.",
+          novelSavedRefreshFailed: "The operation was saved, but the novel list could not refresh. Refresh the workbench later instead of submitting again.",
+          novelReadOnlyState: "Read-only view",
+          novelNoChanges: "No changes",
+          novelCreateAction: "Create novel",
+          novelSaveAction: "Save changes",
+          outlineWorkspaceHint: "Organize plot notes by master outline and chapter. Select an entry to read or edit it.",
+          outlineNewMaster: "New master outline",
+          outlineNewChapter: "New chapter outline",
+          outlineReadOnlyHint: "Read-only mode lets you view and copy outlines.",
+          outlineCreateHeading: "New outline entry",
+          outlineEditHeading: "Edit outline entry",
+          outlineWorking: "Working\u2026",
+          outlineDraftUnsaved: "Unsaved changes",
+          outlineDraftUnchanged: "No changes",
+          outlineFormHint: "Enter a title or body text. Ctrl / \u2318 + Enter saves; Esc cancels.",
+          outlineNeedsText: "Enter a title or body text containing more than whitespace.",
+          outlineTargetMissing: "The attached chapter is unavailable. Choose another chapter or the master outline before saving.",
+          outlineTargetUnavailable: "Chapter unavailable",
+          outlineEntryMissing: "This entry was deleted. Your local draft is preserved; copy it before creating a new entry.",
+          outlineConflictHint: "This outline changed in another window or tool. Your draft is preserved. Copy anything you need before reloading.",
+          outlineReloadDiscard: "Reload and discard local edits",
+          outlineReloadConfirm: "Reloading discards this local draft and loads the latest entry. Continue?",
+          outlineDiscardConfirm: "Discard unsaved changes to this outline and continue?",
+          outlineDiscardChanges: "Discard unsaved outline changes and leave?",
+          outlineSelectHeading: "Read and edit outlines",
+          outlineSelectHint: "Choose \u201CRead full entry\u201D from the list, or create a master or chapter outline.",
+          outlineEntries: "Outline entries",
+          outlineCountUnit: "entries",
+          outlineFilter: "Filter by target",
+          outlineFilterAll: "All outlines",
+          outlineFilterCurrent: "Current chapter",
+          outlineSearch: "Search outlines",
+          outlineSearchHint: "Search title or body",
+          outlineRefresh: "Refresh list",
+          outlineNoMatches: "No matching outlines",
+          outlineNoMatchesHint: "Choose a different target or clear the search.",
+          outlineReadFull: "Read full entry"
         }
       };
 
@@ -945,7 +1004,65 @@ window.__ModuleLoader__.load({
           characterAiResetKeep: "\u4FDD\u7559\u5F53\u524D\u9884\u89C8",
           characterAiSelectionLimit: "\u6BCF\u6B21\u6700\u591A\u5BFC\u5165 30 \u4EBA\uFF1B\u672A\u52FE\u9009\u8005\u4F1A\u4FDD\u7559\u3002",
           characterAiBatchInvalid: "\u672A\u6536\u5230\u6709\u6548\u7684\u5206\u6279\u7ED3\u679C\uFF0C\u8BF7\u91CD\u8BD5\u672C\u6279\u3002",
-          characterAiBatchMerged: "\u672C\u6279\u5019\u9009\u5DF2\u5408\u5E76\u3002"
+          characterAiBatchMerged: "\u672C\u6279\u5019\u9009\u5DF2\u5408\u5E76\u3002",
+          charactersCount: "\u5B57\u7B26",
+          novelCreateLead: "\u5F00\u59CB\u4E00\u90E8\u65B0\u4F5C\u54C1",
+          novelCreateHint: "\u5148\u586B\u5199\u4F5C\u54C1\u540D\uFF0C\u5176\u4F59\u4FE1\u606F\u53EF\u4EE5\u7A0D\u540E\u8865\u5145\u3002",
+          novelSettingsHint: "\u7F16\u8F91\u4F5C\u54C1\u8D44\u6599\uFF0C\u4FDD\u5B58\u540E\u751F\u6548\u3002\u6B63\u6587\u4E0E\u7AE0\u8282\u5728\u5199\u4F5C\u53F0\u7BA1\u7406\u3002",
+          novelReadOnlyHint: "\u5F53\u524D\u4E3A\u53EA\u8BFB\u6A21\u5F0F\uFF0C\u53EF\u4EE5\u67E5\u770B\u548C\u590D\u5236\u8D44\u6599\uFF1B\u5F00\u542F\u5199\u5165\u540E\u624D\u80FD\u4FDD\u5B58\u4FEE\u6539\u3002",
+          novelBasicSection: "\u57FA\u672C\u4FE1\u606F",
+          novelRequiredHint: "\u4EC5\u4F5C\u54C1\u540D\u5FC5\u586B",
+          novelTitlePlaceholder: "\u7ED9\u4F5C\u54C1\u8D77\u4E00\u4E2A\u540D\u5B57",
+          novelAuthorHint: "\u7528\u4E8E\u4F5C\u54C1\u7F72\u540D\uFF0C\u53EF\u4E0E\u8D26\u6237\u540D\u79F0\u4E0D\u540C\u3002",
+          novelAuthorPlaceholder: "\u4F5C\u8005\u7F72\u540D\u6216\u7B14\u540D",
+          novelCustomValueHint: "\u53EF\u9009\u5E38\u7528\u9879\uFF0C\u4E5F\u53EF\u8F93\u5165\u81EA\u5B9A\u4E49\u5185\u5BB9\u3002",
+          novelGenrePlaceholder: "\u4F8B\u5982\uFF1A\u60AC\u7591\u3001\u79D1\u5E7B\u3001\u73B0\u5B9E",
+          novelIntroSection: "\u4F5C\u54C1\u7B80\u4ECB",
+          novelIntroHint: "\u7B80\u8981\u4ECB\u7ECD\u6545\u4E8B\u80CC\u666F\u3001\u6838\u5FC3\u4EBA\u7269\u548C\u4E3B\u8981\u51B2\u7A81\uFF1B\u4E5F\u53EF\u7559\u7A7A\u3002",
+          novelIntroPlaceholder: "\u6545\u4E8B\u53D1\u751F\u5728\u54EA\u91CC\uFF1F\u4E3B\u89D2\u60F3\u8981\u4EC0\u4E48\uFF0C\u53C8\u4F1A\u9047\u5230\u600E\u6837\u7684\u963B\u788D\uFF1F",
+          novelDangerSection: "\u5371\u9669\u64CD\u4F5C",
+          novelDeleteHint: "\u5220\u9664\u4F5C\u54C1\u4F1A\u4E00\u5E76\u5220\u9664\u5168\u90E8\u7AE0\u8282\u3001\u5927\u7EB2\u3001\u4EBA\u7269\u53CA\u8FDE\u7EED\u6027\u8D44\u6599\uFF0C\u65E0\u6CD5\u5728\u6B64\u64A4\u9500\u3002\u8BF7\u5148\u786E\u8BA4\u5DF2\u5BFC\u51FA\u9700\u8981\u4FDD\u7559\u7684\u5185\u5BB9\u3002",
+          novelDeleteAction: "\u5220\u9664\u8FD9\u90E8\u4F5C\u54C1",
+          novelDeleteConfirm: "\u786E\u5B9A\u5220\u9664\u300A{title}\u300B\u53CA\u5176\u5168\u90E8\u7AE0\u8282\u548C\u8BBE\u5B9A\u5417\uFF1F\u6B64\u64CD\u4F5C\u65E0\u6CD5\u64A4\u9500\u3002",
+          novelDiscardChanges: "\u4F5C\u54C1\u8BBE\u7F6E\u6709\u672A\u4FDD\u5B58\u4FEE\u6539\uFF0C\u786E\u5B9A\u653E\u5F03\u5E76\u5173\u95ED\u5417\uFF1F",
+          novelNameRequired: "\u8BF7\u586B\u5199\u4F5C\u54C1\u540D\uFF0C\u4E0D\u80FD\u53EA\u8F93\u5165\u7A7A\u683C\u3002",
+          novelSavedRefreshFailed: "\u64CD\u4F5C\u5DF2\u4FDD\u5B58\uFF0C\u4F46\u4F5C\u54C1\u5217\u8868\u5237\u65B0\u5931\u8D25\u3002\u8BF7\u7A0D\u540E\u5237\u65B0\u5DE5\u4F5C\u53F0\uFF0C\u4E0D\u8981\u91CD\u590D\u63D0\u4EA4\u3002",
+          novelReadOnlyState: "\u53EA\u8BFB\u67E5\u770B",
+          novelNoChanges: "\u5C1A\u65E0\u4FEE\u6539",
+          novelCreateAction: "\u521B\u5EFA\u4F5C\u54C1",
+          novelSaveAction: "\u4FDD\u5B58\u4FEE\u6539",
+          outlineWorkspaceHint: "\u6309\u603B\u7EB2\u548C\u7AE0\u8282\u6574\u7406\u60C5\u8282\uFF0C\u9009\u62E9\u6761\u76EE\u67E5\u770B\u5168\u6587\u6216\u7EE7\u7EED\u7F16\u8F91\u3002",
+          outlineNewMaster: "\u65B0\u5EFA\u603B\u7EB2",
+          outlineNewChapter: "\u65B0\u5EFA\u7AE0\u8282\u7EC6\u7EB2",
+          outlineReadOnlyHint: "\u5F53\u524D\u4E3A\u53EA\u8BFB\u6A21\u5F0F\uFF0C\u53EF\u4EE5\u67E5\u770B\u548C\u590D\u5236\u7EC6\u7EB2\u3002",
+          outlineCreateHeading: "\u65B0\u5EFA\u5927\u7EB2\u6761\u76EE",
+          outlineEditHeading: "\u7F16\u8F91\u5927\u7EB2\u6761\u76EE",
+          outlineWorking: "\u5904\u7406\u4E2D\u2026",
+          outlineDraftUnsaved: "\u6709\u672A\u4FDD\u5B58\u66F4\u6539",
+          outlineDraftUnchanged: "\u5C1A\u65E0\u66F4\u6539",
+          outlineFormHint: "\u6807\u9898\u4E0E\u6B63\u6587\u81F3\u5C11\u586B\u5199\u4E00\u9879\u3002Ctrl / \u2318 + Enter \u4FDD\u5B58\uFF0CEsc \u53D6\u6D88\u3002",
+          outlineNeedsText: "\u8BF7\u586B\u5199\u6807\u9898\u6216\u6B63\u6587\uFF0C\u81F3\u5C11\u4E00\u9879\u4E0D\u80FD\u53EA\u542B\u7A7A\u683C\u3002",
+          outlineTargetMissing: "\u6240\u5C5E\u7AE0\u8282\u5DF2\u4E0D\u53EF\u7528\uFF0C\u8BF7\u9009\u62E9\u5176\u4ED6\u7AE0\u8282\u6216\u603B\u7EB2\u540E\u4FDD\u5B58\u3002",
+          outlineTargetUnavailable: "\u7AE0\u8282\u4E0D\u53EF\u7528",
+          outlineEntryMissing: "\u8FD9\u6761\u7EC6\u7EB2\u5DF2\u88AB\u5220\u9664\uFF0C\u672C\u5730\u8349\u7A3F\u4ECD\u4FDD\u7559\uFF0C\u53EF\u590D\u5236\u540E\u65B0\u5EFA\u3002",
+          outlineConflictHint: "\u8FD9\u6761\u5927\u7EB2\u5DF2\u5728\u5176\u4ED6\u7A97\u53E3\u6216\u5DE5\u5177\u4E2D\u4FEE\u6539\u3002\u4F60\u7684\u8349\u7A3F\u5DF2\u4FDD\u7559\uFF1B\u8BF7\u5148\u590D\u5236\u9700\u8981\u7684\u5185\u5BB9\uFF0C\u518D\u91CD\u65B0\u8F7D\u5165\u3002",
+          outlineReloadDiscard: "\u91CD\u65B0\u8F7D\u5165\uFF08\u653E\u5F03\u672C\u5730\uFF09",
+          outlineReloadConfirm: "\u91CD\u65B0\u8F7D\u5165\u4F1A\u653E\u5F03\u8FD9\u6761\u7EC6\u7EB2\u7684\u672C\u5730\u5185\u5BB9\uFF0C\u8F7D\u5165\u6700\u65B0\u7248\u672C\u3002\u786E\u5B9A\u7EE7\u7EED\u5417\uFF1F",
+          outlineDiscardConfirm: "\u8FD9\u6761\u7EC6\u7EB2\u6709\u672A\u4FDD\u5B58\u66F4\u6539\uFF0C\u786E\u5B9A\u653E\u5F03\u5E76\u7EE7\u7EED\u5417\uFF1F",
+          outlineDiscardChanges: "\u7EC6\u7EB2\u6709\u672A\u4FDD\u5B58\u66F4\u6539\uFF0C\u786E\u5B9A\u653E\u5F03\u5E76\u79BB\u5F00\u5417\uFF1F",
+          outlineSelectHeading: "\u67E5\u770B\u4E0E\u7F16\u8F91\u7EC6\u7EB2",
+          outlineSelectHint: "\u4ECE\u5217\u8868\u9009\u62E9\u201C\u67E5\u770B\u5168\u6587\u201D\uFF0C\u6216\u65B0\u5EFA\u603B\u7EB2\u3001\u7AE0\u8282\u7EC6\u7EB2\u3002",
+          outlineEntries: "\u5927\u7EB2\u6761\u76EE",
+          outlineCountUnit: "\u6761",
+          outlineFilter: "\u5F52\u5C5E\u7B5B\u9009",
+          outlineFilterAll: "\u5168\u90E8\u5927\u7EB2",
+          outlineFilterCurrent: "\u5F53\u524D\u7AE0\u8282",
+          outlineSearch: "\u641C\u7D22\u7EC6\u7EB2",
+          outlineSearchHint: "\u641C\u7D22\u6807\u9898\u6216\u6B63\u6587",
+          outlineRefresh: "\u5237\u65B0\u5217\u8868",
+          outlineNoMatches: "\u6CA1\u6709\u5339\u914D\u7684\u7EC6\u7EB2",
+          outlineNoMatchesHint: "\u8BD5\u8BD5\u5176\u4ED6\u5F52\u5C5E\uFF0C\u6216\u6E05\u7A7A\u641C\u7D22\u8BCD\u3002",
+          outlineReadFull: "\u67E5\u770B\u5168\u6587"
         }
       };
 
@@ -1447,6 +1564,82 @@ window.__ModuleLoader__.load({
         padding: 6px 16px; font-size: 12px; color: var(--dsw-alias-label-secondary);
         background: var(--dsw-alias-bg-layer-1);
         border-bottom: 1px solid var(--dsw-alias-border-l1);
+      }
+
+      /* ---- Outline and manuscript settings ---- */
+      .qibi-outline-workspace { display: flex; flex-direction: column; gap: 16px; min-width: 0; container: qibi-outline / inline-size; }
+      .qibi-outline-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 10px 16px; flex: 0 0 auto; }
+      .qibi-outline-header > div:first-child { flex: 1 1 240px; min-width: 0; }
+      .qibi-outline-heading { margin: 0; font-size: 16px; font-weight: 600; }
+      .qibi-outline-header p { line-height: 1.7; margin: 5px 0 0; }
+      .qibi-outline-columns { display: flex; flex-direction: column; gap: 16px; min-width: 0; min-height: 0; }
+      .qibi-outline-editor { box-sizing: border-box; padding: 16px; min-width: 0; border: 1px solid var(--dsw-alias-border-l1); border-radius: 9px; background: var(--dsw-alias-bg-base); }
+      .qibi-outline-editor h3, .qibi-outline-list h3 { font-size: 13px; margin: 0; overflow-wrap: anywhere; }
+      .qibi-outline-form { margin: 0; gap: 12px; }
+      .qibi-outline-fields { display: flex; flex-direction: column; gap: 12px; }
+      .qibi-outline-editor .qibi-input { width: 100%; box-sizing: border-box; }
+      .qibi-outline-textarea { min-height: 230px; resize: vertical; line-height: 1.8; }
+      .qibi-outline-form > .qibi-sub { line-height: 1.65; margin: 0; }
+      .qibi-outline-form-actions { padding-top: 12px; border-top: 1px solid var(--dsw-alias-border-l1); }
+      .qibi-outline-form-actions .qibi-outline-reload { margin-left: auto; }
+      .qibi-outline-reader { display: flex; flex-direction: column; gap: 10px; }
+      .qibi-outline-reader > p { margin: 0; }
+      .qibi-outline-reader-empty { text-align: left; padding: 22px 0; max-width: none; }
+      .qibi-outline-reader-empty h3 { font-size: 14px; margin-bottom: 6px; color: var(--dsw-alias-label-primary); }
+      .qibi-outline-list { min-width: 0; }
+      .qibi-outline-list-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+      .qibi-outline-count { margin-left: auto; }
+      .qibi-outline-filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto; align-items: end; gap: 8px; padding-bottom: 12px; }
+      .qibi-outline-filters .qibi-input { width: 100%; box-sizing: border-box; }
+      .qibi-outline-group { margin-top: 14px; }
+      .qibi-outline-group-heading { color: var(--dsw-alias-label-secondary); font-weight: 500; font-size: 12px; margin: 0 0 8px; overflow-wrap: anywhere; }
+      .qibi-outline-card { min-width: 0; padding: 12px; }
+      .qibi-outline-card-selected { border-color: var(--dsw-alias-brand-primary); }
+      .qibi-outline-card-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px; }
+      .qibi-outline-card-heading > h4 { flex: 1 1 120px; min-width: 0; overflow-wrap: anywhere; }
+      .qibi-outline-card-heading .qibi-tag { max-width: 100%; height: auto; white-space: normal; overflow-wrap: anywhere; }
+      .qibi-outline-card .qibi-outline-preview { margin: 8px 0 10px; overflow-wrap: anywhere; }
+      .qibi-outline-delete { margin-left: auto; }
+      .qibi-outline-conflict, .qibi-outline-error { margin: 10px 0; padding: 10px; border-radius: 6px; font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
+      .qibi-outline-conflict { color: var(--dsw-alias-label-primary); background: var(--dsw-alias-bg-layer-1); border: 1px solid var(--dsw-alias-state-warn-primary); }
+      .qibi-outline-error { color: var(--dsw-alias-state-error-primary); border: 1px solid var(--dsw-alias-state-error-primary); }
+      @container qibi-outline (min-width: 820px) {
+        .qibi-outline-columns { display: grid; grid-template-columns: minmax(250px, .85fr) minmax(0, 1.15fr); flex: 1 1 0; overflow: hidden; }
+        .qibi-outline-editor { grid-column: 2; grid-row: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+        .qibi-outline-list { grid-column: 1; grid-row: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding-right: 4px; }
+      }
+      @container qibi-outline (max-width: 480px) {
+        .qibi-outline-filters { grid-template-columns: minmax(0, 1fr); }
+        .qibi-outline-editor { padding: 12px; }
+        .qibi-outline-form-actions .qibi-outline-reload { margin-left: 0; }
+      }
+
+      .qibi-novel-settings-dialog { box-sizing: border-box; width: min(720px, 100%); max-height: 100%; min-height: 0; overflow: hidden; container: qibi-novel-settings / inline-size; }
+      .qibi-novel-settings-dialog > .qibi-dialog-head, .qibi-novel-settings-dialog > .qibi-dialog-foot { flex: 0 0 auto; }
+      .qibi-novel-settings-dialog > .qibi-dialog-body { padding: 0 20px; flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+      .qibi-novel-settings-dialog > .qibi-dialog-foot { flex-wrap: wrap; gap: 8px; }
+      .qibi-settings-context { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; padding: 18px 0; border-bottom: 1px solid var(--dsw-alias-border-l1); }
+      .qibi-settings-context > div { flex: 1 1 220px; min-width: 0; }
+      .qibi-settings-context strong { display: block; font-size: 15px; overflow-wrap: anywhere; }
+      .qibi-settings-context p { margin: 5px 0 0; line-height: 1.7; }
+      .qibi-settings-bookmark { display: flex; flex: 0 0 auto; align-items: center; justify-content: center; width: 38px; height: 44px; color: var(--dsw-alias-brand-primary); background: var(--dsw-alias-bg-layer-1); border-radius: 7px; }
+      .qibi-settings-form { min-width: 0; margin: 0; }
+      .qibi-settings-section { display: flex; flex-direction: column; gap: 12px; padding: 18px 0; border-bottom: 1px solid var(--dsw-alias-border-l1); }
+      .qibi-settings-section-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+      .qibi-settings-section-head > h3 { font-size: 13px; margin: 0; flex: 1 1 auto; }
+      .qibi-settings-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+      .qibi-novel-settings .qibi-input { width: 100%; box-sizing: border-box; }
+      .qibi-setting-hint { font-size: 11px; line-height: 1.6; }
+      .qibi-novel-intro { min-height: 150px; max-height: 40dvh; }
+      .qibi-settings-error { padding: 10px 12px; margin: 10px 0; border: 1px solid var(--dsw-alias-state-error-primary); border-radius: 6px; }
+      .qibi-settings-danger { padding: 14px 0 18px; }
+      .qibi-settings-danger > summary { width: fit-content; color: var(--dsw-alias-state-error-primary); cursor: pointer; font-size: 12px; padding: 5px 0; }
+      .qibi-settings-danger > summary:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 2px; border-radius: 3px; }
+      .qibi-settings-danger > p { margin: 8px 0 12px; line-height: 1.7; }
+      .qibi-settings-save-state { flex: 1 1 160px; }
+      @container qibi-novel-settings (max-width: 520px) {
+        .qibi-settings-grid { grid-template-columns: minmax(0, 1fr); }
+        .qibi-novel-settings-dialog > .qibi-dialog-body { padding: 0 14px; }
       }
 
       /* ---- Writer-friendly continuity and author guidance ---- */
@@ -2629,6 +2822,317 @@ window.__ModuleLoader__.load({
         return /* @__PURE__ */ import_react4.default.createElement("div", { className: "qibi-foreshadow-editor" }, parsed.editable && /* @__PURE__ */ import_react4.default.createElement("fieldset", { className: "qibi-foreshadow-list", disabled }, /* @__PURE__ */ import_react4.default.createElement("legend", { className: "qibi-label" }, t("foreshadowList")), parsed.entries.length === 0 && /* @__PURE__ */ import_react4.default.createElement("p", { className: "qibi-sub" }, t(disabled ? "foreshadowEmptyReadOnly" : "foreshadowEmpty")), parsed.entries.map((entry, index) => /* @__PURE__ */ import_react4.default.createElement("fieldset", { className: "qibi-foreshadow-entry", key: keys[index], disabled }, /* @__PURE__ */ import_react4.default.createElement("legend", { className: "qibi-label" }, t("foreshadowEntry"), " ", index + 1), entry.kind === "string" ? /* @__PURE__ */ import_react4.default.createElement("label", { className: "qibi-field" }, /* @__PURE__ */ import_react4.default.createElement("span", { className: "qibi-label" }, t("foreshadowText")), /* @__PURE__ */ import_react4.default.createElement("input", { className: "qibi-input", value: entry.text, disabled, onChange: (event) => update(index, { text: event.target.value }) })) : /* @__PURE__ */ import_react4.default.createElement("div", { className: "qibi-foreshadow-fields" }, /* @__PURE__ */ import_react4.default.createElement("label", { className: "qibi-field" }, /* @__PURE__ */ import_react4.default.createElement("span", { className: "qibi-label" }, t("foreshadowTitle")), /* @__PURE__ */ import_react4.default.createElement("input", { className: "qibi-input", value: entry.title, disabled, onChange: (event) => update(index, { title: event.target.value }) })), /* @__PURE__ */ import_react4.default.createElement("label", { className: "qibi-field" }, /* @__PURE__ */ import_react4.default.createElement("span", { className: "qibi-label" }, t("foreshadowDetail")), /* @__PURE__ */ import_react4.default.createElement("textarea", { className: "qibi-textarea", rows: 3, value: entry.detail, disabled, onChange: (event) => update(index, { detail: event.target.value }) })), /* @__PURE__ */ import_react4.default.createElement("label", { className: "qibi-field" }, /* @__PURE__ */ import_react4.default.createElement("span", { className: "qibi-label" }, t("foreshadowStatus")), /* @__PURE__ */ import_react4.default.createElement("select", { className: "qibi-select", value: entry.status, disabled, onChange: (event) => update(index, { status: event.target.value }) }, !["open", "resolved"].includes(entry.status) && /* @__PURE__ */ import_react4.default.createElement("option", { value: entry.status }, t("foreshadowStatusUnknown"), " ", entry.status), /* @__PURE__ */ import_react4.default.createElement("option", { value: "open" }, t("foreshadowOpen")), /* @__PURE__ */ import_react4.default.createElement("option", { value: "resolved" }, t("foreshadowResolved")))), /* @__PURE__ */ import_react4.default.createElement("label", { className: "qibi-field" }, /* @__PURE__ */ import_react4.default.createElement("span", { className: "qibi-label" }, t("foreshadowNotes")), /* @__PURE__ */ import_react4.default.createElement("textarea", { className: "qibi-textarea", rows: 2, value: entry.notes, disabled, onChange: (event) => update(index, { notes: event.target.value }) }))), /* @__PURE__ */ import_react4.default.createElement("div", { className: "qibi-foreshadow-actions" }, /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "qibi-btn", disabled, onClick: () => remove(index) }, t("foreshadowDelete"))))), /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "qibi-btn", disabled, onClick: add }, t("foreshadowAdd"))), /* @__PURE__ */ import_react4.default.createElement("div", { className: "qibi-foreshadow-advanced" }, /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "qibi-btn", "aria-expanded": showRaw, "aria-controls": `${hintId}-raw`, onClick: toggleAdvanced }, t("foreshadowAdvanced")), showRaw && /* @__PURE__ */ import_react4.default.createElement("div", { className: "qibi-foreshadow-raw", id: `${hintId}-raw` }, /* @__PURE__ */ import_react4.default.createElement("p", { className: "qibi-sub", id: hintId }, t(parsed.editable ? "foreshadowAdvancedHint" : parsed.valid ? "foreshadowUnsupported" : "foreshadowJsonInvalid")), !parsed.valid && /* @__PURE__ */ import_react4.default.createElement("p", { className: "qibi-foreshadow-error", role: "alert" }, t("foreshadowJsonError"), " ", parsed.error), /* @__PURE__ */ import_react4.default.createElement("label", { className: "qibi-field" }, /* @__PURE__ */ import_react4.default.createElement("span", { className: "qibi-label" }, t("foreshadowRawJson")), /* @__PURE__ */ import_react4.default.createElement("textarea", { className: "qibi-textarea qibi-foreshadow-json", "aria-label": t("foreshadowRawJson"), "aria-describedby": hintId, "aria-invalid": !parsed.valid, rows: 8, value: parsed.raw, readOnly: disabled, onChange: (event) => emit(event.target.value), spellCheck: false })))));
       }
 
+      // src/NovelSettingsFields.jsx
+      var import_react5 = __toESM(require("react"), 1);
+
+      // src/novel-settings.js
+      var NOVEL_FIELDS = ["title", "author", "genre", "status", "intro"];
+      var NOVEL_GENRES = ["\u7384\u5E7B", "\u5947\u5E7B", "\u4ED9\u4FA0", "\u90FD\u5E02", "\u79D1\u5E7B", "\u60AC\u7591", "\u5386\u53F2", "\u73B0\u5B9E", "\u8A00\u60C5", "\u5176\u4ED6"];
+      var NOVEL_STATUSES = ["\u8FDE\u8F7D\u4E2D", "\u5DF2\u5B8C\u672C", "\u6682\u505C\u66F4\u65B0"];
+      function novelForm(novel = {}) {
+        return Object.fromEntries(NOVEL_FIELDS.map((key) => [key, typeof novel[key] === "string" ? novel[key] : ""]));
+      }
+      function novelFormDirty(form, initial) {
+        const before = novelForm(initial), after = novelForm(form);
+        return NOVEL_FIELDS.some((key) => before[key] !== after[key]);
+      }
+      function novelPayload(form, initial) {
+        const value = novelForm(form);
+        const payload = { ...value, title: value.title.trim() };
+        if (initial == null) return payload;
+        const before = novelForm(initial);
+        return Object.fromEntries(Object.entries(payload).filter(([key]) => value[key] !== before[key]));
+      }
+
+      // src/NovelSettingsFields.jsx
+      function SettingField({ label, hint, children }) {
+        return /* @__PURE__ */ import_react5.default.createElement("label", { className: "qibi-field" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-label" }, label), children, hint && /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub qibi-setting-hint" }, hint));
+      }
+      function NovelSettingsFields({ form, initial, formId, mode, writable, busy, error, onField, onSubmit, onDelete, t }) {
+        const listId = (0, import_react5.useId)();
+        const titleRef = (0, import_react5.useRef)(null);
+        const locked = busy || !writable;
+        const titleInvalid = Boolean(error) && !form.title.trim();
+        (0, import_react5.useEffect)(() => {
+          if (titleInvalid && !locked) titleRef.current?.focus();
+        }, [titleInvalid, locked]);
+        const set = (key, value) => {
+          if (!locked) onField(key, value);
+        };
+        const submit = (event) => {
+          event.preventDefault();
+          if (!locked) void onSubmit();
+        };
+        return /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-novel-settings" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-settings-context" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-settings-bookmark", "aria-hidden": "true" }, /* @__PURE__ */ import_react5.default.createElement("svg", { viewBox: "0 0 20 24", width: "20", height: "24", fill: "none" }, /* @__PURE__ */ import_react5.default.createElement("path", { d: "M3 2h14v20l-7-4-7 4V2Z", stroke: "currentColor", strokeWidth: "1.3" }), /* @__PURE__ */ import_react5.default.createElement("path", { d: "M7 7h6M7 11h4", stroke: "currentColor", strokeWidth: "1.3" }))), /* @__PURE__ */ import_react5.default.createElement("div", null, /* @__PURE__ */ import_react5.default.createElement("strong", null, mode === "create" ? t("novelCreateLead") : initial?.title || t("untitled")), /* @__PURE__ */ import_react5.default.createElement("p", { className: "qibi-sub" }, t(mode === "create" ? "novelCreateHint" : "novelSettingsHint"))), mode === "edit" && /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-tag" }, Number(initial?.chapterCount ?? 0).toLocaleString(), " ", t("chapters"), " \xB7 ", Number(initial?.wordCount ?? 0).toLocaleString(), " ", t("words"))), !writable && /* @__PURE__ */ import_react5.default.createElement("p", { className: "qibi-sub", role: "status" }, t("novelReadOnlyHint")), /* @__PURE__ */ import_react5.default.createElement("form", { id: formId, className: "qibi-settings-form", noValidate: true, onSubmit: submit, onKeyDown: (event) => {
+          if (event.isComposing || event.nativeEvent?.isComposing) return;
+          if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+            event.preventDefault();
+            event.stopPropagation();
+            if (!locked) void onSubmit();
+          }
+        } }, /* @__PURE__ */ import_react5.default.createElement("section", { className: "qibi-settings-section", "aria-labelledby": `${listId}-basic` }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-settings-section-head" }, /* @__PURE__ */ import_react5.default.createElement("h3", { id: `${listId}-basic` }, t("novelBasicSection")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, t("novelRequiredHint"))), /* @__PURE__ */ import_react5.default.createElement(SettingField, { label: `${t("novelTitle")} *` }, /* @__PURE__ */ import_react5.default.createElement("input", { ref: titleRef, className: "qibi-input", name: "title", autoComplete: "off", required: true, "aria-invalid": titleInvalid || void 0, "aria-describedby": titleInvalid ? `${listId}-error` : void 0, readOnly: !writable, disabled: busy, value: form.title, placeholder: t("novelTitlePlaceholder"), onChange: (event) => set("title", event.target.value) })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-settings-grid" }, /* @__PURE__ */ import_react5.default.createElement(SettingField, { label: t("novelAuthor"), hint: t("novelAuthorHint") }, /* @__PURE__ */ import_react5.default.createElement("input", { className: "qibi-input", name: "author", readOnly: !writable, disabled: busy, value: form.author, onChange: (event) => set("author", event.target.value), placeholder: t("novelAuthorPlaceholder") })), /* @__PURE__ */ import_react5.default.createElement(SettingField, { label: t("novelGenre"), hint: t("novelCustomValueHint") }, /* @__PURE__ */ import_react5.default.createElement("input", { className: "qibi-input", name: "genre", list: `${listId}-genres`, readOnly: !writable, disabled: busy, value: form.genre, onChange: (event) => set("genre", event.target.value), placeholder: t("novelGenrePlaceholder") }), /* @__PURE__ */ import_react5.default.createElement("datalist", { id: `${listId}-genres` }, NOVEL_GENRES.map((value) => /* @__PURE__ */ import_react5.default.createElement("option", { key: value, value })))), /* @__PURE__ */ import_react5.default.createElement(SettingField, { label: t("novelStatus"), hint: t("novelCustomValueHint") }, /* @__PURE__ */ import_react5.default.createElement("input", { className: "qibi-input", name: "status", list: `${listId}-statuses`, readOnly: !writable, disabled: busy, value: form.status, onChange: (event) => set("status", event.target.value) }), /* @__PURE__ */ import_react5.default.createElement("datalist", { id: `${listId}-statuses` }, NOVEL_STATUSES.map((value) => /* @__PURE__ */ import_react5.default.createElement("option", { key: value, value })))))), /* @__PURE__ */ import_react5.default.createElement("section", { className: "qibi-settings-section", "aria-labelledby": `${listId}-intro` }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-settings-section-head" }, /* @__PURE__ */ import_react5.default.createElement("h3", { id: `${listId}-intro` }, t("novelIntroSection")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, form.intro.length.toLocaleString(), " ", t("charactersCount"))), /* @__PURE__ */ import_react5.default.createElement(SettingField, { label: t("novelIntro"), hint: t("novelIntroHint") }, /* @__PURE__ */ import_react5.default.createElement("textarea", { className: "qibi-textarea qibi-novel-intro", name: "intro", rows: 7, readOnly: !writable, disabled: busy, value: form.intro, placeholder: t("novelIntroPlaceholder"), onChange: (event) => set("intro", event.target.value) }))), error && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-error-text qibi-settings-error", id: `${listId}-error`, role: "alert" }, error)), mode === "edit" && /* @__PURE__ */ import_react5.default.createElement("details", { className: "qibi-settings-danger" }, /* @__PURE__ */ import_react5.default.createElement("summary", null, t("novelDangerSection")), /* @__PURE__ */ import_react5.default.createElement("p", { className: "qibi-sub" }, t("novelDeleteHint")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn danger", disabled: locked, onClick: () => {
+          if (!locked) void onDelete();
+        } }, t("novelDeleteAction"))));
+      }
+
+      // src/OutlineWorkspace.jsx
+      var import_react6 = __toESM(require("react"), 1);
+      var errorText2 = (cause) => cause instanceof Error ? cause.message : String(cause ?? "");
+      var sameId = (left, right) => left != null && right != null && String(left) === String(right);
+      var targetValue = (chapterId) => chapterId == null ? "" : String(chapterId);
+      var draftKey = (draft) => JSON.stringify([draft.title, draft.content, draft.chapterId]);
+      var emptyState = (context) => ({ context, outline: null, editor: null, selectedId: null, busy: false, loading: false, loadError: null, formError: null });
+      var editorFrom = (row) => {
+        const editor = { id: row.id, title: row.title ?? "", content: row.content ?? "", chapterId: targetValue(row.chapterId), token: row.token ?? null, conflict: false };
+        return { ...editor, baseline: draftKey(editor) };
+      };
+      var previewText = (content) => {
+        const characters = Array.from(String(content ?? "").replace(/\s+/g, " ").trim());
+        return characters.length > 180 ? characters.slice(0, 179).join("") + "\u2026" : characters.join("");
+      };
+      function OutlineWorkspace({ call, novelId, chapters = [], chapterId, writable, active, notify = () => {
+      }, t = (key) => key, registerGuard }) {
+        const contextRef = (0, import_react6.useRef)(null);
+        if (!contextRef.current || !Object.is(contextRef.current.novelId, novelId)) {
+          contextRef.current = { novelId, alive: true, busy: false, listSeq: 0 };
+        }
+        const context = contextRef.current;
+        const [stored, setStored] = (0, import_react6.useState)(() => emptyState(context));
+        const state = stored.context === context ? stored : emptyState(context);
+        const stateRef = (0, import_react6.useRef)(state);
+        stateRef.current = state;
+        const accessRef = (0, import_react6.useRef)(writable);
+        accessRef.current = writable;
+        const [filter, setFilter] = (0, import_react6.useState)("all");
+        const [search, setSearch] = (0, import_react6.useState)("");
+        const ids = (0, import_react6.useId)();
+        const titleInputRef = (0, import_react6.useRef)(null);
+        const readerInputRef = (0, import_react6.useRef)(null);
+        const pendingFocus = (0, import_react6.useRef)(null);
+        const [focusEpoch, setFocusEpoch] = (0, import_react6.useState)(0);
+        const requestFocus = (target) => {
+          pendingFocus.current = target;
+          setFocusEpoch((value) => value + 1);
+        };
+        (0, import_react6.useEffect)(() => {
+          if (!active || !pendingFocus.current) return;
+          const element = pendingFocus.current === "reader" ? readerInputRef.current : titleInputRef.current;
+          if (!element) return;
+          pendingFocus.current = null;
+          element.focus({ preventScroll: true });
+          element.scrollIntoView?.({ block: "nearest", inline: "nearest", behavior: "auto" });
+        }, [context, active, focusEpoch]);
+        const current = () => contextRef.current === context && context.alive;
+        const commit = (changes) => {
+          if (!current()) return;
+          const previous = stateRef.current.context === context ? stateRef.current : emptyState(context);
+          const next = { ...previous, ...typeof changes === "function" ? changes(previous) : changes };
+          stateRef.current = next;
+          setStored(next);
+        };
+        const dirty = (editor2) => !!editor2 && draftKey(editor2) !== editor2.baseline;
+        const confirmDiscard = () => !dirty(stateRef.current.editor) || window.confirm(t("outlineDiscardConfirm"));
+        const canNavigate = () => current() && !context.busy;
+        const lock = () => {
+          if (!canNavigate()) return false;
+          context.busy = true;
+          context.listSeq++;
+          commit({ busy: true, loading: false });
+          return true;
+        };
+        const unlock = () => {
+          if (!current()) return;
+          context.busy = false;
+          commit({ busy: false });
+        };
+        const load = async () => {
+          if (!current() || context.busy || novelId == null) return;
+          const sequence = ++context.listSeq;
+          commit({ loading: true });
+          try {
+            const result = await call("outline", { novelId });
+            if (!current() || sequence !== context.listSeq) return;
+            commit({ outline: result.outline, loadError: null });
+          } catch (cause) {
+            if (current() && sequence === context.listSeq) commit({ loadError: errorText2(cause) });
+          } finally {
+            if (current() && sequence === context.listSeq) commit({ loading: false });
+          }
+        };
+        (0, import_react6.useEffect)(() => {
+          context.alive = true;
+          setStored((previous) => previous.context === context ? previous : emptyState(context));
+          setFilter("all");
+          setSearch("");
+          return () => {
+            context.alive = false;
+          };
+        }, [context]);
+        (0, import_react6.useEffect)(() => {
+          if (active) void load();
+        }, [context, active, call]);
+        (0, import_react6.useEffect)(() => {
+          if (!registerGuard) return;
+          return registerGuard(() => {
+            if (!current()) return true;
+            if (context.busy) return false;
+            return !dirty(stateRef.current.editor) || window.confirm(t("outlineDiscardChanges"));
+          });
+        }, [registerGuard, context, t]);
+        const startNew = (target) => {
+          if (!accessRef.current || !canNavigate() || !confirmDiscard()) return;
+          const editor2 = editorFrom({ id: "new", title: "", content: "", chapterId: target });
+          commit({ editor: editor2, selectedId: null, formError: null });
+          requestFocus("title");
+        };
+        const read = (row) => {
+          if (!canNavigate()) return;
+          if (sameId(stateRef.current.selectedId, row.id) && !stateRef.current.editor) {
+            requestFocus("reader");
+            return;
+          }
+          if (!confirmDiscard()) return;
+          commit({ editor: null, selectedId: row.id, formError: null });
+          requestFocus("reader");
+        };
+        const edit = (row) => {
+          if (!accessRef.current || !canNavigate()) return;
+          if (sameId(stateRef.current.editor?.id, row.id)) {
+            requestFocus("title");
+            return;
+          }
+          if (!confirmDiscard()) return;
+          commit({ editor: editorFrom(row), selectedId: row.id, formError: null });
+          requestFocus("title");
+        };
+        const cancel = () => {
+          if (!canNavigate() || !confirmDiscard()) return;
+          commit({ editor: null, formError: null });
+        };
+        const changeDraft = (field, value) => {
+          if (!accessRef.current || !canNavigate() || !stateRef.current.editor) return;
+          commit((previous) => ({ editor: { ...previous.editor, [field]: value }, formError: null }));
+        };
+        const save = async () => {
+          if (!accessRef.current || !canNavigate()) return;
+          const editor2 = stateRef.current.editor;
+          if (!editor2) return;
+          if (!editor2.title.trim() && !editor2.content.trim()) {
+            commit({ formError: t("outlineNeedsText") });
+            return;
+          }
+          if (editor2.chapterId !== "" && !chapters.some((row) => sameId(row.id, editor2.chapterId))) {
+            commit({ formError: t("outlineTargetMissing") });
+            return;
+          }
+          if (!lock()) return;
+          commit({ formError: null });
+          try {
+            const target = editor2.chapterId === "" ? null : Number(editor2.chapterId);
+            const result = editor2.id === "new" ? await call("createOutline", { novelId, title: editor2.title, content: editor2.content, chapterId: target }) : await call("updateOutline", { outlineId: editor2.id, title: editor2.title, content: editor2.content, chapterId: target, expectedToken: editor2.token ?? void 0 });
+            if (!current()) return;
+            commit({ outline: result.outline, editor: null, selectedId: editor2.id === "new" ? result.id : editor2.id, formError: null, loadError: null });
+            notify("info", t("savedNotice"));
+          } catch (cause) {
+            if (!current()) return;
+            if (cause?.code === "ENTITY_CONFLICT") {
+              commit((previous) => ({ editor: { ...previous.editor, conflict: true }, formError: null }));
+            } else {
+              commit({ formError: errorText2(cause) });
+            }
+          } finally {
+            unlock();
+          }
+        };
+        const reloadEditor = async () => {
+          if (!canNavigate()) return;
+          const editor2 = stateRef.current.editor;
+          if (!editor2 || editor2.id === "new" || !window.confirm(t("outlineReloadConfirm")) || !lock()) return;
+          try {
+            const result = await call("outline", { novelId });
+            if (!current()) return;
+            const row = result.outline.find((item) => sameId(item.id, editor2.id));
+            if (!row) {
+              commit({ outline: result.outline, formError: t("outlineEntryMissing"), loadError: null });
+              return;
+            }
+            commit({ outline: result.outline, editor: editorFrom(row), formError: null, loadError: null });
+          } catch (cause) {
+            if (current()) commit({ formError: errorText2(cause) });
+          } finally {
+            unlock();
+          }
+        };
+        const remove = async (row) => {
+          if (!accessRef.current || !canNavigate()) return;
+          if (sameId(stateRef.current.editor?.id, row.id) && !confirmDiscard()) return;
+          if (!window.confirm(t("confirmDeleteOutline")) || !lock()) return;
+          try {
+            const result = await call("deleteOutline", { outlineId: row.id });
+            if (!current()) return;
+            commit((previous) => ({
+              outline: result.outline,
+              editor: sameId(previous.editor?.id, row.id) ? null : previous.editor,
+              selectedId: sameId(previous.selectedId, row.id) ? null : previous.selectedId,
+              loadError: null
+            }));
+            notify("info", t("deletedNotice"));
+          } catch (cause) {
+            if (current()) notify("error", errorText2(cause));
+          } finally {
+            unlock();
+          }
+        };
+        const formKeyDown = (event) => {
+          event.stopPropagation();
+          if (event.isComposing || event.nativeEvent?.isComposing) return;
+          if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+            event.preventDefault();
+            return save();
+          }
+          if (event.key === "Escape") {
+            event.preventDefault();
+            cancel();
+          }
+        };
+        const chapterLabel = (id) => chapters.find((row) => sameId(row.id, id))?.title ?? `#${id}`;
+        const chapterOrder = new Map(chapters.map((row, index) => [String(row.id), index]));
+        const sorted = [...state.outline ?? []].sort((left, right) => {
+          const order = (row) => row.chapterId == null ? -1 : chapterOrder.get(String(row.chapterId)) ?? chapters.length;
+          return order(left) - order(right);
+        });
+        const query = search.trim().toLocaleLowerCase();
+        const visible = sorted.filter((row) => {
+          const matchesTarget = filter === "all" || filter === "master" && row.chapterId == null || filter === "current" && chapterId != null && sameId(row.chapterId, chapterId) || filter.startsWith("chapter:") && sameId(row.chapterId, filter.slice(8));
+          return matchesTarget && (!query || `${row.title ?? ""}
+      ${row.content ?? ""}`.toLocaleLowerCase().includes(query));
+        });
+        const groups = [];
+        for (const row of visible) {
+          const key = row.chapterId == null ? "master" : String(row.chapterId);
+          let group = groups.find((item) => item.key === key);
+          if (!group) {
+            group = { key, label: row.chapterId == null ? t("outlineMaster") : chapterLabel(row.chapterId), rows: [] };
+            groups.push(group);
+          }
+          group.rows.push(row);
+        }
+        const editor = state.editor;
+        const selected = (state.outline ?? []).find((row) => sameId(row.id, state.selectedId));
+        const currentChapter = chapters.find((row) => sameId(row.id, chapterId));
+        const canWrite = !!writable && !state.busy;
+        const missingTarget = editor && editor.chapterId !== "" && !chapters.some((row) => sameId(row.id, editor.chapterId));
+        return /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-pane qibi-outline-workspace", "aria-busy": state.busy || state.loading, onKeyDown: (event) => event.stopPropagation() }, /* @__PURE__ */ import_react6.default.createElement("header", { className: "qibi-outline-header" }, /* @__PURE__ */ import_react6.default.createElement("div", null, /* @__PURE__ */ import_react6.default.createElement("h2", { className: "qibi-outline-heading" }, t("tabOutline")), /* @__PURE__ */ import_react6.default.createElement("p", { className: "qibi-sub" }, t("outlineWorkspaceHint"))), /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-actions qibi-outline-create-actions" }, /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !canWrite, onClick: () => startNew(null) }, t("outlineNewMaster")), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !canWrite || chapters.length === 0, onClick: () => startNew(currentChapter?.id ?? chapters[0]?.id) }, t("outlineNewChapter")))), !writable && /* @__PURE__ */ import_react6.default.createElement("p", { className: "qibi-sub qibi-outline-readonly", role: "status" }, t("outlineReadOnlyHint")), /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-outline-columns" }, /* @__PURE__ */ import_react6.default.createElement("section", { className: "qibi-outline-editor", "aria-labelledby": `${ids}-editor` }, editor ? /* @__PURE__ */ import_react6.default.createElement("form", { className: "qibi-form qibi-outline-form", onSubmit: (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          return save();
+        }, onKeyDown: formKeyDown }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react6.default.createElement("h3", { id: `${ids}-editor` }, t(editor.id === "new" ? "outlineCreateHeading" : "outlineEditHeading")), /* @__PURE__ */ import_react6.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react6.default.createElement("span", { className: "qibi-sub", role: "status" }, t(state.busy ? "outlineWorking" : dirty(editor) ? "outlineDraftUnsaved" : "outlineDraftUnchanged"))), /* @__PURE__ */ import_react6.default.createElement("fieldset", { className: "qibi-form-lock qibi-outline-fields", disabled: state.busy }, /* @__PURE__ */ import_react6.default.createElement("label", { className: "qibi-field", htmlFor: `${ids}-target` }, /* @__PURE__ */ import_react6.default.createElement("span", { className: "qibi-label" }, t("outlineTarget")), /* @__PURE__ */ import_react6.default.createElement("select", { id: `${ids}-target`, name: "outline-target", className: "qibi-select", value: editor.chapterId, disabled: !canWrite, onChange: (event) => changeDraft("chapterId", event.target.value) }, /* @__PURE__ */ import_react6.default.createElement("option", { value: "" }, t("outlineMaster")), missingTarget && /* @__PURE__ */ import_react6.default.createElement("option", { value: editor.chapterId }, chapterLabel(editor.chapterId), " \xB7 ", t("outlineTargetUnavailable")), chapters.map((row) => /* @__PURE__ */ import_react6.default.createElement("option", { key: row.id, value: String(row.id) }, row.title)))), /* @__PURE__ */ import_react6.default.createElement("label", { className: "qibi-field", htmlFor: `${ids}-title` }, /* @__PURE__ */ import_react6.default.createElement("span", { className: "qibi-label" }, t("outlineTitle")), /* @__PURE__ */ import_react6.default.createElement("input", { ref: titleInputRef, id: `${ids}-title`, name: "outline-title", className: "qibi-input", value: editor.title, readOnly: !writable, disabled: state.busy, "aria-describedby": `${ids}-form-hint`, "aria-invalid": !!state.formError, onChange: (event) => changeDraft("title", event.target.value) })), /* @__PURE__ */ import_react6.default.createElement("label", { className: "qibi-field", htmlFor: `${ids}-content` }, /* @__PURE__ */ import_react6.default.createElement("span", { className: "qibi-label" }, t("outlineContent")), /* @__PURE__ */ import_react6.default.createElement("textarea", { id: `${ids}-content`, name: "outline-content", className: "qibi-textarea qibi-outline-textarea", rows: 12, value: editor.content, readOnly: !writable, disabled: state.busy, "aria-describedby": `${ids}-form-hint`, "aria-invalid": !!state.formError, onChange: (event) => changeDraft("content", event.target.value) }))), /* @__PURE__ */ import_react6.default.createElement("p", { id: `${ids}-form-hint`, className: "qibi-sub" }, t("outlineFormHint")), editor.conflict && /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-outline-conflict", role: "alert" }, t("outlineConflictHint")), state.formError && /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-outline-error", role: "alert" }, state.formError), /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-actions qibi-outline-form-actions" }, /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: !canWrite, onClick: save }, t("save")), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: state.busy, onClick: cancel }, t("cancel")), editor.id !== "new" && /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "qibi-btn small qibi-outline-reload", disabled: state.busy, onClick: reloadEditor }, t("outlineReloadDiscard")))) : selected ? /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-outline-reader" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react6.default.createElement("h3", { id: `${ids}-editor` }, selected.title || t("untitled")), /* @__PURE__ */ import_react6.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !canWrite, onClick: () => edit(selected) }, t("edit"))), /* @__PURE__ */ import_react6.default.createElement("p", { className: "qibi-sub" }, selected.chapterId == null ? t("outlineMaster") : chapterLabel(selected.chapterId)), /* @__PURE__ */ import_react6.default.createElement("label", { className: "qibi-field", htmlFor: `${ids}-reader` }, /* @__PURE__ */ import_react6.default.createElement("span", { className: "qibi-label" }, t("outlineContent")), /* @__PURE__ */ import_react6.default.createElement("textarea", { ref: readerInputRef, id: `${ids}-reader`, name: "outline-reader", className: "qibi-textarea qibi-outline-textarea", rows: 12, readOnly: true, disabled: state.busy, value: selected.content ?? "" }))) : /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-empty qibi-outline-reader-empty" }, /* @__PURE__ */ import_react6.default.createElement("h3", { id: `${ids}-editor` }, t("outlineSelectHeading")), /* @__PURE__ */ import_react6.default.createElement("span", null, t("outlineSelectHint")))), /* @__PURE__ */ import_react6.default.createElement("section", { className: "qibi-outline-list", "aria-labelledby": `${ids}-list` }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-outline-list-heading" }, /* @__PURE__ */ import_react6.default.createElement("h3", { id: `${ids}-list` }, t("outlineEntries")), /* @__PURE__ */ import_react6.default.createElement("span", { className: "qibi-sub qibi-outline-count", role: "status" }, visible.length, " / ", state.outline?.length ?? 0, " ", t("outlineCountUnit"))), /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-outline-filters" }, /* @__PURE__ */ import_react6.default.createElement("label", { className: "qibi-field", htmlFor: `${ids}-filter` }, /* @__PURE__ */ import_react6.default.createElement("span", { className: "qibi-label" }, t("outlineFilter")), /* @__PURE__ */ import_react6.default.createElement("select", { id: `${ids}-filter`, name: "outline-filter", className: "qibi-select", value: filter, disabled: state.busy, onChange: (event) => {
+          if (canNavigate()) setFilter(event.target.value);
+        } }, /* @__PURE__ */ import_react6.default.createElement("option", { value: "all" }, t("outlineFilterAll")), /* @__PURE__ */ import_react6.default.createElement("option", { value: "master" }, t("outlineMaster")), /* @__PURE__ */ import_react6.default.createElement("option", { value: "current", disabled: !currentChapter }, t("outlineFilterCurrent")), chapters.map((row) => /* @__PURE__ */ import_react6.default.createElement("option", { key: row.id, value: `chapter:${row.id}` }, row.title)))), /* @__PURE__ */ import_react6.default.createElement("label", { className: "qibi-field", htmlFor: `${ids}-search` }, /* @__PURE__ */ import_react6.default.createElement("span", { className: "qibi-label" }, t("outlineSearch")), /* @__PURE__ */ import_react6.default.createElement("input", { id: `${ids}-search`, name: "outline-search", type: "search", className: "qibi-input", value: search, disabled: state.busy, placeholder: t("outlineSearchHint"), onChange: (event) => {
+          if (canNavigate()) setSearch(event.target.value);
+        } })), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "qibi-btn small qibi-outline-refresh", disabled: state.busy, onClick: load }, t("outlineRefresh"))), state.loadError && /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-outline-error", role: "alert" }, /* @__PURE__ */ import_react6.default.createElement("strong", null, t("loadFailed")), /* @__PURE__ */ import_react6.default.createElement("p", null, state.loadError), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: state.busy, onClick: load }, t("retry"))), state.loading && /* @__PURE__ */ import_react6.default.createElement("p", { className: "qibi-sub", role: "status" }, t("loading")), state.outline !== null && visible.length === 0 && /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react6.default.createElement("strong", null, t(state.outline.length === 0 ? "emptyOutline" : "outlineNoMatches")), /* @__PURE__ */ import_react6.default.createElement("span", null, t(state.outline.length === 0 ? "emptyOutlineHint" : "outlineNoMatchesHint"))), groups.map((group) => /* @__PURE__ */ import_react6.default.createElement("section", { key: group.key, className: "qibi-outline-group", "aria-label": group.label }, /* @__PURE__ */ import_react6.default.createElement("h4", { className: "qibi-outline-group-heading" }, group.label), group.rows.map((row) => /* @__PURE__ */ import_react6.default.createElement("article", { key: row.id, "data-outline-id": row.id, className: `qibi-card qibi-outline-card${sameId(state.selectedId, row.id) ? " qibi-outline-card-selected" : ""}` }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-outline-card-heading" }, /* @__PURE__ */ import_react6.default.createElement("h4", null, row.title || t("untitled")), /* @__PURE__ */ import_react6.default.createElement("span", { className: "qibi-tag" }, group.label)), /* @__PURE__ */ import_react6.default.createElement("p", { className: "qibi-outline-preview" }, previewText(row.content) || "\u2014"), /* @__PURE__ */ import_react6.default.createElement("div", { className: "qibi-actions qibi-outline-card-actions" }, /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", "data-outline-action": "read", className: "qibi-btn small", disabled: state.busy, "aria-expanded": sameId(state.selectedId, row.id) && !editor, "aria-controls": `${ids}-editor`, onClick: () => read(row) }, t("outlineReadFull")), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", "data-outline-action": "edit", className: "qibi-btn small", disabled: !canWrite, onClick: () => edit(row) }, t("edit")), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", "data-outline-action": "delete", className: "qibi-btn small danger qibi-outline-delete", disabled: !canWrite, onClick: () => remove(row) }, t("delete"))))))))));
+      }
+
       // src/panel.jsx
       var PANEL_ID = "qibi";
       var API_PATH = "api/qibi";
@@ -2646,7 +3150,7 @@ window.__ModuleLoader__.load({
       var CHARACTER_FIELDS2 = ["name", "alias", "role", "gender", "age", "appearance", "personality", "background"];
       var STATE_FIELDS = ["location", "realm", "inventory", "statusEffects", "recentEvents", "keyRelationships", "notes"];
       function QibiIcon({ size = 16 }) {
-        return /* @__PURE__ */ import_react5.default.createElement("svg", { viewBox: "0 0 24 24", width: size, height: size, fill: "none", "aria-hidden": "true", focusable: "false" }, /* @__PURE__ */ import_react5.default.createElement("path", { d: "M4 20.2c3.1 1 6 .7 8.6-.9", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", opacity: ".55" }), /* @__PURE__ */ import_react5.default.createElement(
+        return /* @__PURE__ */ import_react7.default.createElement("svg", { viewBox: "0 0 24 24", width: size, height: size, fill: "none", "aria-hidden": "true", focusable: "false" }, /* @__PURE__ */ import_react7.default.createElement("path", { d: "M4 20.2c3.1 1 6 .7 8.6-.9", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", opacity: ".55" }), /* @__PURE__ */ import_react7.default.createElement(
           "path",
           {
             d: "M14.6 3.5a2.4 2.4 0 0 1 3.3 0l2.6 2.6a2.4 2.4 0 0 1 0 3.3l-6.8 6.8-6.2 1.6 1.6-6.2 6.9-6.9Z",
@@ -2654,7 +3158,7 @@ window.__ModuleLoader__.load({
             strokeWidth: "1.6",
             strokeLinejoin: "round"
           }
-        ), /* @__PURE__ */ import_react5.default.createElement("path", { d: "M13.1 5 19 10.9", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round" }), /* @__PURE__ */ import_react5.default.createElement("circle", { cx: "12.2", cy: "13.4", r: "1.15", fill: "currentColor" }));
+        ), /* @__PURE__ */ import_react7.default.createElement("path", { d: "M13.1 5 19 10.9", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round" }), /* @__PURE__ */ import_react7.default.createElement("circle", { cx: "12.2", cy: "13.4", r: "1.15", fill: "currentColor" }));
       }
       function rpcError(failure) {
         const error = new Error(failure?.message ?? "\u672A\u77E5\u9519\u8BEF");
@@ -2759,20 +3263,20 @@ window.__ModuleLoader__.load({
         return Boolean(entry && (entry.previewOnly === true || entry.mode === "continue" && entry.forceRewrite === true && typeof entry.complete !== "boolean"));
       }
       function AiDrawer({ call, novelId, chapterId, historyScope, draft, selection, initialMode, writable, info, modelLoading = false, hasOutline, t, notify, onApply, onClose }) {
-        const [reasoningEffort, setReasoningEffort] = (0, import_react5.useState)(() => validReasoningPreference(info, readJson(AI_REASONING_KEY, {})?.[info?.model]));
-        const [mode, setMode] = (0, import_react5.useState)("draft");
-        const [extra, setExtra] = (0, import_react5.useState)("");
-        const [busy, setBusy] = (0, import_react5.useState)(false);
-        const [preview, setPreview] = (0, import_react5.useState)("");
-        const [error, setError] = (0, import_react5.useState)("");
-        const [complete, setComplete] = (0, import_react5.useState)(false);
-        const [truncated, setTruncated] = (0, import_react5.useState)(false);
-        const [forceRewrite, setForceRewrite] = (0, import_react5.useState)(false);
-        const [history, setHistory] = (0, import_react5.useState)(() => listAiDrafts(chapterId, historyScope));
-        const [historyEntry, setHistoryEntry] = (0, import_react5.useState)(null);
+        const [reasoningEffort, setReasoningEffort] = (0, import_react7.useState)(() => validReasoningPreference(info, readJson(AI_REASONING_KEY, {})?.[info?.model]));
+        const [mode, setMode] = (0, import_react7.useState)("draft");
+        const [extra, setExtra] = (0, import_react7.useState)("");
+        const [busy, setBusy] = (0, import_react7.useState)(false);
+        const [preview, setPreview] = (0, import_react7.useState)("");
+        const [error, setError] = (0, import_react7.useState)("");
+        const [complete, setComplete] = (0, import_react7.useState)(false);
+        const [truncated, setTruncated] = (0, import_react7.useState)(false);
+        const [forceRewrite, setForceRewrite] = (0, import_react7.useState)(false);
+        const [history, setHistory] = (0, import_react7.useState)(() => listAiDrafts(chapterId, historyScope));
+        const [historyEntry, setHistoryEntry] = (0, import_react7.useState)(null);
         const effectiveSelection = historyEntry ? restoreHistorySelection(historyEntry, draft, chapterId) : selection;
         const historyPreviewOnly = previewOnlyHistory(historyEntry);
-        const abortRef = (0, import_react5.useRef)(null);
+        const abortRef = (0, import_react7.useRef)(null);
         const modes2 = info?.modes ?? [];
         const modeInfo = modes2.find((row) => row.id === mode);
         const isSelectionMode = modeInfo?.group === "selection";
@@ -2780,7 +3284,7 @@ window.__ModuleLoader__.load({
         const reasoning = info?.reasoning;
         const inheritedEffort = reasoning?.selectedEffort ?? reasoning?.defaultEffort;
         const inheritedRow = reasoning?.efforts?.find((row) => row.id === inheritedEffort);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           setReasoningEffort(validReasoningPreference(info, readJson(AI_REASONING_KEY, {})?.[info?.model]));
         }, [info]);
         const chooseReasoning = (event) => {
@@ -2788,19 +3292,19 @@ window.__ModuleLoader__.load({
           setReasoningEffort(next);
           if (info?.model) writeJson(AI_REASONING_KEY, { ...readJson(AI_REASONING_KEY, {}), [info.model]: next });
         };
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (selection) setMode(initialMode || "polish-selection");
           else setMode((prev) => modes2.some((row) => row.id === prev) ? prev : "draft");
         }, [selection, initialMode]);
-        (0, import_react5.useEffect)(() => () => {
+        (0, import_react7.useEffect)(() => () => {
           abortRef.current?.abort?.();
         }, []);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           setHistory(listAiDrafts(chapterId, historyScope));
         }, [chapterId, historyScope]);
-        const closeRef = (0, import_react5.useRef)(onClose);
+        const closeRef = (0, import_react7.useRef)(onClose);
         closeRef.current = onClose;
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           const onKey = (event) => {
             if (event.key !== "Escape") return;
             event.stopPropagation();
@@ -2915,7 +3419,7 @@ window.__ModuleLoader__.load({
             notify("error", causeText(cause));
           }
         };
-        return /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-ai-overlay", onClick: onClose }), /* @__PURE__ */ import_react5.default.createElement(
+        return /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-ai-overlay", onClick: onClose }), /* @__PURE__ */ import_react7.default.createElement(
           "div",
           {
             className: "qibi-ai-drawer",
@@ -2924,14 +3428,14 @@ window.__ModuleLoader__.load({
             "aria-label": t("aiTitle"),
             onClick: (event) => event.stopPropagation()
           },
-          /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-ai-head" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, t("aiTitle")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small qibi-ai-close", onClick: onClose, title: t("close"), "aria-label": t("close") }, t("close"))),
-          /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row qibi-ai-model-settings", "aria-busy": modelLoading }, /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("aiGenerationModel") }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub qibi-ai-model", title: info?.model ?? "" }, modelLoading ? t("aiModelLoading") : info?.model || t("aiUnavailable"))), /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("aiReasoning") }, /* @__PURE__ */ import_react5.default.createElement("select", { className: "qibi-select", "aria-label": t("aiReasoning"), value: validReasoningPreference(info, reasoningEffort), onChange: chooseReasoning, disabled: busy || modelLoading || !reasoning?.supported }, /* @__PURE__ */ import_react5.default.createElement("option", { value: "" }, t("aiReasoningFollow"), inheritedRow ? ` \xB7 ${reasoningLabel2(inheritedRow, t)}` : ""), (reasoning?.efforts ?? []).map((row) => /* @__PURE__ */ import_react5.default.createElement("option", { key: row.id, value: row.id, title: row.description }, reasoningLabel2(row, t)))))),
-          !modelLoading && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, reasoning?.supported ? t("aiReasoningHint") : reasoning?.known ? t("aiReasoningUnsupported") : t("aiReasoningUnknown")),
-          chapterId != null && hasOutline === false && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-ai-note" }, t("aiNoOutline")),
-          isSelectionMode && effectiveSelection && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-ai-selection" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, t("aiSelectionLabel")), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-ai-selected" }, "\u201C", effectiveSelection.text.slice(0, 120), effectiveSelection.text.length > 120 ? "\u2026" : "", "\u201D")),
-          isSelectionMode && !effectiveSelection && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-ai-note" }, t("aiHistorySelectionMissing")),
-          historyPreviewOnly && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-ai-note" }, t(historyEntry?.legacyScope ? "aiHistoryLegacyScope" : "aiHistoryLegacyContinuation")),
-          /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-ai-modes" }, ["chapter", "selection", "report"].map((group) => /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-ai-mode-group", key: group }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, t(group === "chapter" ? "aiGroupChapter" : group === "selection" ? "aiGroupSelection" : "aiGroupReport")), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-actions" }, modes2.filter((row) => row.group === group).map((row) => /* @__PURE__ */ import_react5.default.createElement(
+          /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-ai-head" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, t("aiTitle")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small qibi-ai-close", onClick: onClose, title: t("close"), "aria-label": t("close") }, t("close"))),
+          /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row qibi-ai-model-settings", "aria-busy": modelLoading }, /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("aiGenerationModel") }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub qibi-ai-model", title: info?.model ?? "" }, modelLoading ? t("aiModelLoading") : info?.model || t("aiUnavailable"))), /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("aiReasoning") }, /* @__PURE__ */ import_react7.default.createElement("select", { className: "qibi-select", "aria-label": t("aiReasoning"), value: validReasoningPreference(info, reasoningEffort), onChange: chooseReasoning, disabled: busy || modelLoading || !reasoning?.supported }, /* @__PURE__ */ import_react7.default.createElement("option", { value: "" }, t("aiReasoningFollow"), inheritedRow ? ` \xB7 ${reasoningLabel2(inheritedRow, t)}` : ""), (reasoning?.efforts ?? []).map((row) => /* @__PURE__ */ import_react7.default.createElement("option", { key: row.id, value: row.id, title: row.description }, reasoningLabel2(row, t)))))),
+          !modelLoading && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub" }, reasoning?.supported ? t("aiReasoningHint") : reasoning?.known ? t("aiReasoningUnsupported") : t("aiReasoningUnknown")),
+          chapterId != null && hasOutline === false && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-ai-note" }, t("aiNoOutline")),
+          isSelectionMode && effectiveSelection && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-ai-selection" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, t("aiSelectionLabel")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-ai-selected" }, "\u201C", effectiveSelection.text.slice(0, 120), effectiveSelection.text.length > 120 ? "\u2026" : "", "\u201D")),
+          isSelectionMode && !effectiveSelection && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-ai-note" }, t("aiHistorySelectionMissing")),
+          historyPreviewOnly && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-ai-note" }, t(historyEntry?.legacyScope ? "aiHistoryLegacyScope" : "aiHistoryLegacyContinuation")),
+          /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-ai-modes" }, ["chapter", "selection", "report"].map((group) => /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-ai-mode-group", key: group }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, t(group === "chapter" ? "aiGroupChapter" : group === "selection" ? "aiGroupSelection" : "aiGroupReport")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-actions" }, modes2.filter((row) => row.group === group).map((row) => /* @__PURE__ */ import_react7.default.createElement(
             "button",
             {
               type: "button",
@@ -2947,8 +3451,8 @@ window.__ModuleLoader__.load({
             },
             row.label
           )))))),
-          /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("aiExtra") }, /* @__PURE__ */ import_react5.default.createElement("textarea", { className: "qibi-textarea", rows: 2, value: extra, onChange: (event) => setExtra(event.target.value), placeholder: t("aiExtraHint") })),
-          /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-presets" }, AI_PRESETS.map((key) => /* @__PURE__ */ import_react5.default.createElement(
+          /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("aiExtra") }, /* @__PURE__ */ import_react7.default.createElement("textarea", { className: "qibi-textarea", rows: 2, value: extra, onChange: (event) => setExtra(event.target.value), placeholder: t("aiExtraHint") })),
+          /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-presets" }, AI_PRESETS.map((key) => /* @__PURE__ */ import_react7.default.createElement(
             "button",
             {
               type: "button",
@@ -2958,12 +3462,12 @@ window.__ModuleLoader__.load({
             },
             t(key)
           ))),
-          /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-actions" }, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || modelLoading || !info?.available || isSelectionMode && !effectiveSelection, onClick: () => void generate() }, busy ? t("aiGenerating") : t("aiGenerate")), busy && /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: cancel }, t("cancel")), preview && !busy && !complete && !historyPreviewOnly && /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: modelLoading, onClick: () => void continueWriting() }, t("aiContinue")), preview && !busy && /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void copy() }, t("exportCopy")), isReportMode ? modeInfo?.saveAsOutline === false ? null : /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || !complete || historyPreviewOnly, onClick: () => onApply({ sourceNovelId: novelId, sourceChapterId: chapterId, mode, modeLabel: modeInfo?.label, text: preview, report: true }) }, t("aiSaveOutline")) : /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: !writable || !complete || historyPreviewOnly || isSelectionMode && !effectiveSelection || historyEntry && !modes2.some((row) => row.id === historyEntry.mode), onClick: () => onApply({ sourceNovelId: novelId, sourceChapterId: chapterId, mode, modeLabel: modeInfo?.label, text: preview, rewrite: forceRewrite ? true : modeInfo?.rewrite !== false, selection: isSelectionMode ? effectiveSelection : null }) }, t("aiApply"))), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, preview ? `${preview.replace(/\s/g, "").length} ${t("words")}` : "")),
-          !info?.available && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-error-text" }, t("aiUnavailable")),
-          preview && !busy && !complete && !historyPreviewOnly && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-error-text" }, truncated ? t("aiTruncated") : t("aiIncomplete")),
-          error && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-error-text" }, error),
-          /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-ai-preview" }, preview ? /* @__PURE__ */ import_react5.default.createElement("pre", { className: "qibi-pre" }, preview) : /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, busy ? t("aiWaiting") : t("aiPreviewHint"))),
-          history.length > 0 && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-drafts" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, t("aiHistory"), " \xB7 ", history.length), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement(
+          /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-actions" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || modelLoading || !info?.available || isSelectionMode && !effectiveSelection, onClick: () => void generate() }, busy ? t("aiGenerating") : t("aiGenerate")), busy && /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: cancel }, t("cancel")), preview && !busy && !complete && !historyPreviewOnly && /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: modelLoading, onClick: () => void continueWriting() }, t("aiContinue")), preview && !busy && /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void copy() }, t("exportCopy")), isReportMode ? modeInfo?.saveAsOutline === false ? null : /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || !complete || historyPreviewOnly, onClick: () => onApply({ sourceNovelId: novelId, sourceChapterId: chapterId, mode, modeLabel: modeInfo?.label, text: preview, report: true }) }, t("aiSaveOutline")) : /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: !writable || !complete || historyPreviewOnly || isSelectionMode && !effectiveSelection || historyEntry && !modes2.some((row) => row.id === historyEntry.mode), onClick: () => onApply({ sourceNovelId: novelId, sourceChapterId: chapterId, mode, modeLabel: modeInfo?.label, text: preview, rewrite: forceRewrite ? true : modeInfo?.rewrite !== false, selection: isSelectionMode ? effectiveSelection : null }) }, t("aiApply"))), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, preview ? `${preview.replace(/\s/g, "").length} ${t("words")}` : "")),
+          !info?.available && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-error-text" }, t("aiUnavailable")),
+          preview && !busy && !complete && !historyPreviewOnly && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-error-text" }, truncated ? t("aiTruncated") : t("aiIncomplete")),
+          error && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-error-text" }, error),
+          /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-ai-preview" }, preview ? /* @__PURE__ */ import_react7.default.createElement("pre", { className: "qibi-pre" }, preview) : /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub" }, busy ? t("aiWaiting") : t("aiPreviewHint"))),
+          history.length > 0 && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-drafts" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, t("aiHistory"), " \xB7 ", history.length), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement(
             "button",
             {
               type: "button",
@@ -2974,7 +3478,7 @@ window.__ModuleLoader__.load({
               }
             },
             t("aiHistoryClear")
-          )), history.map((item) => /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-draft", key: item.id }, /* @__PURE__ */ import_react5.default.createElement(
+          )), history.map((item) => /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-draft", key: item.id }, /* @__PURE__ */ import_react7.default.createElement(
             "button",
             {
               type: "button",
@@ -2991,9 +3495,9 @@ window.__ModuleLoader__.load({
                 setForceRewrite(item.forceRewrite === true);
               }
             },
-            /* @__PURE__ */ import_react5.default.createElement("span", null, item.label || item.mode),
-            /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, new Date(item.at).toLocaleString(), " \xB7 ", item.text.replace(/\s/g, "").length, " ", t("words"))
-          ), /* @__PURE__ */ import_react5.default.createElement(
+            /* @__PURE__ */ import_react7.default.createElement("span", null, item.label || item.mode),
+            /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, new Date(item.at).toLocaleString(), " \xB7 ", item.text.replace(/\s/g, "").length, " ", t("words"))
+          ), /* @__PURE__ */ import_react7.default.createElement(
             "button",
             {
               type: "button",
@@ -3181,16 +3685,16 @@ window.__ModuleLoader__.load({
         return cause instanceof Error ? cause.message : String(cause);
       }
       function Field2({ label, children }) {
-        return /* @__PURE__ */ import_react5.default.createElement("label", { className: "qibi-field" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-label" }, label), children);
+        return /* @__PURE__ */ import_react7.default.createElement("label", { className: "qibi-field" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-label" }, label), children);
       }
-      function Dialog({ title, onClose, children, footer, busy = false }) {
-        const element = (0, import_react5.useRef)(null);
-        const close = (0, import_react5.useRef)(onClose);
-        const locked = (0, import_react5.useRef)(busy);
+      function Dialog({ title, onClose, children, footer, busy = false, className = "" }) {
+        const element = (0, import_react7.useRef)(null);
+        const close = (0, import_react7.useRef)(onClose);
+        const locked = (0, import_react7.useRef)(busy);
         close.current = onClose;
         locked.current = busy;
-        const titleId = (0, import_react5.useId)();
-        (0, import_react5.useEffect)(() => {
+        const titleId = (0, import_react7.useId)();
+        (0, import_react7.useEffect)(() => {
           const trigger = document.activeElement;
           element.current?.focus();
           const onKey = (event) => {
@@ -3200,7 +3704,7 @@ window.__ModuleLoader__.load({
               if (!locked.current) close.current();
             }
             if (event.key !== "Tab" || !element.current) return;
-            const controls = Array.from(element.current.querySelectorAll('button, input, textarea, select, [tabindex="0"]')).filter((node) => !node.matches(":disabled") && node.getClientRects().length);
+            const controls = Array.from(element.current.querySelectorAll('button, input, textarea, select, summary, a[href], [tabindex="0"]')).filter((node) => !node.matches(":disabled") && node.getClientRects().length);
             const first = controls[0], last = controls[controls.length - 1];
             if (!first) {
               event.preventDefault();
@@ -3219,131 +3723,19 @@ window.__ModuleLoader__.load({
             if (trigger?.isConnected) trigger.focus();
           };
         }, []);
-        return /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-overlay", onMouseDown: (event) => {
+        return /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-overlay", onMouseDown: (event) => {
           if (event.target === event.currentTarget && !busy) onClose();
-        } }, /* @__PURE__ */ import_react5.default.createElement("div", { ref: element, className: "qibi-dialog", role: "dialog", "aria-modal": "true", "aria-labelledby": titleId, "aria-busy": busy, tabIndex: -1 }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-dialog-head" }, /* @__PURE__ */ import_react5.default.createElement("strong", { id: titleId }, title), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy, "aria-label": title + " \xB7 \u5173\u95ED", onClick: onClose }, "\xD7")), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-dialog-body" }, /* @__PURE__ */ import_react5.default.createElement("fieldset", { className: "qibi-form-lock", disabled: busy }, children)), footer ? /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-dialog-foot" }, footer) : null));
+        } }, /* @__PURE__ */ import_react7.default.createElement("div", { ref: element, className: `qibi-dialog${className ? ` ${className}` : ""}`, role: "dialog", "aria-modal": "true", "aria-labelledby": titleId, "aria-busy": busy, tabIndex: -1 }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-dialog-head" }, /* @__PURE__ */ import_react7.default.createElement("strong", { id: titleId }, title), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy, "aria-label": title + " \xB7 \u5173\u95ED", onClick: onClose }, "\xD7")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-dialog-body" }, /* @__PURE__ */ import_react7.default.createElement("fieldset", { className: "qibi-form-lock", disabled: busy }, children)), footer ? /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-dialog-foot" }, footer) : null));
       }
       function LoadError({ message, onRetry, t }) {
-        return /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, t("loadFailed")), /* @__PURE__ */ import_react5.default.createElement("span", null, message), /* @__PURE__ */ import_react5.default.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn", onClick: onRetry }, t("retry"))));
-      }
-      function OutlineTab({ call, novelId, chapters, writable, active, notify, t }) {
-        const [outline, setOutline] = (0, import_react5.useState)(null);
-        const [editing, setEditing] = (0, import_react5.useState)(null);
-        const [form, setForm] = (0, import_react5.useState)({ title: "", content: "", chapterId: "" });
-        const [busy, setBusy] = (0, import_react5.useState)(false);
-        const [error, setError] = (0, import_react5.useState)(null);
-        const [editToken, setEditToken] = (0, import_react5.useState)(null);
-        const load = (0, import_react5.useCallback)(async () => {
-          if (novelId === null) return;
-          try {
-            const result = await call("outline", { novelId });
-            setOutline(result.outline);
-            setError(null);
-          } catch (cause) {
-            setError(causeText(cause));
-          }
-        }, [call, novelId]);
-        (0, import_react5.useEffect)(() => {
-          setOutline(null);
-          setEditing(null);
-          setForm({ title: "", content: "", chapterId: "" });
-          setError(null);
-        }, [novelId]);
-        (0, import_react5.useEffect)(() => {
-          if (active) void load();
-        }, [active, load]);
-        const startNew = () => {
-          setEditing("new");
-          setEditToken(null);
-          setForm({ title: "", content: "", chapterId: "" });
-        };
-        const startEdit = (row) => {
-          setEditing(row.id);
-          setEditToken(row.token ?? null);
-          setForm({ title: row.title, content: row.content, chapterId: row.chapterId === null ? "" : String(row.chapterId) });
-        };
-        const cancel = () => {
-          setEditing(null);
-          setEditToken(null);
-          setForm({ title: "", content: "", chapterId: "" });
-        };
-        const submit = async () => {
-          if (busy) return;
-          if (!form.title.trim() && !form.content.trim()) {
-            notify("error", t("titleRequired"));
-            return;
-          }
-          setBusy(true);
-          try {
-            const chapterId = form.chapterId === "" ? null : Number(form.chapterId);
-            if (editing === "new") {
-              await call("createOutline", { novelId, title: form.title, content: form.content, chapterId });
-            } else {
-              await call("updateOutline", {
-                outlineId: editing,
-                title: form.title,
-                content: form.content,
-                chapterId,
-                expectedToken: editToken ?? void 0
-              });
-            }
-            await load();
-            cancel();
-            notify("info", t("savedNotice"));
-          } catch (cause) {
-            if (cause?.code === "ENTITY_CONFLICT") {
-              notify("error", t("entityConflict"));
-            } else {
-              notify("error", causeText(cause));
-            }
-          } finally {
-            setBusy(false);
-          }
-        };
-        const remove = async (row) => {
-          if (!window.confirm(t("confirmDeleteOutline"))) return;
-          try {
-            await call("deleteOutline", { outlineId: row.id });
-            await load();
-            notify("info", t("deletedNotice"));
-          } catch (cause) {
-            notify("error", causeText(cause));
-          }
-        };
-        const chapterLabel = (id) => chapters.find((row) => row.id === id)?.title ?? `#${id}`;
-        return /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-pane" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-section-title" }, t("tabOutline")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: startNew }, "\uFF0B ", t("outlineNew"))), editing !== null && /* @__PURE__ */ import_react5.default.createElement("fieldset", { className: "qibi-form-lock", disabled: busy || !writable }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-form" }, /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("outlineTarget") }, /* @__PURE__ */ import_react5.default.createElement(
-          "select",
-          {
-            className: "qibi-select",
-            value: form.chapterId,
-            onChange: (event) => setForm((current) => ({ ...current, chapterId: event.target.value }))
-          },
-          /* @__PURE__ */ import_react5.default.createElement("option", { value: "" }, t("outlineMaster")),
-          chapters.map((row) => /* @__PURE__ */ import_react5.default.createElement("option", { key: row.id, value: String(row.id) }, row.title))
-        )), /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("outlineTitle") }, /* @__PURE__ */ import_react5.default.createElement(
-          "input",
-          {
-            className: "qibi-input",
-            value: form.title,
-            placeholder: t("outlineTitle"),
-            onChange: (event) => setForm((current) => ({ ...current, title: event.target.value }))
-          }
-        )), /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("outlineContent") }, /* @__PURE__ */ import_react5.default.createElement(
-          "textarea",
-          {
-            className: "qibi-textarea",
-            rows: 6,
-            value: form.content,
-            onChange: (event) => setForm((current) => ({ ...current, content: event.target.value }))
-          }
-        )), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-actions" }, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy, onClick: () => void submit() }, t("save")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: cancel }, t("cancel"))))), error && /* @__PURE__ */ import_react5.default.createElement(LoadError, { message: error, onRetry: () => void load(), t }), !error && outline === null && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, t("loading")), !error && outline !== null && outline.length === 0 && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, t("emptyOutline")), /* @__PURE__ */ import_react5.default.createElement("span", null, t("emptyOutlineHint")), writable && /* @__PURE__ */ import_react5.default.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn", onClick: startNew }, "\uFF0B ", t("outlineNew")))), !error && (outline ?? []).map((row) => /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-card", key: row.id }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("h4", null, row.title || t("untitled")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-tag" }, row.chapterId === null ? t("outlineMaster") : chapterLabel(row.chapterId)), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: () => startEdit(row) }, t("edit")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small danger", disabled: !writable || busy, onClick: () => void remove(row) }, t("delete"))), /* @__PURE__ */ import_react5.default.createElement("p", null, row.content || "\u2014"))));
+        return /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, t("loadFailed")), /* @__PURE__ */ import_react7.default.createElement("span", null, message), /* @__PURE__ */ import_react7.default.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn", onClick: onRetry }, t("retry"))));
       }
       function CharactersTab({ call, novelId, chapterId, writable, active, notify, t, guard }) {
-        const [characters, setCharacters] = (0, import_react5.useState)(null);
-        const [aiAction, setAiAction] = (0, import_react5.useState)(null);
-        const [dialog, setDialog] = (0, import_react5.useState)(null);
-        const [error, setError] = (0, import_react5.useState)(null);
-        const load = (0, import_react5.useCallback)(async () => {
+        const [characters, setCharacters] = (0, import_react7.useState)(null);
+        const [aiAction, setAiAction] = (0, import_react7.useState)(null);
+        const [dialog, setDialog] = (0, import_react7.useState)(null);
+        const [error, setError] = (0, import_react7.useState)(null);
+        const load = (0, import_react7.useCallback)(async () => {
           if (novelId === null) return;
           try {
             const result = await call("characters", { novelId });
@@ -3353,16 +3745,16 @@ window.__ModuleLoader__.load({
             setError(causeText(cause));
           }
         }, [call, novelId]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           setCharacters(null);
           setAiAction(null);
           setDialog(null);
           setError(null);
         }, [novelId]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (!active) setAiAction(null);
         }, [active]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (active) void load();
         }, [active, load]);
         const openCharacterAi = async (action) => {
@@ -3416,7 +3808,7 @@ window.__ModuleLoader__.load({
             notify("error", causeText(cause));
           }
         };
-        return /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-pane" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-section-title" }, t("tabCharacters")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void openCharacterAi("extract") }, t("characterAiExtractTitle")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void openCharacterAi("generate") }, t("characterAiGenerateTitle")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable, onClick: openCreate }, "\uFF0B ", t("characterNew"))), error && /* @__PURE__ */ import_react5.default.createElement(LoadError, { message: error, onRetry: () => void load(), t }), !error && characters === null && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, t("loading")), !error && characters !== null && characters.length === 0 && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, t("emptyCharacters")), /* @__PURE__ */ import_react5.default.createElement("span", null, t("emptyCharactersHint")), writable && /* @__PURE__ */ import_react5.default.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn", onClick: openCreate }, "\uFF0B ", t("characterNew")))), !error && (characters ?? []).map((row) => /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-card", key: row.id }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("h4", null, row.name, row.role ? ` \xB7 ${row.role}` : ""), row.alias && /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-tag" }, row.alias), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable, onClick: () => void openEdit(row) }, t("edit")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small danger", disabled: !writable, onClick: () => void remove(row) }, t("delete"))), [row.gender, row.age].filter(Boolean).length > 0 && /* @__PURE__ */ import_react5.default.createElement("p", null, [row.gender, row.age].filter(Boolean).join(" \xB7 ")), row.personality && /* @__PURE__ */ import_react5.default.createElement("p", null, t("characterPersonality"), "\uFF1A", row.personality), row.background && /* @__PURE__ */ import_react5.default.createElement("p", null, t("characterBackground"), "\uFF1A", row.background), (row.location || row.realm) && /* @__PURE__ */ import_react5.default.createElement("p", null, t("stateSection"), "\uFF1A", [row.location, row.realm].filter(Boolean).join(" \xB7 ")))), aiAction && /* @__PURE__ */ import_react5.default.createElement(
+        return /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-pane" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-section-title" }, t("tabCharacters")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void openCharacterAi("extract") }, t("characterAiExtractTitle")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void openCharacterAi("generate") }, t("characterAiGenerateTitle")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable, onClick: openCreate }, "\uFF0B ", t("characterNew"))), error && /* @__PURE__ */ import_react7.default.createElement(LoadError, { message: error, onRetry: () => void load(), t }), !error && characters === null && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub" }, t("loading")), !error && characters !== null && characters.length === 0 && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, t("emptyCharacters")), /* @__PURE__ */ import_react7.default.createElement("span", null, t("emptyCharactersHint")), writable && /* @__PURE__ */ import_react7.default.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn", onClick: openCreate }, "\uFF0B ", t("characterNew")))), !error && (characters ?? []).map((row) => /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-card", key: row.id }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement("h4", null, row.name, row.role ? ` \xB7 ${row.role}` : ""), row.alias && /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-tag" }, row.alias), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable, onClick: () => void openEdit(row) }, t("edit")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small danger", disabled: !writable, onClick: () => void remove(row) }, t("delete"))), [row.gender, row.age].filter(Boolean).length > 0 && /* @__PURE__ */ import_react7.default.createElement("p", null, [row.gender, row.age].filter(Boolean).join(" \xB7 ")), row.personality && /* @__PURE__ */ import_react7.default.createElement("p", null, t("characterPersonality"), "\uFF1A", row.personality), row.background && /* @__PURE__ */ import_react7.default.createElement("p", null, t("characterBackground"), "\uFF1A", row.background), (row.location || row.realm) && /* @__PURE__ */ import_react7.default.createElement("p", null, t("stateSection"), "\uFF1A", [row.location, row.realm].filter(Boolean).join(" \xB7 ")))), aiAction && /* @__PURE__ */ import_react7.default.createElement(
           CharacterAiDialog,
           {
             key: `${novelId}:${chapterId ?? "all"}:${aiAction}`,
@@ -3433,7 +3825,7 @@ window.__ModuleLoader__.load({
               notify("info", `${t("characterAiCreated")} ${result.created} \xB7 ${t("characterAiSkipped")} ${result.skipped}`);
             }
           }
-        ), dialog && /* @__PURE__ */ import_react5.default.createElement(
+        ), dialog && /* @__PURE__ */ import_react7.default.createElement(
           Dialog,
           {
             title: dialog.id === null ? t("characterNew") : t("edit"),
@@ -3441,9 +3833,9 @@ window.__ModuleLoader__.load({
             onClose: () => {
               if (!dialog.busy) setDialog(null);
             },
-            footer: /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: dialog.busy, onClick: () => setDialog(null) }, t("cancel")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: dialog.busy || dialog.loadingState || dialog.stateLoadError, onClick: () => void save() }, t("save")))
+            footer: /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: dialog.busy, onClick: () => setDialog(null) }, t("cancel")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: dialog.busy || dialog.loadingState || dialog.stateLoadError, onClick: () => void save() }, t("save")))
           },
-          /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-form" }, CHARACTER_FIELDS2.map((key) => /* @__PURE__ */ import_react5.default.createElement(Field2, { key, label: t(`character${key[0].toUpperCase()}${key.slice(1)}`) }, key === "background" || key === "appearance" || key === "personality" ? /* @__PURE__ */ import_react5.default.createElement(
+          /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-form" }, CHARACTER_FIELDS2.map((key) => /* @__PURE__ */ import_react7.default.createElement(Field2, { key, label: t(`character${key[0].toUpperCase()}${key.slice(1)}`) }, key === "background" || key === "appearance" || key === "personality" ? /* @__PURE__ */ import_react7.default.createElement(
             "textarea",
             {
               className: "qibi-textarea",
@@ -3451,14 +3843,14 @@ window.__ModuleLoader__.load({
               value: dialog.form[key],
               onChange: (event) => setField(key, event.target.value)
             }
-          ) : /* @__PURE__ */ import_react5.default.createElement(
+          ) : /* @__PURE__ */ import_react7.default.createElement(
             "input",
             {
               className: "qibi-input",
               value: dialog.form[key],
               onChange: (event) => setField(key, event.target.value)
             }
-          ))), /* @__PURE__ */ import_react5.default.createElement("h4", { className: "qibi-form-title" }, t("stateSection")), dialog.stateLoadError && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-error-text", role: "alert" }, t("characterStateReadFailed"), " ", /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void openEdit({ ...dialog.form, id: dialog.id, token: dialog.token }) }, t("retry"))), dialog.loadingState ? /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, t("loading")) : STATE_FIELDS.map((key) => /* @__PURE__ */ import_react5.default.createElement(Field2, { key, label: t(`state${key[0].toUpperCase()}${key.slice(1)}`) }, /* @__PURE__ */ import_react5.default.createElement(
+          ))), /* @__PURE__ */ import_react7.default.createElement("h4", { className: "qibi-form-title" }, t("stateSection")), dialog.stateLoadError && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-error-text", role: "alert" }, t("characterStateReadFailed"), " ", /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void openEdit({ ...dialog.form, id: dialog.id, token: dialog.token }) }, t("retry"))), dialog.loadingState ? /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub" }, t("loading")) : STATE_FIELDS.map((key) => /* @__PURE__ */ import_react7.default.createElement(Field2, { key, label: t(`state${key[0].toUpperCase()}${key.slice(1)}`) }, /* @__PURE__ */ import_react7.default.createElement(
             "textarea",
             {
               className: "qibi-textarea",
@@ -3470,27 +3862,27 @@ window.__ModuleLoader__.load({
         ));
       }
       function DistillTab({ call, novelId, writable, active, notify, t }) {
-        const [authors, setAuthors] = (0, import_react5.useState)(null);
-        const [authorsError, setAuthorsError] = (0, import_react5.useState)("");
-        const [authorId, setAuthorId] = (0, import_react5.useState)(null);
-        const [detail, setDetail] = (0, import_react5.useState)(null);
-        const [binding, setBinding] = (0, import_react5.useState)(null);
-        const [detailError, setDetailError] = (0, import_react5.useState)("");
-        const [creating, setCreating] = (0, import_react5.useState)(false);
-        const [newName, setNewName] = (0, import_react5.useState)("");
-        const [pasteOpen, setPasteOpen] = (0, import_react5.useState)(false);
-        const [pasteName, setPasteName] = (0, import_react5.useState)("");
-        const [pasteText, setPasteText] = (0, import_react5.useState)("");
-        const [instruction, setInstruction] = (0, import_react5.useState)("");
-        const [instructionCopied, setInstructionCopied] = (0, import_react5.useState)(false);
-        const [busy, setBusy] = (0, import_react5.useState)(false);
-        const [uploading, setUploading] = (0, import_react5.useState)(null);
-        const [preview, setPreview] = (0, import_react5.useState)(null);
-        const fileRef = (0, import_react5.useRef)(null);
-        const detailSeq = (0, import_react5.useRef)(0);
-        const authorRef = (0, import_react5.useRef)(authorId);
+        const [authors, setAuthors] = (0, import_react7.useState)(null);
+        const [authorsError, setAuthorsError] = (0, import_react7.useState)("");
+        const [authorId, setAuthorId] = (0, import_react7.useState)(null);
+        const [detail, setDetail] = (0, import_react7.useState)(null);
+        const [binding, setBinding] = (0, import_react7.useState)(null);
+        const [detailError, setDetailError] = (0, import_react7.useState)("");
+        const [creating, setCreating] = (0, import_react7.useState)(false);
+        const [newName, setNewName] = (0, import_react7.useState)("");
+        const [pasteOpen, setPasteOpen] = (0, import_react7.useState)(false);
+        const [pasteName, setPasteName] = (0, import_react7.useState)("");
+        const [pasteText, setPasteText] = (0, import_react7.useState)("");
+        const [instruction, setInstruction] = (0, import_react7.useState)("");
+        const [instructionCopied, setInstructionCopied] = (0, import_react7.useState)(false);
+        const [busy, setBusy] = (0, import_react7.useState)(false);
+        const [uploading, setUploading] = (0, import_react7.useState)(null);
+        const [preview, setPreview] = (0, import_react7.useState)(null);
+        const fileRef = (0, import_react7.useRef)(null);
+        const detailSeq = (0, import_react7.useRef)(0);
+        const authorRef = (0, import_react7.useRef)(authorId);
         authorRef.current = authorId;
-        const loadAuthors = (0, import_react5.useCallback)(async () => {
+        const loadAuthors = (0, import_react7.useCallback)(async () => {
           setAuthorsError("");
           try {
             const result = await call("distilledAuthors", {});
@@ -3502,7 +3894,7 @@ window.__ModuleLoader__.load({
             notify("error", causeText(cause));
           }
         }, [call, notify]);
-        const loadDetail = (0, import_react5.useCallback)(async (id) => {
+        const loadDetail = (0, import_react7.useCallback)(async (id) => {
           const sequence = ++detailSeq.current;
           setDetailError("");
           if (id == null || id !== authorRef.current) {
@@ -3516,7 +3908,7 @@ window.__ModuleLoader__.load({
             if (sequence === detailSeq.current && authorRef.current === id) setDetailError(causeText(cause));
           }
         }, [call, notify]);
-        const loadBinding = (0, import_react5.useCallback)(async () => {
+        const loadBinding = (0, import_react7.useCallback)(async () => {
           if (novelId == null) {
             setBinding(null);
             return;
@@ -3528,10 +3920,10 @@ window.__ModuleLoader__.load({
             notify("error", causeText(cause));
           }
         }, [call, novelId, notify]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (active) void loadAuthors();
         }, [active, loadAuthors]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (!active) return;
           setDetail(null);
           setPreview(null);
@@ -3539,7 +3931,7 @@ window.__ModuleLoader__.load({
           setInstructionCopied(false);
           void loadDetail(authorId);
         }, [active, authorId, loadDetail]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (active) void loadBinding();
         }, [active, loadBinding]);
         const createAuthor = async () => {
@@ -3693,7 +4085,7 @@ window.__ModuleLoader__.load({
         };
         const boundAuthor = authors?.find((author) => author.id === binding?.distilledAuthorId) ?? null;
         const isBound = detail ? binding?.distilledAuthorId === detail.id : false;
-        return /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-distill" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-distill-list" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-side-head" }, /* @__PURE__ */ import_react5.default.createElement("span", null, t("distillAuthors")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement(
+        return /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-distill" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-distill-list" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-side-head" }, /* @__PURE__ */ import_react7.default.createElement("span", null, t("distillAuthors")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement(
           "button",
           {
             type: "button",
@@ -3706,7 +4098,7 @@ window.__ModuleLoader__.load({
             }
           },
           "\uFF0B"
-        )), creating && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-newrow" }, /* @__PURE__ */ import_react5.default.createElement(
+        )), creating && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-newrow" }, /* @__PURE__ */ import_react7.default.createElement(
           "input",
           {
             autoFocus: true,
@@ -3723,7 +4115,7 @@ window.__ModuleLoader__.load({
               }
             }
           }
-        ), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || !newName.trim(), onClick: () => void createAuthor() }, "\u2713")), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-list" }, authorsError && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-error-text", role: "alert" }, authorsError, " ", /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void loadAuthors() }, t("retry"))), !authorsError && authors === null && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub", style: { padding: "8px" } }, t("loading")), authors !== null && authors.length === 0 && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub", style: { padding: "8px" } }, t("distillEmpty")), (authors ?? []).map((author) => /* @__PURE__ */ import_react5.default.createElement(
+        ), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || !newName.trim(), onClick: () => void createAuthor() }, "\u2713")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-list" }, authorsError && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-error-text", role: "alert" }, authorsError, " ", /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void loadAuthors() }, t("retry"))), !authorsError && authors === null && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub", style: { padding: "8px" } }, t("loading")), authors !== null && authors.length === 0 && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub", style: { padding: "8px" } }, t("distillEmpty")), (authors ?? []).map((author) => /* @__PURE__ */ import_react7.default.createElement(
           "button",
           {
             type: "button",
@@ -3736,9 +4128,9 @@ window.__ModuleLoader__.load({
               setAuthorId(author.id);
             }
           },
-          /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-author-name" }, author.name),
-          /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-author-meta" }, author.sourceCount, " ", t("distillSourceCount"), " \xB7 ", author.currentVersion ? `v${author.currentVersion.version}` : t("distillNoVersion"))
-        )))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-distill-main" }, /* @__PURE__ */ import_react5.default.createElement(
+          /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-author-name" }, author.name),
+          /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-author-meta" }, author.sourceCount, " ", t("distillSourceCount"), " \xB7 ", author.currentVersion ? `v${author.currentVersion.version}` : t("distillNoVersion"))
+        )))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-distill-main" }, /* @__PURE__ */ import_react7.default.createElement(
           DistillGuide,
           {
             detail: detail?.id === authorId ? detail : null,
@@ -3755,11 +4147,11 @@ window.__ModuleLoader__.load({
               if (detail?.id === authorId) void bindAuthor(detail.id);
             }
           }
-        ), detailError && /* @__PURE__ */ import_react5.default.createElement(LoadError, { message: detailError, onRetry: () => void loadDetail(authorId), t }), !detailError && (!detail || detail.id !== authorId) && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, t(authorId == null ? "distillEmpty" : "loading")), /* @__PURE__ */ import_react5.default.createElement("span", null, t("distillStartHint"))), detail && detail.id === authorId && /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("h3", { className: "qibi-distill-title" }, detail.name), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-tag" }, detail.status), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, t("distillCurrentVersion"), " ", detail.currentVersion ? `v${detail.currentVersion.version}` : t("distillNoVersion")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => {
+        ), detailError && /* @__PURE__ */ import_react7.default.createElement(LoadError, { message: detailError, onRetry: () => void loadDetail(authorId), t }), !detailError && (!detail || detail.id !== authorId) && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, t(authorId == null ? "distillEmpty" : "loading")), /* @__PURE__ */ import_react7.default.createElement("span", null, t("distillStartHint"))), detail && detail.id === authorId && /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement("h3", { className: "qibi-distill-title" }, detail.name), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-tag" }, detail.status), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, t("distillCurrentVersion"), " ", detail.currentVersion ? `v${detail.currentVersion.version}` : t("distillNoVersion")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => {
           void loadDetail(detail.id);
           void loadAuthors();
           void loadBinding();
-        } }, t("refresh")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small danger", disabled: !writable || busy, onClick: () => void deleteAuthor() }, t("delete"))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row qibi-binding" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, boundAuthor ? `${t("distillBindingOther")}\u300A${boundAuthor.name}\u300B` : t("distillNotBound")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), isBound ? /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-tag" }, t("distillBound")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: () => void bindAuthor(null) }, t("distillUnbind"))) : /* @__PURE__ */ import_react5.default.createElement(
+        } }, t("refresh")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small danger", disabled: !writable || busy, onClick: () => void deleteAuthor() }, t("delete"))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row qibi-binding" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, boundAuthor ? `${t("distillBindingOther")}\u300A${boundAuthor.name}\u300B` : t("distillNotBound")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), isBound ? /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-tag" }, t("distillBound")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: () => void bindAuthor(null) }, t("distillUnbind"))) : /* @__PURE__ */ import_react7.default.createElement(
           "button",
           {
             type: "button",
@@ -3768,7 +4160,7 @@ window.__ModuleLoader__.load({
             onClick: () => void bindAuthor(detail.id)
           },
           t("distillBind")
-        )), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-section-title" }, t("distillSources"), " (", detail.sources.length, ")"), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: () => fileRef.current?.click() }, t("distillUpload")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: () => setPasteOpen((value) => !value) }, t("distillPaste")), /* @__PURE__ */ import_react5.default.createElement(
+        )), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-section-title" }, t("distillSources"), " (", detail.sources.length, ")"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: () => fileRef.current?.click() }, t("distillUpload")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: () => setPasteOpen((value) => !value) }, t("distillPaste")), /* @__PURE__ */ import_react7.default.createElement(
           "input",
           {
             ref: fileRef,
@@ -3780,7 +4172,7 @@ window.__ModuleLoader__.load({
               void uploadFiles(event.target.files);
             }
           }
-        )), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, t("distillFilesHint")), uploading && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-progress" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-progress-bar", style: { width: `${uploading.percent}%` } }), /* @__PURE__ */ import_react5.default.createElement("span", null, uploading.filename, " \xB7 ", uploading.percent, "%")), pasteOpen && /* @__PURE__ */ import_react5.default.createElement("fieldset", { className: "qibi-form-lock", disabled: busy || !writable }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-form" }, /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("distillPasteName") }, /* @__PURE__ */ import_react5.default.createElement("input", { className: "qibi-input", value: pasteName, placeholder: "\u6750\u6599.txt", onChange: (event) => setPasteName(event.target.value) })), /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("distillPasteContent") }, /* @__PURE__ */ import_react5.default.createElement("textarea", { className: "qibi-textarea", rows: 6, value: pasteText, onChange: (event) => setPasteText(event.target.value) })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-actions" }, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || !pasteText.trim(), onClick: () => void addPaste() }, t("distillAdd")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => setPasteOpen(false) }, t("cancel"))))), detail.sources.length === 0 && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, t("distillNoSources")), detail.sources.map((source) => /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-card", key: source.id }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, source.filename), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-tag" }, source.format), /* @__PURE__ */ import_react5.default.createElement("span", { className: `qibi-tag${source.status === "error" ? " danger" : ""}` }, source.status), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, formatWords(source.parsedChars), " ", t("words"), " \xB7 ", source.chapterCount, " ", t("chapters")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small danger", disabled: !writable || busy, onClick: () => void deleteSource(source) }, t("delete"))), source.error && /* @__PURE__ */ import_react5.default.createElement("p", { className: "qibi-error-text" }, source.error))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-section-title" }, t("distillAction")), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-card" }, /* @__PURE__ */ import_react5.default.createElement("p", null, t("distillAgentHint")), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-actions" }, /* @__PURE__ */ import_react5.default.createElement(
+        )), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub" }, t("distillFilesHint")), uploading && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-progress" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-progress-bar", style: { width: `${uploading.percent}%` } }), /* @__PURE__ */ import_react7.default.createElement("span", null, uploading.filename, " \xB7 ", uploading.percent, "%")), pasteOpen && /* @__PURE__ */ import_react7.default.createElement("fieldset", { className: "qibi-form-lock", disabled: busy || !writable }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-form" }, /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("distillPasteName") }, /* @__PURE__ */ import_react7.default.createElement("input", { className: "qibi-input", value: pasteName, placeholder: "\u6750\u6599.txt", onChange: (event) => setPasteName(event.target.value) })), /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("distillPasteContent") }, /* @__PURE__ */ import_react7.default.createElement("textarea", { className: "qibi-textarea", rows: 6, value: pasteText, onChange: (event) => setPasteText(event.target.value) })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-actions" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || !pasteText.trim(), onClick: () => void addPaste() }, t("distillAdd")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => setPasteOpen(false) }, t("cancel"))))), detail.sources.length === 0 && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub" }, t("distillNoSources")), detail.sources.map((source) => /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-card", key: source.id }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, source.filename), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-tag" }, source.format), /* @__PURE__ */ import_react7.default.createElement("span", { className: `qibi-tag${source.status === "error" ? " danger" : ""}` }, source.status), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, formatWords(source.parsedChars), " ", t("words"), " \xB7 ", source.chapterCount, " ", t("chapters")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small danger", disabled: !writable || busy, onClick: () => void deleteSource(source) }, t("delete"))), source.error && /* @__PURE__ */ import_react7.default.createElement("p", { className: "qibi-error-text" }, source.error))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-section-title" }, t("distillAction")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-card" }, /* @__PURE__ */ import_react7.default.createElement("p", null, t("distillAgentHint")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-actions" }, /* @__PURE__ */ import_react7.default.createElement(
           "button",
           {
             type: "button",
@@ -3789,11 +4181,11 @@ window.__ModuleLoader__.load({
             onClick: () => void copyInstruction()
           },
           t("distillInstruction")
-        ))), instruction && /* @__PURE__ */ import_react5.default.createElement("section", { className: "qibi-card qibi-distill-instruction", "aria-label": t("distillInstructionPreview") }, /* @__PURE__ */ import_react5.default.createElement("strong", null, t(instructionCopied ? "distillPasteIntoChat" : "distillCopyManual")), /* @__PURE__ */ import_react5.default.createElement("p", null, t("distillAfterChatHint")), /* @__PURE__ */ import_react5.default.createElement("label", { className: "qibi-field" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-label" }, t("distillInstructionPreview")), /* @__PURE__ */ import_react5.default.createElement("textarea", { className: "qibi-textarea mono", rows: 7, readOnly: true, value: instruction, onFocus: (event) => event.target.select() })), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy, onClick: () => {
+        ))), instruction && /* @__PURE__ */ import_react7.default.createElement("section", { className: "qibi-card qibi-distill-instruction", "aria-label": t("distillInstructionPreview") }, /* @__PURE__ */ import_react7.default.createElement("strong", null, t(instructionCopied ? "distillPasteIntoChat" : "distillCopyManual")), /* @__PURE__ */ import_react7.default.createElement("p", null, t("distillAfterChatHint")), /* @__PURE__ */ import_react7.default.createElement("label", { className: "qibi-field" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-label" }, t("distillInstructionPreview")), /* @__PURE__ */ import_react7.default.createElement("textarea", { className: "qibi-textarea mono", rows: 7, readOnly: true, value: instruction, onFocus: (event) => event.target.select() })), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy, onClick: () => {
           void loadDetail(authorId);
           void loadAuthors();
           void loadBinding();
-        } }, t("distillRefreshAfterChat"))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-section-title" }, t("distillVersions"), " (", detail.versions.length, ")"), detail.versions.length === 0 && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, t("distillNoVersions")), detail.versions.map((version) => /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-card", key: version.id }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, "v", version.version), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, version.createdAt), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => setPreview(version) }, t("distillView")), /* @__PURE__ */ import_react5.default.createElement(
+        } }, t("distillRefreshAfterChat"))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-section-title" }, t("distillVersions"), " (", detail.versions.length, ")"), detail.versions.length === 0 && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub" }, t("distillNoVersions")), detail.versions.map((version) => /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-card", key: version.id }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, "v", version.version), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, version.createdAt), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => setPreview(version) }, t("distillView")), /* @__PURE__ */ import_react7.default.createElement(
           "button",
           {
             type: "button",
@@ -3802,28 +4194,28 @@ window.__ModuleLoader__.load({
             onClick: () => void rollback(version)
           },
           t("distillRollback")
-        )), /* @__PURE__ */ import_react5.default.createElement("p", null, version.sampleSummary || "\u2014"))), preview && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-card" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, "v", preview.version), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, preview.createdAt), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => setPreview(null) }, "\xD7")), /* @__PURE__ */ import_react5.default.createElement("pre", { className: "qibi-pre" }, preview.skillMarkdown), /* @__PURE__ */ import_react5.default.createElement("details", null, /* @__PURE__ */ import_react5.default.createElement("summary", null, t("distillWritingSkill")), /* @__PURE__ */ import_react5.default.createElement("pre", { className: "qibi-pre" }, preview.writingSkill)), /* @__PURE__ */ import_react5.default.createElement("details", null, /* @__PURE__ */ import_react5.default.createElement("summary", null, t("distillAuthorPersona")), /* @__PURE__ */ import_react5.default.createElement("pre", { className: "qibi-pre" }, preview.authorPersona))))));
+        )), /* @__PURE__ */ import_react7.default.createElement("p", null, version.sampleSummary || "\u2014"))), preview && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-card" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, "v", preview.version), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, preview.createdAt), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => setPreview(null) }, "\xD7")), /* @__PURE__ */ import_react7.default.createElement("pre", { className: "qibi-pre" }, preview.skillMarkdown), /* @__PURE__ */ import_react7.default.createElement("details", null, /* @__PURE__ */ import_react7.default.createElement("summary", null, t("distillWritingSkill")), /* @__PURE__ */ import_react7.default.createElement("pre", { className: "qibi-pre" }, preview.writingSkill)), /* @__PURE__ */ import_react7.default.createElement("details", null, /* @__PURE__ */ import_react7.default.createElement("summary", null, t("distillAuthorPersona")), /* @__PURE__ */ import_react7.default.createElement("pre", { className: "qibi-pre" }, preview.authorPersona))))));
       }
       function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }) {
-        const [volumes, setVolumes] = (0, import_react5.useState)(null);
-        const [volumeForm, setVolumeForm] = (0, import_react5.useState)(null);
-        const [summary, setSummary] = (0, import_react5.useState)(null);
-        const [summaryForm, setSummaryForm] = (0, import_react5.useState)({ summary: "", keyEvents: "", cliffhanger: "" });
-        const [writerState, setWriterState] = (0, import_react5.useState)(null);
-        const [writerForm, setWriterForm] = (0, import_react5.useState)({ progress: "", foreshadowing: "[]" });
-        const [busy, setBusy] = (0, import_react5.useState)(false);
-        const [loadingSummary, setLoadingSummary] = (0, import_react5.useState)(false);
-        const [loadingWriter, setLoadingWriter] = (0, import_react5.useState)(false);
-        const [summaryError, setSummaryError] = (0, import_react5.useState)("");
-        const [writerError, setWriterError] = (0, import_react5.useState)("");
-        const summarySeq = (0, import_react5.useRef)(0);
-        const writerSeq = (0, import_react5.useRef)(0);
-        const volumeSeq = (0, import_react5.useRef)(0);
-        const scopeRef = (0, import_react5.useRef)({ novelId, chapterId });
+        const [volumes, setVolumes] = (0, import_react7.useState)(null);
+        const [volumeForm, setVolumeForm] = (0, import_react7.useState)(null);
+        const [summary, setSummary] = (0, import_react7.useState)(null);
+        const [summaryForm, setSummaryForm] = (0, import_react7.useState)({ summary: "", keyEvents: "", cliffhanger: "" });
+        const [writerState, setWriterState] = (0, import_react7.useState)(null);
+        const [writerForm, setWriterForm] = (0, import_react7.useState)({ progress: "", foreshadowing: "[]" });
+        const [busy, setBusy] = (0, import_react7.useState)(false);
+        const [loadingSummary, setLoadingSummary] = (0, import_react7.useState)(false);
+        const [loadingWriter, setLoadingWriter] = (0, import_react7.useState)(false);
+        const [summaryError, setSummaryError] = (0, import_react7.useState)("");
+        const [writerError, setWriterError] = (0, import_react7.useState)("");
+        const summarySeq = (0, import_react7.useRef)(0);
+        const writerSeq = (0, import_react7.useRef)(0);
+        const volumeSeq = (0, import_react7.useRef)(0);
+        const scopeRef = (0, import_react7.useRef)({ novelId, chapterId });
         scopeRef.current = { novelId, chapterId };
-        const loadedSummaryFor = (0, import_react5.useRef)(void 0);
-        const loadedWriterFor = (0, import_react5.useRef)(void 0);
-        const loadVolumes = (0, import_react5.useCallback)(async () => {
+        const loadedSummaryFor = (0, import_react7.useRef)(void 0);
+        const loadedWriterFor = (0, import_react7.useRef)(void 0);
+        const loadVolumes = (0, import_react7.useCallback)(async () => {
           if (novelId === null) return;
           const seq = ++volumeSeq.current;
           try {
@@ -3834,7 +4226,7 @@ window.__ModuleLoader__.load({
             if (seq === volumeSeq.current) notify("error", causeText(cause));
           }
         }, [call, novelId, notify]);
-        const loadSummary = (0, import_react5.useCallback)(async () => {
+        const loadSummary = (0, import_react7.useCallback)(async () => {
           if (scopeRef.current.chapterId !== chapterId) return;
           if (chapterId === null) {
             loadedSummaryFor.current = null;
@@ -3865,7 +4257,7 @@ window.__ModuleLoader__.load({
             if (seq === summarySeq.current) setLoadingSummary(false);
           }
         }, [call, chapterId, notify]);
-        const loadWriter = (0, import_react5.useCallback)(async () => {
+        const loadWriter = (0, import_react7.useCallback)(async () => {
           if (scopeRef.current.novelId !== novelId) return;
           if (novelId === null) return;
           const target = novelId;
@@ -3890,7 +4282,7 @@ window.__ModuleLoader__.load({
             if (seq === writerSeq.current) setLoadingWriter(false);
           }
         }, [call, novelId, notify]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           volumeSeq.current += 1;
           summarySeq.current += 1;
           writerSeq.current += 1;
@@ -3907,20 +4299,20 @@ window.__ModuleLoader__.load({
           setSummaryError("");
           setWriterError("");
         }, [novelId]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           summarySeq.current += 1;
           loadedSummaryFor.current = void 0;
           setSummary(null);
           setSummaryForm({ summary: "", keyEvents: "", cliffhanger: "" });
           setLoadingSummary(false);
         }, [chapterId]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (active) void loadVolumes();
         }, [active, loadVolumes]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (active && loadedSummaryFor.current !== chapterId) void loadSummary();
         }, [active, chapterId, loadSummary]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (active && loadedWriterFor.current !== novelId) void loadWriter();
         }, [active, novelId, loadWriter]);
         const startVolume = (row) => setVolumeForm(row ? { id: row.id, token: row.token ?? null, title: row.title, summary: row.summary, coreConflict: row.coreConflict } : { id: null, token: null, title: "", summary: "", coreConflict: "" });
@@ -3988,24 +4380,24 @@ window.__ModuleLoader__.load({
             setBusy(false);
           }
         };
-        return /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-pane" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-section-title" }, t("volumes")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: () => startVolume(null) }, "\uFF0B ", t("volumeNew"))), volumes === null && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, t("loading")), volumes !== null && volumes.length === 0 && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, t("emptyVolumes")), (volumes ?? []).map((row) => /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-card", key: row.id }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("h4", null, row.title), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: () => startVolume(row) }, t("edit"))), row.summary && /* @__PURE__ */ import_react5.default.createElement("p", null, row.summary), row.coreConflict && /* @__PURE__ */ import_react5.default.createElement("p", null, t("volumeConflict"), "\uFF1A", row.coreConflict))), volumeForm && /* @__PURE__ */ import_react5.default.createElement("fieldset", { className: "qibi-form-lock", disabled: busy || !writable }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-form" }, /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("volumeTitle") }, /* @__PURE__ */ import_react5.default.createElement("input", { className: "qibi-input", value: volumeForm.title, onChange: (event) => setVolumeForm((current) => ({ ...current, title: event.target.value })) })), /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("volumeSummary") }, /* @__PURE__ */ import_react5.default.createElement("textarea", { className: "qibi-textarea", rows: 3, value: volumeForm.summary, onChange: (event) => setVolumeForm((current) => ({ ...current, summary: event.target.value })) })), /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("volumeConflict") }, /* @__PURE__ */ import_react5.default.createElement("input", { className: "qibi-input", value: volumeForm.coreConflict, onChange: (event) => setVolumeForm((current) => ({ ...current, coreConflict: event.target.value })) })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-actions" }, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy, onClick: () => void submitVolume() }, t("save")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => setVolumeForm(null) }, t("cancel"))))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-section-title" }, t("chapterSummary")), summaryError && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-error-text", role: "alert" }, t("continuityReadFailed"), " ", summaryError, " ", /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy || loadingSummary, onClick: () => void loadSummary() }, t("retry"))), chapterId === null ? /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, t("noChapterHint")) : /* @__PURE__ */ import_react5.default.createElement("fieldset", { className: "qibi-form-lock", disabled: busy || !writable || loadingSummary || Boolean(summaryError) || loadedSummaryFor.current !== chapterId }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-form" }, /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("summaryText") }, /* @__PURE__ */ import_react5.default.createElement("textarea", { className: "qibi-textarea", rows: 3, value: summaryForm.summary, onChange: (event) => setSummaryForm((current) => ({ ...current, summary: event.target.value })) })), /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("keyEvents") }, /* @__PURE__ */ import_react5.default.createElement("textarea", { className: "qibi-textarea", rows: 2, value: summaryForm.keyEvents, onChange: (event) => setSummaryForm((current) => ({ ...current, keyEvents: event.target.value })) })), /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("cliffhanger") }, /* @__PURE__ */ import_react5.default.createElement("textarea", { className: "qibi-textarea", rows: 2, value: summaryForm.cliffhanger, onChange: (event) => setSummaryForm((current) => ({ ...current, cliffhanger: event.target.value })) })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-actions" }, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: !writable || busy || loadingSummary || Boolean(summaryError) || loadedSummaryFor.current !== chapterId, onClick: () => void submitSummary() }, t("save")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy || loadingSummary, onClick: () => {
+        return /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-pane" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-section-title" }, t("volumes")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: () => startVolume(null) }, "\uFF0B ", t("volumeNew"))), volumes === null && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub" }, t("loading")), volumes !== null && volumes.length === 0 && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub" }, t("emptyVolumes")), (volumes ?? []).map((row) => /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-card", key: row.id }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement("h4", null, row.title), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: () => startVolume(row) }, t("edit"))), row.summary && /* @__PURE__ */ import_react7.default.createElement("p", null, row.summary), row.coreConflict && /* @__PURE__ */ import_react7.default.createElement("p", null, t("volumeConflict"), "\uFF1A", row.coreConflict))), volumeForm && /* @__PURE__ */ import_react7.default.createElement("fieldset", { className: "qibi-form-lock", disabled: busy || !writable }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-form" }, /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("volumeTitle") }, /* @__PURE__ */ import_react7.default.createElement("input", { className: "qibi-input", value: volumeForm.title, onChange: (event) => setVolumeForm((current) => ({ ...current, title: event.target.value })) })), /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("volumeSummary") }, /* @__PURE__ */ import_react7.default.createElement("textarea", { className: "qibi-textarea", rows: 3, value: volumeForm.summary, onChange: (event) => setVolumeForm((current) => ({ ...current, summary: event.target.value })) })), /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("volumeConflict") }, /* @__PURE__ */ import_react7.default.createElement("input", { className: "qibi-input", value: volumeForm.coreConflict, onChange: (event) => setVolumeForm((current) => ({ ...current, coreConflict: event.target.value })) })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-actions" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy, onClick: () => void submitVolume() }, t("save")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => setVolumeForm(null) }, t("cancel"))))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-section-title" }, t("chapterSummary")), summaryError && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-error-text", role: "alert" }, t("continuityReadFailed"), " ", summaryError, " ", /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy || loadingSummary, onClick: () => void loadSummary() }, t("retry"))), chapterId === null ? /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub" }, t("noChapterHint")) : /* @__PURE__ */ import_react7.default.createElement("fieldset", { className: "qibi-form-lock", disabled: busy || !writable || loadingSummary || Boolean(summaryError) || loadedSummaryFor.current !== chapterId }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-form" }, /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("summaryText") }, /* @__PURE__ */ import_react7.default.createElement("textarea", { className: "qibi-textarea", rows: 3, value: summaryForm.summary, onChange: (event) => setSummaryForm((current) => ({ ...current, summary: event.target.value })) })), /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("keyEvents") }, /* @__PURE__ */ import_react7.default.createElement("textarea", { className: "qibi-textarea", rows: 2, value: summaryForm.keyEvents, onChange: (event) => setSummaryForm((current) => ({ ...current, keyEvents: event.target.value })) })), /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("cliffhanger") }, /* @__PURE__ */ import_react7.default.createElement("textarea", { className: "qibi-textarea", rows: 2, value: summaryForm.cliffhanger, onChange: (event) => setSummaryForm((current) => ({ ...current, cliffhanger: event.target.value })) })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-actions" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: !writable || busy || loadingSummary || Boolean(summaryError) || loadedSummaryFor.current !== chapterId, onClick: () => void submitSummary() }, t("save")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy || loadingSummary, onClick: () => {
           if (window.confirm(t("discardInfoDraftConfirm"))) void loadSummary();
-        } }, t("reload")), summary?.exists && /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, t("updatedAt"), " ", summary.updatedAt)))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-section-title" }, t("writerState")), writerError && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-error-text", role: "alert" }, t("continuityReadFailed"), " ", writerError, " ", /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy || loadingWriter, onClick: () => void loadWriter() }, t("retry"))), /* @__PURE__ */ import_react5.default.createElement("fieldset", { className: "qibi-form-lock", disabled: busy || loadingWriter || Boolean(writerError) || loadedWriterFor.current !== novelId }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-form" }, /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("progress") }, /* @__PURE__ */ import_react5.default.createElement("textarea", { className: "qibi-textarea", rows: 3, readOnly: !writable, value: writerForm.progress, onChange: (event) => setWriterForm((current) => ({ ...current, progress: event.target.value })) })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-field" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-label" }, t("foreshadowing")), /* @__PURE__ */ import_react5.default.createElement(ForeshadowEditor, { value: writerForm.foreshadowing, onChange: (value) => setWriterForm((current) => ({ ...current, foreshadowing: value })), disabled: !writable || busy || loadingWriter || Boolean(writerError) || loadedWriterFor.current !== novelId, t })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-actions" }, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: !writable || busy || loadingWriter || Boolean(writerError) || loadedWriterFor.current !== novelId, onClick: () => void submitWriter() }, t("save")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy || loadingWriter, onClick: () => {
+        } }, t("reload")), summary?.exists && /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, t("updatedAt"), " ", summary.updatedAt)))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-section-title" }, t("writerState")), writerError && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-error-text", role: "alert" }, t("continuityReadFailed"), " ", writerError, " ", /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy || loadingWriter, onClick: () => void loadWriter() }, t("retry"))), /* @__PURE__ */ import_react7.default.createElement("fieldset", { className: "qibi-form-lock", disabled: busy || loadingWriter || Boolean(writerError) || loadedWriterFor.current !== novelId }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-form" }, /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("progress") }, /* @__PURE__ */ import_react7.default.createElement("textarea", { className: "qibi-textarea", rows: 3, readOnly: !writable, value: writerForm.progress, onChange: (event) => setWriterForm((current) => ({ ...current, progress: event.target.value })) })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-field" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-label" }, t("foreshadowing")), /* @__PURE__ */ import_react7.default.createElement(ForeshadowEditor, { value: writerForm.foreshadowing, onChange: (value) => setWriterForm((current) => ({ ...current, foreshadowing: value })), disabled: !writable || busy || loadingWriter || Boolean(writerError) || loadedWriterFor.current !== novelId, t })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-actions" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: !writable || busy || loadingWriter || Boolean(writerError) || loadedWriterFor.current !== novelId, onClick: () => void submitWriter() }, t("save")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy || loadingWriter, onClick: () => {
           if (window.confirm(t("discardInfoDraftConfirm"))) void loadWriter();
-        } }, t("reload")), writerState?.exists && /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, t("updatedAt"), " ", writerState.updatedAt)))));
+        } }, t("reload")), writerState?.exists && /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, t("updatedAt"), " ", writerState.updatedAt)))));
       }
       function SearchTab({ call, novelId, writable, active, notify, onOpenChapter, t }) {
-        const [query, setQuery] = (0, import_react5.useState)("");
-        const [result, setResult] = (0, import_react5.useState)(null);
-        const [hits, setHits] = (0, import_react5.useState)(null);
-        const [stats, setStats] = (0, import_react5.useState)(null);
-        const [busy, setBusy] = (0, import_react5.useState)(false);
-        (0, import_react5.useEffect)(() => {
+        const [query, setQuery] = (0, import_react7.useState)("");
+        const [result, setResult] = (0, import_react7.useState)(null);
+        const [hits, setHits] = (0, import_react7.useState)(null);
+        const [stats, setStats] = (0, import_react7.useState)(null);
+        const [busy, setBusy] = (0, import_react7.useState)(false);
+        (0, import_react7.useEffect)(() => {
           setResult(null);
           setHits(null);
           setStats(null);
         }, [novelId]);
-        const loadStats = (0, import_react5.useCallback)(async () => {
+        const loadStats = (0, import_react7.useCallback)(async () => {
           if (novelId === null) return;
           try {
             setStats(await call("kbStats", { novelId }));
@@ -4013,7 +4405,7 @@ window.__ModuleLoader__.load({
             notify("error", causeText(cause));
           }
         }, [call, novelId, notify]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (active) void loadStats();
         }, [active, loadStats]);
         const run = async () => {
@@ -4042,7 +4434,7 @@ window.__ModuleLoader__.load({
             notify("error", causeText(cause));
           }
         };
-        return /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-pane" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement(
+        return /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-pane" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement(
           "input",
           {
             className: "qibi-input",
@@ -4053,9 +4445,9 @@ window.__ModuleLoader__.load({
               if (event.key === "Enter") void run();
             }
           }
-        ), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || !query.trim(), onClick: () => void run() }, t("search"))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, stats ? `${t("kbStatsLabel")} ${stats.chunks}` : "", stats?.lastIndexed ? ` \xB7 ${t("updatedAt")} ${stats.lastIndexed}` : ""), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: () => void reindex() }, t("reindex"))), result && /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-section-title" }, t("searchKeyword")), result.chapters.length === 0 && result.characters.length === 0 && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, t("searchEmpty")), result.chapters.map((hit) => /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-result", key: `c${hit.id}`, onClick: () => onOpenChapter(hit.novelId, hit.id) }, /* @__PURE__ */ import_react5.default.createElement("strong", null, hit.title), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, formatWords(hit.wordCount), " ", t("words")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-snippet" }, hit.snippet))), result.characters.map((hit) => /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-result", key: `p${hit.id}` }, /* @__PURE__ */ import_react5.default.createElement("strong", null, hit.name, hit.role ? ` \xB7 ${hit.role}` : ""), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-snippet" }, hit.background)))), hits && /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-section-title" }, t("searchKb")), hits.length === 0 && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, t("searchEmpty")), hits.map((hit, index) => {
+        ), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || !query.trim(), onClick: () => void run() }, t("search"))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, stats ? `${t("kbStatsLabel")} ${stats.chunks}` : "", stats?.lastIndexed ? ` \xB7 ${t("updatedAt")} ${stats.lastIndexed}` : ""), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: () => void reindex() }, t("reindex"))), result && /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-section-title" }, t("searchKeyword")), result.chapters.length === 0 && result.characters.length === 0 && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub" }, t("searchEmpty")), result.chapters.map((hit) => /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-result", key: `c${hit.id}`, onClick: () => onOpenChapter(hit.novelId, hit.id) }, /* @__PURE__ */ import_react7.default.createElement("strong", null, hit.title), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, formatWords(hit.wordCount), " ", t("words")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-snippet" }, hit.snippet))), result.characters.map((hit) => /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-result", key: `p${hit.id}` }, /* @__PURE__ */ import_react7.default.createElement("strong", null, hit.name, hit.role ? ` \xB7 ${hit.role}` : ""), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-snippet" }, hit.background)))), hits && /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-section-title" }, t("searchKb")), hits.length === 0 && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub" }, t("searchEmpty")), hits.map((hit, index) => {
           const openable = hit.kind === "chapter" && hit.sourceId !== null;
-          return /* @__PURE__ */ import_react5.default.createElement(
+          return /* @__PURE__ */ import_react7.default.createElement(
             "button",
             {
               type: "button",
@@ -4064,17 +4456,17 @@ window.__ModuleLoader__.load({
               style: openable ? void 0 : { cursor: "default" },
               onClick: openable ? () => onOpenChapter(novelId, hit.sourceId) : void 0
             },
-            /* @__PURE__ */ import_react5.default.createElement("strong", null, hit.title),
-            /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, hit.score),
-            /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-snippet" }, hit.content)
+            /* @__PURE__ */ import_react7.default.createElement("strong", null, hit.title),
+            /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, hit.score),
+            /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-snippet" }, hit.content)
           );
         })));
       }
       function RevisionsTab({ call, chapterId, writable, active, notify, onRestored, guard, t }) {
-        const [revisions, setRevisions] = (0, import_react5.useState)(null);
-        const [busy, setBusy] = (0, import_react5.useState)(false);
-        const [error, setError] = (0, import_react5.useState)(null);
-        const load = (0, import_react5.useCallback)(async () => {
+        const [revisions, setRevisions] = (0, import_react7.useState)(null);
+        const [busy, setBusy] = (0, import_react7.useState)(false);
+        const [error, setError] = (0, import_react7.useState)(null);
+        const load = (0, import_react7.useCallback)(async () => {
           if (chapterId === null) {
             setRevisions(null);
             return;
@@ -4087,10 +4479,10 @@ window.__ModuleLoader__.load({
             setError(causeText(cause));
           }
         }, [call, chapterId]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           setError(null);
         }, [chapterId]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (active) void load();
         }, [active, load]);
         const restore = async (row) => {
@@ -4111,14 +4503,14 @@ window.__ModuleLoader__.load({
             setBusy(false);
           }
         };
-        return /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-pane" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-section-title" }, t("tabRevisions")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void load() }, t("refresh"))), chapterId === null && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, t("noChapterHint")), chapterId !== null && error && /* @__PURE__ */ import_react5.default.createElement(LoadError, { message: error, onRetry: () => void load(), t }), chapterId !== null && !error && revisions === null && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, t("loading")), !error && revisions !== null && revisions.length === 0 && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, t("revisionsEmpty")), /* @__PURE__ */ import_react5.default.createElement("span", null, t("revisionsEmptyHint"))), !error && (revisions ?? []).map((row) => /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-card", key: row.id }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("h4", null, "#", row.id, " \xB7 ", row.title || t("untitled")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, row.createdAt), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, formatWords(row.wordCount), " ", t("words")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: () => void restore(row) }, t("restore"))), /* @__PURE__ */ import_react5.default.createElement("p", null, row.reason || "\u2014"))));
+        return /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-pane" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-section-title" }, t("tabRevisions")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void load() }, t("refresh"))), chapterId === null && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub" }, t("noChapterHint")), chapterId !== null && error && /* @__PURE__ */ import_react7.default.createElement(LoadError, { message: error, onRetry: () => void load(), t }), chapterId !== null && !error && revisions === null && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub" }, t("loading")), !error && revisions !== null && revisions.length === 0 && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, t("revisionsEmpty")), /* @__PURE__ */ import_react7.default.createElement("span", null, t("revisionsEmptyHint"))), !error && (revisions ?? []).map((row) => /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-card", key: row.id }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement("h4", null, "#", row.id, " \xB7 ", row.title || t("untitled")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, row.createdAt), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, formatWords(row.wordCount), " ", t("words")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || busy, onClick: () => void restore(row) }, t("restore"))), /* @__PURE__ */ import_react7.default.createElement("p", null, row.reason || "\u2014"))));
       }
       function ExportTab({ call, novelId, notify, t }) {
-        const [format, setFormat] = (0, import_react5.useState)("markdown");
-        const [onlyPublished, setOnlyPublished] = (0, import_react5.useState)(false);
-        const [result, setResult] = (0, import_react5.useState)(null);
-        const [busy, setBusy] = (0, import_react5.useState)(false);
-        (0, import_react5.useEffect)(() => {
+        const [format, setFormat] = (0, import_react7.useState)("markdown");
+        const [onlyPublished, setOnlyPublished] = (0, import_react7.useState)(false);
+        const [result, setResult] = (0, import_react7.useState)(null);
+        const [busy, setBusy] = (0, import_react7.useState)(false);
+        (0, import_react7.useEffect)(() => {
           setResult(null);
         }, [novelId]);
         const generate = async () => {
@@ -4153,7 +4545,7 @@ window.__ModuleLoader__.load({
             notify("error", causeText(cause));
           }
         };
-        return /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-pane" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("exportFormat") }, /* @__PURE__ */ import_react5.default.createElement("select", { className: "qibi-select", value: format, onChange: (event) => setFormat(event.target.value) }, /* @__PURE__ */ import_react5.default.createElement("option", { value: "markdown" }, "Markdown"), /* @__PURE__ */ import_react5.default.createElement("option", { value: "txt" }, "TXT"))), /* @__PURE__ */ import_react5.default.createElement("label", { className: "qibi-check" }, /* @__PURE__ */ import_react5.default.createElement("input", { type: "checkbox", checked: onlyPublished, onChange: (event) => setOnlyPublished(event.target.checked) }), t("exportOnlyPublished")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || novelId === null, onClick: () => void generate() }, t("exportGenerate"))), result && /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, result.filename, " \xB7 ", result.chapters, " ", t("chapters"), " \xB7 ", formatWords(result.wordCount), " ", t("words")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void copy() }, t("exportCopy")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", onClick: download }, t("exportDownload"))), /* @__PURE__ */ import_react5.default.createElement("textarea", { className: "qibi-textarea preview mono", readOnly: true, value: result.content })));
+        return /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-pane" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("exportFormat") }, /* @__PURE__ */ import_react7.default.createElement("select", { className: "qibi-select", value: format, onChange: (event) => setFormat(event.target.value) }, /* @__PURE__ */ import_react7.default.createElement("option", { value: "markdown" }, "Markdown"), /* @__PURE__ */ import_react7.default.createElement("option", { value: "txt" }, "TXT"))), /* @__PURE__ */ import_react7.default.createElement("label", { className: "qibi-check" }, /* @__PURE__ */ import_react7.default.createElement("input", { type: "checkbox", checked: onlyPublished, onChange: (event) => setOnlyPublished(event.target.checked) }), t("exportOnlyPublished")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || novelId === null, onClick: () => void generate() }, t("exportGenerate"))), result && /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, result.filename, " \xB7 ", result.chapters, " ", t("chapters"), " \xB7 ", formatWords(result.wordCount), " ", t("words")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void copy() }, t("exportCopy")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", onClick: download }, t("exportDownload"))), /* @__PURE__ */ import_react7.default.createElement("textarea", { className: "qibi-textarea preview mono", readOnly: true, value: result.content })));
       }
       function dataSettingsPayload({ dataDir, mode, userId }, info) {
         const target = String(dataDir ?? "").trim();
@@ -4164,14 +4556,14 @@ window.__ModuleLoader__.load({
         return payload;
       }
       function DataSettings({ call, t, initialSettings, onBeforeSave, onSaved, onCancel, onBusyChange }) {
-        const [info, setInfo] = (0, import_react5.useState)(() => initialSettings ?? null);
-        const [dataDir, setDataDir] = (0, import_react5.useState)(() => initialSettings?.dataDir || initialSettings?.defaultDataDir || "");
-        const [mode, setMode] = (0, import_react5.useState)(() => initialSettings?.exists === true ? "existing" : "create");
-        const [userId, setUserId] = (0, import_react5.useState)(() => initialSettings?.userId == null ? "" : String(initialSettings.userId));
-        const [loading, setLoading] = (0, import_react5.useState)(() => !initialSettings);
-        const [busy, setBusy] = (0, import_react5.useState)(false);
-        const [error, setError] = (0, import_react5.useState)("");
-        const load = (0, import_react5.useCallback)(async () => {
+        const [info, setInfo] = (0, import_react7.useState)(() => initialSettings ?? null);
+        const [dataDir, setDataDir] = (0, import_react7.useState)(() => initialSettings?.dataDir || initialSettings?.defaultDataDir || "");
+        const [mode, setMode] = (0, import_react7.useState)(() => initialSettings?.exists === true ? "existing" : "create");
+        const [userId, setUserId] = (0, import_react7.useState)(() => initialSettings?.userId == null ? "" : String(initialSettings.userId));
+        const [loading, setLoading] = (0, import_react7.useState)(() => !initialSettings);
+        const [busy, setBusy] = (0, import_react7.useState)(false);
+        const [error, setError] = (0, import_react7.useState)("");
+        const load = (0, import_react7.useCallback)(async () => {
           setLoading(true);
           setError("");
           try {
@@ -4186,7 +4578,7 @@ window.__ModuleLoader__.load({
             setLoading(false);
           }
         }, [call]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (!initialSettings) void load();
         }, [initialSettings, load]);
         const pick2 = async () => {
@@ -4224,7 +4616,7 @@ window.__ModuleLoader__.load({
         const availableUsers = sameDirectory ? users : [];
         const currentPath = info?.dbPath || info?.dataDir || "";
         const cannotSaveReason = info?.canSaveReason || info?.reason || info?.error || t("dataSettingsCannotSave");
-        return /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-form qibi-data-settings" }, loading && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-sub" }, t("loading")), !loading && /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-field" }, /* @__PURE__ */ import_react5.default.createElement("label", { className: "qibi-label", htmlFor: "qibi-data-directory" }, t("dataSettingsDirectory")), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement(
+        return /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-form qibi-data-settings" }, loading && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-sub" }, t("loading")), !loading && /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-field" }, /* @__PURE__ */ import_react7.default.createElement("label", { className: "qibi-label", htmlFor: "qibi-data-directory" }, t("dataSettingsDirectory")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react7.default.createElement(
           "input",
           {
             id: "qibi-data-directory",
@@ -4237,82 +4629,91 @@ window.__ModuleLoader__.load({
             placeholder: info?.defaultDataDir || "",
             disabled: busy
           }
-        ), info?.canPick && /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy, onClick: () => void pick2() }, t("dataSettingsBrowse")))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-field" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-label" }, t("dataSettingsMode")), /* @__PURE__ */ import_react5.default.createElement("label", { className: "qibi-check" }, /* @__PURE__ */ import_react5.default.createElement("input", { type: "radio", name: "qibi-data-mode", value: "create", checked: mode === "create", disabled: busy, onChange: () => setMode("create") }), t("dataSettingsCreate")), mode === "create" && /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, t("dataSettingsModeHintCreate")), /* @__PURE__ */ import_react5.default.createElement("label", { className: "qibi-check" }, /* @__PURE__ */ import_react5.default.createElement("input", { type: "radio", name: "qibi-data-mode", value: "existing", checked: mode === "existing", disabled: busy, onChange: () => setMode("existing") }), t("dataSettingsExisting")), mode === "existing" && /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, t("dataSettingsModeHintExisting"))), mode === "existing" && availableUsers.length > 0 && /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("dataSettingsUser") }, /* @__PURE__ */ import_react5.default.createElement("select", { className: "qibi-select", value: userId, disabled: busy, onChange: (event) => setUserId(event.target.value) }, /* @__PURE__ */ import_react5.default.createElement("option", { value: "" }, t("dataSettingsUserDefault")), availableUsers.map((user) => /* @__PURE__ */ import_react5.default.createElement("option", { key: user.id, value: String(user.id) }, user.username || user.name || `#${user.id}`)))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-card qibi-data-settings-current" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, t("dataSettingsCurrent")), /* @__PURE__ */ import_react5.default.createElement("span", null, currentPath || t("dataSettingsNoCurrent")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, t("dataSettingsNoMove"))), info?.canSave === false && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-error-text" }, cannotSaveReason), error && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-error-text" }, error, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy, onClick: () => void load() }, t("retry"))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-actions" }, onCancel && /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy, onClick: onCancel }, t("cancel")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || loading || info?.canSave !== true || !dataDir.trim(), onClick: () => void save() }, busy ? t("saving") : t("dataSettingsSave")))), !loading && !info && !error && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-error-text" }, t("dataSettingsLoadFailed")));
+        ), info?.canPick && /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy, onClick: () => void pick2() }, t("dataSettingsBrowse")))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-field" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-label" }, t("dataSettingsMode")), /* @__PURE__ */ import_react7.default.createElement("label", { className: "qibi-check" }, /* @__PURE__ */ import_react7.default.createElement("input", { type: "radio", name: "qibi-data-mode", value: "create", checked: mode === "create", disabled: busy, onChange: () => setMode("create") }), t("dataSettingsCreate")), mode === "create" && /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, t("dataSettingsModeHintCreate")), /* @__PURE__ */ import_react7.default.createElement("label", { className: "qibi-check" }, /* @__PURE__ */ import_react7.default.createElement("input", { type: "radio", name: "qibi-data-mode", value: "existing", checked: mode === "existing", disabled: busy, onChange: () => setMode("existing") }), t("dataSettingsExisting")), mode === "existing" && /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, t("dataSettingsModeHintExisting"))), mode === "existing" && availableUsers.length > 0 && /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("dataSettingsUser") }, /* @__PURE__ */ import_react7.default.createElement("select", { className: "qibi-select", value: userId, disabled: busy, onChange: (event) => setUserId(event.target.value) }, /* @__PURE__ */ import_react7.default.createElement("option", { value: "" }, t("dataSettingsUserDefault")), availableUsers.map((user) => /* @__PURE__ */ import_react7.default.createElement("option", { key: user.id, value: String(user.id) }, user.username || user.name || `#${user.id}`)))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-card qibi-data-settings-current" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, t("dataSettingsCurrent")), /* @__PURE__ */ import_react7.default.createElement("span", null, currentPath || t("dataSettingsNoCurrent")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, t("dataSettingsNoMove"))), info?.canSave === false && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-error-text" }, cannotSaveReason), error && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-error-text" }, error, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy, onClick: () => void load() }, t("retry"))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-actions" }, onCancel && /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: busy, onClick: onCancel }, t("cancel")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: busy || loading || info?.canSave !== true || !dataDir.trim(), onClick: () => void save() }, busy ? t("saving") : t("dataSettingsSave")))), !loading && !info && !error && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-error-text" }, t("dataSettingsLoadFailed")));
       }
       function ThemedWorkbench(props) {
-        return /* @__PURE__ */ import_react5.default.createElement(AppearanceFrame, { t: props.t }, (appearance) => /* @__PURE__ */ import_react5.default.createElement(Workbench, { ...props, appearance }));
+        return /* @__PURE__ */ import_react7.default.createElement(AppearanceFrame, { t: props.t }, (appearance) => /* @__PURE__ */ import_react7.default.createElement(Workbench, { ...props, appearance }));
       }
       function Workbench({ call, t, appearance }) {
-        const [status, setStatus] = (0, import_react5.useState)(null);
-        const [phase, setPhase] = (0, import_react5.useState)("loading");
-        const [error, setError] = (0, import_react5.useState)(null);
-        const [loadEpoch, setLoadEpoch] = (0, import_react5.useState)(0);
-        const [dataSettingsOpen, setDataSettingsOpen] = (0, import_react5.useState)(false);
-        const [dataSettingsBusy, setDataSettingsBusy] = (0, import_react5.useState)(false);
-        const [novels, setNovels] = (0, import_react5.useState)([]);
-        const [novelId, setNovelId] = (0, import_react5.useState)(null);
-        const [chapters, setChapters] = (0, import_react5.useState)([]);
-        const [chapterId, setChapterId] = (0, import_react5.useState)(null);
-        const [chapter, setChapter] = (0, import_react5.useState)(null);
-        const [draft, setDraft] = (0, import_react5.useState)("");
-        const [dirty, setDirty] = (0, import_react5.useState)(false);
-        const [saveState, setSaveState] = (0, import_react5.useState)("idle");
-        const [conflict, setConflict] = (0, import_react5.useState)(null);
-        const [characters, setCharacters] = (0, import_react5.useState)([]);
-        const [cast, setCast] = (0, import_react5.useState)([]);
-        const [tab, setTab] = (0, import_react5.useState)("body");
-        const [writable, setWritable] = (0, import_react5.useState)(false);
-        const [creating, setCreating] = (0, import_react5.useState)(false);
-        const [transitioning, setTransitioning] = (0, import_react5.useState)(false);
-        const transitionRef = (0, import_react5.useRef)(false);
-        const [newTitle, setNewTitle] = (0, import_react5.useState)("");
-        const [notice, setNotice] = (0, import_react5.useState)(null);
-        const [novelDialog, setNovelDialog] = (0, import_react5.useState)(null);
-        const [chapterDialog, setChapterDialog] = (0, import_react5.useState)(null);
-        const [aiInfo, setAiInfo] = (0, import_react5.useState)(null);
-        const [aiInfoLoading, setAiInfoLoading] = (0, import_react5.useState)(false);
-        const aiInfoSequence = (0, import_react5.useRef)(0);
-        const [aiOpen, setAiOpen] = (0, import_react5.useState)(false);
-        const [aiSelection, setAiSelection] = (0, import_react5.useState)(null);
-        const [aiInitialMode, setAiInitialMode] = (0, import_react5.useState)(null);
-        const [findOpen, setFindOpen] = (0, import_react5.useState)(false);
-        const [findQuery, setFindQuery] = (0, import_react5.useState)("");
-        const [findReplace, setFindReplace] = (0, import_react5.useState)("");
-        const [findIndex, setFindIndex] = (0, import_react5.useState)(0);
-        const [contextMenu, setContextMenu] = (0, import_react5.useState)(null);
-        const [novelQuery, setNovelQuery] = (0, import_react5.useState)("");
-        const [chapterQuery, setChapterQuery] = (0, import_react5.useState)("");
-        const [chapterMenu, setChapterMenu] = (0, import_react5.useState)(false);
-        const [zen, setZen] = (0, import_react5.useState)(() => readFlag("qibi:zen"));
-        const [outlines, setOutlines] = (0, import_react5.useState)([]);
-        const [outlineMarkers, setOutlineMarkers] = (0, import_react5.useState)(() => readJson("qibi:outline-markers", {}));
-        const [markerEditing, setMarkerEditing] = (0, import_react5.useState)(null);
-        const editorRef = (0, import_react5.useRef)(null);
-        const dirtyRef = (0, import_react5.useRef)(false);
-        const chapterRef = (0, import_react5.useRef)(null);
-        const draftRef = (0, import_react5.useRef)("");
-        const revRef = (0, import_react5.useRef)(0);
-        const chapterIdRef = (0, import_react5.useRef)(null);
-        const saveInFlightRef = (0, import_react5.useRef)(null);
-        const historyRef = (0, import_react5.useRef)(createHistory());
-        const tabRef = (0, import_react5.useRef)("body");
-        (0, import_react5.useEffect)(() => {
+        const [status, setStatus] = (0, import_react7.useState)(null);
+        const [phase, setPhase] = (0, import_react7.useState)("loading");
+        const [error, setError] = (0, import_react7.useState)(null);
+        const [loadEpoch, setLoadEpoch] = (0, import_react7.useState)(0);
+        const [dataSettingsOpen, setDataSettingsOpen] = (0, import_react7.useState)(false);
+        const [dataSettingsBusy, setDataSettingsBusy] = (0, import_react7.useState)(false);
+        const [novels, setNovels] = (0, import_react7.useState)([]);
+        const [novelId, setNovelId] = (0, import_react7.useState)(null);
+        const [chapters, setChapters] = (0, import_react7.useState)([]);
+        const [chapterId, setChapterId] = (0, import_react7.useState)(null);
+        const [chapter, setChapter] = (0, import_react7.useState)(null);
+        const [draft, setDraft] = (0, import_react7.useState)("");
+        const [dirty, setDirty] = (0, import_react7.useState)(false);
+        const [saveState, setSaveState] = (0, import_react7.useState)("idle");
+        const [conflict, setConflict] = (0, import_react7.useState)(null);
+        const [characters, setCharacters] = (0, import_react7.useState)([]);
+        const [cast, setCast] = (0, import_react7.useState)([]);
+        const [tab, setTab] = (0, import_react7.useState)("body");
+        const [writable, setWritable] = (0, import_react7.useState)(false);
+        const [creating, setCreating] = (0, import_react7.useState)(false);
+        const [transitioning, setTransitioning] = (0, import_react7.useState)(false);
+        const transitionRef = (0, import_react7.useRef)(false);
+        const [newTitle, setNewTitle] = (0, import_react7.useState)("");
+        const [notice, setNotice] = (0, import_react7.useState)(null);
+        const [novelDialog, setNovelDialog] = (0, import_react7.useState)(null);
+        const novelRequestRef = (0, import_react7.useRef)(false);
+        const outlineGuardRef = (0, import_react7.useRef)(null);
+        const registerOutlineGuard = (0, import_react7.useCallback)((guard) => {
+          outlineGuardRef.current = guard;
+          return () => {
+            if (outlineGuardRef.current === guard) outlineGuardRef.current = null;
+          };
+        }, []);
+        const novelFormId = (0, import_react7.useId)();
+        const [chapterDialog, setChapterDialog] = (0, import_react7.useState)(null);
+        const [aiInfo, setAiInfo] = (0, import_react7.useState)(null);
+        const [aiInfoLoading, setAiInfoLoading] = (0, import_react7.useState)(false);
+        const aiInfoSequence = (0, import_react7.useRef)(0);
+        const [aiOpen, setAiOpen] = (0, import_react7.useState)(false);
+        const [aiSelection, setAiSelection] = (0, import_react7.useState)(null);
+        const [aiInitialMode, setAiInitialMode] = (0, import_react7.useState)(null);
+        const [findOpen, setFindOpen] = (0, import_react7.useState)(false);
+        const [findQuery, setFindQuery] = (0, import_react7.useState)("");
+        const [findReplace, setFindReplace] = (0, import_react7.useState)("");
+        const [findIndex, setFindIndex] = (0, import_react7.useState)(0);
+        const [contextMenu, setContextMenu] = (0, import_react7.useState)(null);
+        const [novelQuery, setNovelQuery] = (0, import_react7.useState)("");
+        const [chapterQuery, setChapterQuery] = (0, import_react7.useState)("");
+        const [chapterMenu, setChapterMenu] = (0, import_react7.useState)(false);
+        const [zen, setZen] = (0, import_react7.useState)(() => readFlag("qibi:zen"));
+        const [outlines, setOutlines] = (0, import_react7.useState)([]);
+        const [outlineMarkers, setOutlineMarkers] = (0, import_react7.useState)(() => readJson("qibi:outline-markers", {}));
+        const [markerEditing, setMarkerEditing] = (0, import_react7.useState)(null);
+        const editorRef = (0, import_react7.useRef)(null);
+        const dirtyRef = (0, import_react7.useRef)(false);
+        const chapterRef = (0, import_react7.useRef)(null);
+        const draftRef = (0, import_react7.useRef)("");
+        const revRef = (0, import_react7.useRef)(0);
+        const chapterIdRef = (0, import_react7.useRef)(null);
+        const saveInFlightRef = (0, import_react7.useRef)(null);
+        const historyRef = (0, import_react7.useRef)(createHistory());
+        const tabRef = (0, import_react7.useRef)("body");
+        (0, import_react7.useEffect)(() => {
           dirtyRef.current = dirty;
         }, [dirty]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           chapterRef.current = chapter;
         }, [chapter]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           draftRef.current = draft;
         }, [draft]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           chapterIdRef.current = chapterId;
         }, [chapterId]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           tabRef.current = tab;
         }, [tab]);
-        const notify = (0, import_react5.useCallback)((kind, text) => setNotice({ kind, text }), []);
-        const retryStatus = (0, import_react5.useCallback)(() => {
+        const notify = (0, import_react7.useCallback)((kind, text) => setNotice({ kind, text }), []);
+        const retryStatus = (0, import_react7.useCallback)(() => {
           chapterRef.current = null;
           chapterIdRef.current = null;
           draftRef.current = "";
@@ -4331,15 +4732,15 @@ window.__ModuleLoader__.load({
           setPhase("loading");
           setLoadEpoch((value) => value + 1);
         }, []);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (!notice || notice.kind === "error") return void 0;
           const timer = setTimeout(() => setNotice(null), 5e3);
           return () => clearTimeout(timer);
         }, [notice]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           writeFlag("qibi:zen", zen);
         }, [zen]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           const onKey = (event) => {
             if (!event.altKey || event.ctrlKey || event.metaKey) return;
             if (event.key !== "f" && event.key !== "F") return;
@@ -4350,7 +4751,7 @@ window.__ModuleLoader__.load({
           window.addEventListener("keydown", onKey, true);
           return () => window.removeEventListener("keydown", onKey, true);
         }, []);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           let cancelled = false;
           (async () => {
             try {
@@ -4363,7 +4764,7 @@ window.__ModuleLoader__.load({
             cancelled = true;
           };
         }, [call]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (novelId === null) {
             setCharacters([]);
             return void 0;
@@ -4381,7 +4782,7 @@ window.__ModuleLoader__.load({
             cancelled = true;
           };
         }, [call, novelId]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           const timer = setTimeout(() => {
             if (!draft || characters.length === 0) {
               setCast([]);
@@ -4405,7 +4806,7 @@ window.__ModuleLoader__.load({
           }, 400);
           return () => clearTimeout(timer);
         }, [draft, characters]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (novelId === null) {
             setOutlines([]);
             return void 0;
@@ -4424,10 +4825,10 @@ window.__ModuleLoader__.load({
             cancelled = true;
           };
         }, [call, novelId, tab]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           writeJson("qibi:outline-markers", outlineMarkers);
         }, [outlineMarkers]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (!contextMenu) return void 0;
           const close = () => setContextMenu(null);
           window.addEventListener("click", close);
@@ -4437,13 +4838,13 @@ window.__ModuleLoader__.load({
             window.removeEventListener("keydown", close);
           };
         }, [contextMenu]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (!chapterMenu) return void 0;
           const close = () => setChapterMenu(false);
           window.addEventListener("click", close);
           return () => window.removeEventListener("click", close);
         }, [chapterMenu]);
-        const adoptChapter = (0, import_react5.useCallback)((next) => {
+        const adoptChapter = (0, import_react7.useCallback)((next) => {
           chapterRef.current = next;
           draftRef.current = next.content;
           dirtyRef.current = false;
@@ -4455,7 +4856,7 @@ window.__ModuleLoader__.load({
           historyRef.current = { ...createHistory(), lastText: next.content };
           setChapters((previous) => previous.map((row) => row.id === next.id ? { ...row, title: next.title, status: next.status, wordCount: next.wordCount, updatedAt: next.updatedAt } : row));
         }, []);
-        const refreshNovels = (0, import_react5.useCallback)(async (preferred) => {
+        const refreshNovels = (0, import_react7.useCallback)(async (preferred) => {
           const list = await call("novels", {});
           setNovels(list.novels);
           if (list.novels.length === 0) {
@@ -4470,7 +4871,7 @@ window.__ModuleLoader__.load({
           setPhase("ready");
           return list.novels;
         }, [call]);
-        const refreshChapters = (0, import_react5.useCallback)(async (targetNovelId, preferred) => {
+        const refreshChapters = (0, import_react7.useCallback)(async (targetNovelId, preferred) => {
           const id = targetNovelId !== void 0 && targetNovelId !== null ? targetNovelId : novelId;
           if (id === null) {
             setChapters([]);
@@ -4485,7 +4886,7 @@ window.__ModuleLoader__.load({
           });
           return result.chapters;
         }, [call, novelId]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           const beforeUnload = (event) => {
             if (!dirtyRef.current && !saveInFlightRef.current) return;
             event.preventDefault();
@@ -4494,7 +4895,7 @@ window.__ModuleLoader__.load({
           window.addEventListener("beforeunload", beforeUnload);
           return () => window.removeEventListener("beforeunload", beforeUnload);
         }, []);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           let cancelled = false;
           (async () => {
             try {
@@ -4530,7 +4931,7 @@ window.__ModuleLoader__.load({
             cancelled = true;
           };
         }, [call, loadEpoch]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (novelId === null) return;
           let cancelled = false;
           (async () => {
@@ -4547,7 +4948,7 @@ window.__ModuleLoader__.load({
             cancelled = true;
           };
         }, [call, novelId, notify]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (chapterId === null) {
             chapterRef.current = null;
             draftRef.current = "";
@@ -4580,7 +4981,7 @@ window.__ModuleLoader__.load({
             cancelled = true;
           };
         }, [adoptChapter, call, chapterId, novelId, notify]);
-        const save = (0, import_react5.useCallback)((options = {}) => runSerializedSave(saveInFlightRef, options.force === true, async () => {
+        const save = (0, import_react7.useCallback)((options = {}) => runSerializedSave(saveInFlightRef, options.force === true, async () => {
           const current = chapterRef.current;
           if (!current || !writable) return false;
           const content = draftRef.current;
@@ -4620,14 +5021,14 @@ window.__ModuleLoader__.load({
             return false;
           }
         }), [call, notify, writable]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           if (!dirty || conflict || !writable || chapter === null) return void 0;
           const timer = setTimeout(() => {
             void save();
           }, 900);
           return () => clearTimeout(timer);
         }, [draft, dirty, conflict, writable, chapter, save]);
-        (0, import_react5.useEffect)(() => {
+        (0, import_react7.useEffect)(() => {
           let cancelled = false;
           let running = false;
           const timer = setInterval(async () => {
@@ -4686,7 +5087,7 @@ window.__ModuleLoader__.load({
             clearInterval(timer);
           };
         }, [adoptChapter, call, chapterId, notify, novelId, t]);
-        const guardDirty = (0, import_react5.useCallback)(() => {
+        const guardDirty = (0, import_react7.useCallback)(() => {
           const target = chapterIdRef.current;
           return flushDraft({
             isCurrent: () => chapterIdRef.current === target,
@@ -4695,7 +5096,7 @@ window.__ModuleLoader__.load({
             save
           });
         }, [save]);
-        const runTransition = (0, import_react5.useCallback)(async (action) => {
+        const runTransition = (0, import_react7.useCallback)(async (action) => {
           if (transitionRef.current) return false;
           transitionRef.current = true;
           setTransitioning(true);
@@ -4708,20 +5109,22 @@ window.__ModuleLoader__.load({
             setTransitioning(false);
           }
         }, [guardDirty]);
-        const beforeDataSettingsSave = (0, import_react5.useCallback)(async () => {
+        const beforeDataSettingsSave = (0, import_react7.useCallback)(async () => {
+          if (outlineGuardRef.current && !await outlineGuardRef.current()) return false;
           const ok = await guardDirty();
           if (!ok) return false;
-          if (["outline", "characters", "continuity"].includes(tab)) {
+          if (["characters", "continuity"].includes(tab)) {
             return window.confirm(t("dataSettingsInfoPageConfirm"));
           }
           return true;
         }, [guardDirty, tab, t]);
-        const finishDataSettingsSave = (0, import_react5.useCallback)(() => {
+        const finishDataSettingsSave = (0, import_react7.useCallback)(() => {
           setDataSettingsOpen(false);
           retryStatus();
         }, [retryStatus]);
-        const chooseNovel = (0, import_react5.useCallback)(async (id) => {
+        const chooseNovel = (0, import_react7.useCallback)(async (id) => {
           if (id === novelId) return;
+          if (outlineGuardRef.current && !await outlineGuardRef.current()) return;
           const ok = await guardDirty();
           if (!ok || transitionRef.current) return;
           chapterRef.current = null;
@@ -4736,7 +5139,7 @@ window.__ModuleLoader__.load({
           setNewTitle("");
           setTab("body");
         }, [guardDirty, novelId]);
-        const chooseChapter = (0, import_react5.useCallback)(async (id) => {
+        const chooseChapter = (0, import_react7.useCallback)(async (id) => {
           if (id === chapterId) return;
           const ok = await guardDirty();
           if (!ok || transitionRef.current) return;
@@ -4750,7 +5153,7 @@ window.__ModuleLoader__.load({
           setSaveState("idle");
           setChapterId(id);
         }, [chapterId, guardDirty]);
-        const reload = (0, import_react5.useCallback)(async (options = {}) => {
+        const reload = (0, import_react7.useCallback)(async (options = {}) => {
           if (chapterId === null || transitionRef.current) return;
           transitionRef.current = true;
           setTransitioning(true);
@@ -4766,7 +5169,7 @@ window.__ModuleLoader__.load({
             setTransitioning(false);
           }
         }, [adoptChapter, call, chapterId, guardDirty, notify]);
-        const toggleWritable = (0, import_react5.useCallback)(async () => {
+        const toggleWritable = (0, import_react7.useCallback)(async () => {
           if (!writable) {
             try {
               const result = await call("writable", { writable: true });
@@ -4785,7 +5188,7 @@ window.__ModuleLoader__.load({
             }
           });
         }, [call, notify, runTransition, writable]);
-        const createChapter = (0, import_react5.useCallback)(async () => {
+        const createChapter = (0, import_react7.useCallback)(async () => {
           const title = newTitle.trim();
           if (!title || novelId === null) return;
           await runTransition(async () => {
@@ -4801,7 +5204,7 @@ window.__ModuleLoader__.load({
             }
           });
         }, [runTransition, call, newTitle, novelId, notify, refreshChapters, refreshNovels]);
-        const moveChapter = (0, import_react5.useCallback)(async (direction) => {
+        const moveChapter = (0, import_react7.useCallback)(async (direction) => {
           const current = chapterRef.current;
           if (!current) return;
           await runTransition(async () => {
@@ -4813,14 +5216,14 @@ window.__ModuleLoader__.load({
             }
           });
         }, [runTransition, call, novelId, notify, refreshChapters]);
-        const openChapterEdit = (0, import_react5.useCallback)(async () => {
+        const openChapterEdit = (0, import_react7.useCallback)(async () => {
           const current = chapterRef.current;
           if (!current) return;
           const ok = await guardDirty();
           if (!ok) return;
           setChapterDialog({ form: { title: current.title, status: current.status || "\u8349\u7A3F" }, busy: false });
         }, [guardDirty]);
-        const submitChapter = (0, import_react5.useCallback)(async () => {
+        const submitChapter = (0, import_react7.useCallback)(async () => {
           const current = chapterRef.current;
           if (!current || !chapterDialog || chapterDialog.busy) return;
           if (!chapterDialog.form.title.trim()) {
@@ -4842,7 +5245,7 @@ window.__ModuleLoader__.load({
             setChapterDialog((previous) => previous ? { ...previous, busy: false } : previous);
           }
         }, [adoptChapter, call, chapterDialog, notify, t]);
-        const deleteChapter = (0, import_react5.useCallback)(async () => {
+        const deleteChapter = (0, import_react7.useCallback)(async () => {
           const current = chapterRef.current;
           if (!current) return;
           const ok = await guardDirty();
@@ -4865,92 +5268,115 @@ window.__ModuleLoader__.load({
             }
           });
         }, [runTransition, call, guardDirty, novelId, notify, refreshChapters, refreshNovels, t]);
-        const openNovelCreate = (0, import_react5.useCallback)(() => {
-          setNovelDialog({
-            mode: "create",
-            form: { title: "", author: status?.user?.username ?? "", genre: "\u7384\u5E7B", status: "\u8FDE\u8F7D\u4E2D", intro: "" },
-            busy: false
-          });
+        const openNovelCreate = (0, import_react7.useCallback)(() => {
+          const form = novelForm({ title: "", author: status?.user?.username ?? "", genre: "\u7384\u5E7B", status: "\u8FDE\u8F7D\u4E2D", intro: "" });
+          setNovelDialog({ mode: "create", id: null, form, initial: { ...form }, original: null, busy: false, error: "" });
         }, [status]);
-        const openNovelEdit = (0, import_react5.useCallback)(() => {
+        const openNovelEdit = (0, import_react7.useCallback)(() => {
           const row = novels.find((novel) => novel.id === novelId);
           if (!row) return;
-          setNovelDialog({
-            mode: "edit",
-            form: { title: row.title, author: row.author, genre: row.genre, status: row.status, intro: row.intro ?? "" },
-            busy: false
-          });
+          const form = novelForm(row);
+          setNovelDialog({ mode: "edit", id: row.id, form, initial: { ...form }, original: { ...row }, busy: false, error: "" });
         }, [novelId, novels]);
-        const setNovelField = (0, import_react5.useCallback)((key, value) => {
-          setNovelDialog((current) => current ? { ...current, form: { ...current.form, [key]: value } } : current);
-        }, []);
-        const submitNovel = (0, import_react5.useCallback)(async () => {
-          if (!novelDialog || novelDialog.busy || !writable) return;
+        const setNovelField = (0, import_react7.useCallback)((key, value) => {
+          if (novelRequestRef.current || !writable) return;
+          setNovelDialog((current) => current ? { ...current, form: { ...current.form, [key]: value }, error: "" } : current);
+        }, [writable]);
+        const closeNovelDialog = (0, import_react7.useCallback)(() => {
+          if (!novelDialog || novelRequestRef.current || novelDialog.busy) return;
+          if (novelFormDirty(novelDialog.form, novelDialog.initial) && !window.confirm(t("novelDiscardChanges"))) return;
+          setNovelDialog(null);
+        }, [novelDialog, t]);
+        const submitNovel = (0, import_react7.useCallback)(async () => {
+          if (!novelDialog || novelDialog.busy || novelRequestRef.current || !writable) return;
           if (!novelDialog.form.title.trim()) {
-            notify("error", t("titleRequired"));
+            setNovelDialog((current) => current ? { ...current, error: t("novelNameRequired") } : current);
             return;
           }
-          if (novelDialog.mode === "create") {
-            if (transitionRef.current) return;
-            transitionRef.current = true;
-            setTransitioning(true);
-            if (!await guardDirty()) {
-              transitionRef.current = false;
-              setTransitioning(false);
-              return;
-            }
-          }
-          setNovelDialog((previous) => previous ? { ...previous, busy: true } : previous);
+          if (novelDialog.mode === "edit" && !novelFormDirty(novelDialog.form, novelDialog.initial)) return;
+          const snapshot = novelDialog;
+          if (snapshot.mode === "create" && outlineGuardRef.current && !await outlineGuardRef.current()) return;
+          if (novelRequestRef.current) return;
+          const payload = novelPayload(snapshot.form, snapshot.mode === "edit" ? snapshot.initial : void 0);
+          novelRequestRef.current = true;
+          setNovelDialog((previous) => previous ? { ...previous, busy: true, error: "" } : previous);
+          let ownsTransition = false;
+          let committed = false;
           try {
-            if (novelDialog.mode === "create") {
-              const result = await call("createNovel", novelDialog.form);
-              await refreshNovels(result.novel?.id);
+            if (snapshot.mode === "create") {
+              if (transitionRef.current) return;
+              transitionRef.current = true;
+              ownsTransition = true;
+              setTransitioning(true);
+              if (!await guardDirty()) return;
+            }
+            const result = snapshot.mode === "create" ? await call("createNovel", payload) : await call("updateNovel", { novelId: snapshot.id, ...payload });
+            committed = true;
+            setNovelDialog(null);
+            notify("info", t(snapshot.mode === "create" ? "createdNotice" : "savedNotice"));
+            if (snapshot.mode === "create") {
+              chapterRef.current = null;
+              chapterIdRef.current = null;
+              draftRef.current = "";
+              dirtyRef.current = false;
               setChapterId(null);
               setChapter(null);
               setDraft("");
+              setDirty(false);
               setTab("body");
-              notify("info", t("createdNotice"));
-            } else {
-              await call("updateNovel", { novelId, ...novelDialog.form });
-              await refreshNovels(novelId);
-              notify("info", t("savedNotice"));
             }
-            setNovelDialog(null);
+            await refreshNovels(snapshot.mode === "create" ? result.novel?.id : snapshot.id);
           } catch (cause) {
-            notify("error", causeText(cause));
-            setNovelDialog((previous) => previous ? { ...previous, busy: false } : previous);
+            if (committed) notify("error", t("novelSavedRefreshFailed"));
+            else setNovelDialog((current) => current && current.id === snapshot.id && current.mode === snapshot.mode ? { ...current, busy: false, error: causeText(cause) } : current);
           } finally {
-            if (novelDialog.mode === "create") {
+            novelRequestRef.current = false;
+            if (ownsTransition) {
               transitionRef.current = false;
               setTransitioning(false);
             }
+            if (!committed) setNovelDialog((current) => current ? { ...current, busy: false } : current);
           }
-        }, [guardDirty, call, novelDialog, novelId, notify, refreshNovels, t]);
-        const deleteNovel = (0, import_react5.useCallback)(async () => {
-          if (novelId === null || !writable) return;
-          const ok = await guardDirty();
-          if (!ok) return;
-          if (!window.confirm(t("confirmDeleteNovel"))) return;
-          await runTransition(async () => {
-            try {
-              await call("deleteNovel", { novelId, confirm: true });
+        }, [guardDirty, call, novelDialog, notify, refreshNovels, t, writable]);
+        const deleteNovel = (0, import_react7.useCallback)(async () => {
+          const snapshot = novelDialog;
+          if (!snapshot || snapshot.mode !== "edit" || snapshot.id == null || !writable || snapshot.busy || novelRequestRef.current) return;
+          const confirmation = t("novelDeleteConfirm").replace("{title}", snapshot.original?.title ?? snapshot.form.title);
+          if (!window.confirm(confirmation)) return;
+          novelRequestRef.current = true;
+          setNovelDialog((current) => current ? { ...current, busy: true, error: "" } : current);
+          let committed = false;
+          try {
+            await runTransition(async () => {
+              await call("deleteNovel", { novelId: snapshot.id, confirm: true });
+              committed = true;
               setNovelDialog(null);
-              await refreshNovels();
+              chapterRef.current = null;
+              chapterIdRef.current = null;
+              draftRef.current = "";
+              dirtyRef.current = false;
               setChapterId(null);
               setChapter(null);
               setDraft("");
+              setDirty(false);
               setTab("body");
               notify("info", t("deletedNotice"));
-            } catch (cause) {
-              notify("error", causeText(cause));
-            }
-          });
-        }, [runTransition, call, guardDirty, novelId, notify, refreshNovels, t, writable]);
-        const openChapterFromSearch = (0, import_react5.useCallback)(async (targetNovelId, targetChapterId) => {
+              await refreshNovels();
+            });
+          } catch (cause) {
+            if (committed) notify("error", t("novelSavedRefreshFailed"));
+            else setNovelDialog((current) => current ? { ...current, error: causeText(cause), busy: false } : current);
+          } finally {
+            novelRequestRef.current = false;
+            if (!committed) setNovelDialog((current) => current ? { ...current, busy: false } : current);
+          }
+        }, [runTransition, call, novelDialog, notify, refreshNovels, t, writable]);
+        const openChapterFromSearch = (0, import_react7.useCallback)(async (targetNovelId, targetChapterId) => {
           if (targetNovelId === novelId && targetChapterId === chapterIdRef.current) {
             setTab("body");
             return;
           }
+          if (targetNovelId !== novelId && outlineGuardRef.current && !await outlineGuardRef.current()) return;
           const ok = await guardDirty();
           if (!ok || transitionRef.current) return;
           chapterRef.current = null;
@@ -4965,7 +5391,7 @@ window.__ModuleLoader__.load({
           setChapterId(targetChapterId);
           setTab("body");
         }, [guardDirty, novelId]);
-        const onChapterRestored = (0, import_react5.useCallback)(async (restored) => {
+        const onChapterRestored = (0, import_react7.useCallback)(async (restored) => {
           if (!restored || chapterIdRef.current !== restored.id) return;
           if (dirtyRef.current) {
             setConflict({ currentUpdatedAt: restored.updatedAt });
@@ -4974,7 +5400,7 @@ window.__ModuleLoader__.load({
           }
           adoptChapter(restored);
         }, [adoptChapter, notify, t]);
-        const findMatches = (0, import_react5.useMemo)(() => {
+        const findMatches = (0, import_react7.useMemo)(() => {
           const query = findQuery;
           if (!query) return [];
           const list = [];
@@ -4987,32 +5413,32 @@ window.__ModuleLoader__.load({
           }
           return list;
         }, [draft, findQuery]);
-        const applyDraft = (0, import_react5.useCallback)((next) => {
+        const applyDraft = (0, import_react7.useCallback)((next) => {
           if (transitionRef.current) return;
           draftRef.current = next;
           dirtyRef.current = next !== (chapterRef.current?.content ?? "");
           setDraft(next);
           setDirty(dirtyRef.current);
         }, []);
-        const editDraft = (0, import_react5.useCallback)((next) => {
+        const editDraft = (0, import_react7.useCallback)((next) => {
           pushHistory(historyRef.current, draftRef.current, next);
           applyDraft(next);
         }, [applyDraft]);
-        const undo = (0, import_react5.useCallback)(() => {
+        const undo = (0, import_react7.useCallback)(() => {
           if (transitionRef.current || !writable) return false;
           const previous = undoHistory(historyRef.current, draftRef.current);
           if (previous === null) return false;
           applyDraft(previous);
           return true;
         }, [applyDraft, writable]);
-        const redo = (0, import_react5.useCallback)(() => {
+        const redo = (0, import_react7.useCallback)(() => {
           if (transitionRef.current || !writable) return false;
           const next = redoHistory(historyRef.current, draftRef.current);
           if (next === null) return false;
           applyDraft(next);
           return true;
         }, [applyDraft, writable]);
-        const autoFormat = (0, import_react5.useCallback)(() => {
+        const autoFormat = (0, import_react7.useCallback)(() => {
           const doc = draftRef.current;
           if (!doc) return;
           const formatted = doc.split(/\r?\n/).map((line) => {
@@ -5023,7 +5449,7 @@ window.__ModuleLoader__.load({
           }).join("\n");
           if (formatted !== doc) editDraft(formatted);
         }, [editDraft]);
-        const selectMatch = (0, import_react5.useCallback)((index) => {
+        const selectMatch = (0, import_react7.useCallback)((index) => {
           const editor = editorRef.current;
           if (!editor || findMatches.length === 0) return;
           const normalized = (index % findMatches.length + findMatches.length) % findMatches.length;
@@ -5032,7 +5458,7 @@ window.__ModuleLoader__.load({
           editor.setSelectionRange(at, at + findQuery.length);
           editor.scrollTop = Math.max(0, (draft.length ? at / draft.length : 0) * editor.scrollHeight - editor.clientHeight / 2);
         }, [draft.length, findMatches, findQuery.length]);
-        const openFind = (0, import_react5.useCallback)((focusReplace) => {
+        const openFind = (0, import_react7.useCallback)((focusReplace) => {
           setFindOpen(true);
           setFindIndex(0);
           const editor = editorRef.current;
@@ -5047,13 +5473,13 @@ window.__ModuleLoader__.load({
             editor?.focus();
           }, 0);
         }, [draft]);
-        const findStep = (0, import_react5.useCallback)((direction) => {
+        const findStep = (0, import_react7.useCallback)((direction) => {
           if (findMatches.length === 0) return;
           const next = findIndex + direction;
           setFindIndex(next);
           selectMatch(next);
         }, [findIndex, findMatches.length, selectMatch]);
-        const replaceOne = (0, import_react5.useCallback)(() => {
+        const replaceOne = (0, import_react7.useCallback)(() => {
           if (findMatches.length === 0) return;
           const at = findMatches[Math.min(Math.max(findIndex, 0), findMatches.length - 1)];
           const next = `${draft.slice(0, at)}${findReplace}${draft.slice(at + findQuery.length)}`;
@@ -5061,14 +5487,14 @@ window.__ModuleLoader__.load({
           setTimeout(() => selectMatch(findIndex), 0);
           notify("info", t("findReplacedOne"));
         }, [draft, editDraft, findIndex, findMatches, findQuery.length, findReplace, notify, selectMatch, t]);
-        const replaceAll = (0, import_react5.useCallback)(() => {
+        const replaceAll = (0, import_react7.useCallback)(() => {
           if (findMatches.length === 0) return;
           const count = findMatches.length;
           editDraft(draft.split(findQuery).join(findReplace));
           setFindIndex(0);
           notify("info", t("findReplacedAll").replace("{n}", String(count)));
         }, [draft, editDraft, findMatches.length, findQuery, findReplace, notify, t]);
-        const onEditorContextMenu = (0, import_react5.useCallback)((event) => {
+        const onEditorContextMenu = (0, import_react7.useCallback)((event) => {
           const editor = editorRef.current;
           if (!editor) return;
           const { selectionStart, selectionEnd } = editor;
@@ -5078,7 +5504,7 @@ window.__ModuleLoader__.load({
           event.preventDefault();
           setContextMenu({ x: event.clientX, y: event.clientY, from: selectionStart, to: selectionEnd, text });
         }, [draft]);
-        const openAi = (0, import_react5.useCallback)((selection, initialMode) => {
+        const openAi = (0, import_react7.useCallback)((selection, initialMode) => {
           setAiSelection(selection ?? null);
           setAiInitialMode(initialMode ?? null);
           setAiOpen(true);
@@ -5096,7 +5522,7 @@ window.__ModuleLoader__.load({
             if (sequence === aiInfoSequence.current) setAiInfoLoading(false);
           });
         }, [call, notify]);
-        const showUndo = (0, import_react5.useCallback)((previous, appliedChapterId, messageKey) => {
+        const showUndo = (0, import_react7.useCallback)((previous, appliedChapterId, messageKey) => {
           setNotice({
             kind: "info",
             text: t(messageKey),
@@ -5113,7 +5539,7 @@ window.__ModuleLoader__.load({
             }
           });
         }, [editDraft, t]);
-        const recordAiRevision = (0, import_react5.useCallback)((text, label) => {
+        const recordAiRevision = (0, import_react7.useCallback)((text, label) => {
           const target = chapterIdRef.current;
           if (target == null || !String(text ?? "").trim()) return;
           void call("addRevision", {
@@ -5122,7 +5548,7 @@ window.__ModuleLoader__.load({
             reason: `AI \u751F\u6210 \xB7 ${label || "\u6B63\u6587"}`
           }).catch((cause) => notify("error", causeText(cause)));
         }, [call, notify]);
-        const applyAi = (0, import_react5.useCallback)(async ({ mode, modeLabel, text, rewrite, report, selection, sourceNovelId, sourceChapterId }) => {
+        const applyAi = (0, import_react7.useCallback)(async ({ mode, modeLabel, text, rewrite, report, selection, sourceNovelId, sourceChapterId }) => {
           if (!writable || transitionRef.current || sourceNovelId !== novelId || sourceChapterId !== chapterIdRef.current) {
             notify("error", t("aiSourceChanged"));
             return;
@@ -5164,7 +5590,7 @@ window.__ModuleLoader__.load({
           setAiOpen(false);
           showUndo(current, chapterIdRef.current, "aiAppliedHint");
         }, [call, chapterId, editDraft, novelId, notify, recordAiRevision, showUndo, t, writable]);
-        const copySelection = (0, import_react5.useCallback)(async () => {
+        const copySelection = (0, import_react7.useCallback)(async () => {
           if (!contextMenu) return;
           try {
             await navigator.clipboard.writeText(contextMenu.text);
@@ -5173,7 +5599,7 @@ window.__ModuleLoader__.load({
             notify("error", causeText(cause));
           }
         }, [contextMenu, notify]);
-        const cutSelection = (0, import_react5.useCallback)(async () => {
+        const cutSelection = (0, import_react7.useCallback)(async () => {
           if (!contextMenu) return;
           try {
             await navigator.clipboard.writeText(contextMenu.text);
@@ -5188,17 +5614,17 @@ window.__ModuleLoader__.load({
         const wordCount = draft.length;
         const editable = writable && !transitioning && conflict === null && chapter !== null;
         const saveLabel = saveState === "saving" ? t("saving") : saveState === "error" ? t("saveFailed") : dirty ? t("unsaved") : saveState === "saved" ? t("saved") : "";
-        const visibleNovels = (0, import_react5.useMemo)(() => {
+        const visibleNovels = (0, import_react7.useMemo)(() => {
           const query = novelQuery.trim().toLowerCase();
           const rows = query ? novels.filter((row) => String(row.title ?? "").toLowerCase().includes(query) || String(row.genre ?? "").toLowerCase().includes(query)) : novels;
           return rows.slice().sort((a, b) => String(b.updatedAt ?? "").localeCompare(String(a.updatedAt ?? "")));
         }, [novels, novelQuery]);
-        const visibleChapters = (0, import_react5.useMemo)(() => {
+        const visibleChapters = (0, import_react7.useMemo)(() => {
           const query = chapterQuery.trim().toLowerCase();
           if (!query) return chapters;
           return chapters.filter((row) => String(row.title ?? "").toLowerCase().includes(query));
         }, [chapters, chapterQuery]);
-        const anchors = (0, import_react5.useMemo)(
+        const anchors = (0, import_react7.useMemo)(
           () => matchOutlineAnchors(draft, outlines, outlineMarkers, chapterId),
           [draft, outlines, outlineMarkers, chapterId]
         );
@@ -5268,19 +5694,34 @@ window.__ModuleLoader__.load({
             requestAnimationFrame(() => document.getElementById(`qibi-tab-${nextKey}`)?.focus());
           }
         };
-        const novelDialogNode = novelDialog ? /* @__PURE__ */ import_react5.default.createElement(
+        const novelDirty = novelDialog ? novelFormDirty(novelDialog.form, novelDialog.initial) : false;
+        const novelDialogNode = novelDialog ? /* @__PURE__ */ import_react7.default.createElement(
           Dialog,
           {
             title: novelDialog.mode === "create" ? t("newNovel") : t("novelSettings"),
+            className: "qibi-novel-settings-dialog",
             busy: novelDialog.busy,
-            onClose: () => {
-              if (!novelDialog.busy) setNovelDialog(null);
-            },
-            footer: /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, novelDialog.mode === "edit" && /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small danger", disabled: !writable || novelDialog.busy, onClick: () => void deleteNovel() }, t("delete")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: novelDialog.busy, onClick: () => setNovelDialog(null) }, t("cancel")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: !writable || novelDialog.busy, onClick: () => void submitNovel() }, t("save")))
+            onClose: closeNovelDialog,
+            footer: /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub qibi-settings-save-state" }, t(novelDialog.busy ? "saving" : !writable ? "novelReadOnlyState" : novelDirty ? "unsaved" : "novelNoChanges")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn", disabled: novelDialog.busy, onClick: closeNovelDialog }, t(novelDirty ? "cancel" : "close")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "submit", form: novelFormId, className: "qibi-btn primary", disabled: !writable || novelDialog.busy || novelDialog.mode === "edit" && !novelDirty }, t(novelDialog.busy ? "saving" : novelDialog.mode === "create" ? "novelCreateAction" : "novelSaveAction")))
           },
-          /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-form" }, /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("novelTitle") }, /* @__PURE__ */ import_react5.default.createElement("input", { className: "qibi-input", value: novelDialog.form.title, onChange: (event) => setNovelField("title", event.target.value) })), /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("novelAuthor") }, /* @__PURE__ */ import_react5.default.createElement("input", { className: "qibi-input", value: novelDialog.form.author, onChange: (event) => setNovelField("author", event.target.value) })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("novelGenre") }, /* @__PURE__ */ import_react5.default.createElement("input", { className: "qibi-input", value: novelDialog.form.genre, onChange: (event) => setNovelField("genre", event.target.value) })), /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("novelStatus") }, /* @__PURE__ */ import_react5.default.createElement("input", { className: "qibi-input", value: novelDialog.form.status, onChange: (event) => setNovelField("status", event.target.value) }))), /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("novelIntro") }, /* @__PURE__ */ import_react5.default.createElement("textarea", { className: "qibi-textarea", rows: 4, value: novelDialog.form.intro, onChange: (event) => setNovelField("intro", event.target.value) })))
+          /* @__PURE__ */ import_react7.default.createElement(
+            NovelSettingsFields,
+            {
+              formId: novelFormId,
+              form: novelDialog.form,
+              initial: novelDialog.original,
+              mode: novelDialog.mode,
+              writable,
+              busy: novelDialog.busy,
+              error: novelDialog.error,
+              onField: setNovelField,
+              onSubmit: submitNovel,
+              onDelete: deleteNovel,
+              t
+            }
+          )
         ) : null;
-        const chapterDialogNode = chapterDialog && chapter ? /* @__PURE__ */ import_react5.default.createElement(
+        const chapterDialogNode = chapterDialog && chapter ? /* @__PURE__ */ import_react7.default.createElement(
           Dialog,
           {
             title: t("chapterSettings"),
@@ -5288,28 +5729,28 @@ window.__ModuleLoader__.load({
             onClose: () => {
               if (!chapterDialog.busy) setChapterDialog(null);
             },
-            footer: /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: chapterDialog.busy, onClick: () => setChapterDialog(null) }, t("cancel")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: chapterDialog.busy, onClick: () => void submitChapter() }, t("save")))
+            footer: /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: chapterDialog.busy, onClick: () => setChapterDialog(null) }, t("cancel")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", disabled: chapterDialog.busy, onClick: () => void submitChapter() }, t("save")))
           },
-          /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-form" }, /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("chapterTitle") }, /* @__PURE__ */ import_react5.default.createElement(
+          /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-form" }, /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("chapterTitle") }, /* @__PURE__ */ import_react7.default.createElement(
             "input",
             {
               className: "qibi-input",
               value: chapterDialog.form.title,
               onChange: (event) => setChapterDialog((current) => current ? { ...current, form: { ...current.form, title: event.target.value } } : current)
             }
-          )), /* @__PURE__ */ import_react5.default.createElement(Field2, { label: t("chapterStatus") }, /* @__PURE__ */ import_react5.default.createElement(
+          )), /* @__PURE__ */ import_react7.default.createElement(Field2, { label: t("chapterStatus") }, /* @__PURE__ */ import_react7.default.createElement(
             "select",
             {
               className: "qibi-select",
               value: chapterDialog.form.status,
               onChange: (event) => setChapterDialog((current) => current ? { ...current, form: { ...current.form, status: event.target.value } } : current)
             },
-            chapterStatusOptions(chapter.status).map((option) => /* @__PURE__ */ import_react5.default.createElement("option", { key: option, value: option }, option))
+            chapterStatusOptions(chapter.status).map((option) => /* @__PURE__ */ import_react7.default.createElement("option", { key: option, value: option }, option))
           )))
         ) : null;
-        const dataSettingsDialogNode = dataSettingsOpen ? /* @__PURE__ */ import_react5.default.createElement(Dialog, { title: t("dataSettingsTitle"), busy: dataSettingsBusy, onClose: () => {
+        const dataSettingsDialogNode = dataSettingsOpen ? /* @__PURE__ */ import_react7.default.createElement(Dialog, { title: t("dataSettingsTitle"), busy: dataSettingsBusy, onClose: () => {
           if (!dataSettingsBusy) setDataSettingsOpen(false);
-        } }, /* @__PURE__ */ import_react5.default.createElement(
+        } }, /* @__PURE__ */ import_react7.default.createElement(
           DataSettings,
           {
             key: `data-settings-${loadEpoch}`,
@@ -5322,10 +5763,10 @@ window.__ModuleLoader__.load({
           }
         )) : null;
         if (phase === "loading") {
-          return /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-root" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-bar" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-title" }, t("panel")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement(ThemeButton, { appearance, t })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-empty" }, t("loading")));
+          return /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-root" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-bar" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-title" }, t("panel")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement(ThemeButton, { appearance, t })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-empty" }, t("loading")));
         }
         if (phase === "nodb") {
-          return /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-root qibi-setup-root" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-bar" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-title" }, t("panel")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement(ThemeButton, { appearance, t })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, t("noDb")), /* @__PURE__ */ import_react5.default.createElement("span", null, t("noDbHint").replace("{path}", status?.dbPath ?? status?.dataDir ?? "")), /* @__PURE__ */ import_react5.default.createElement("code", { className: "qibi-code" }, status?.dbPath)), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-card" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, t("dataSettingsTitle")), /* @__PURE__ */ import_react5.default.createElement(
+          return /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-root qibi-setup-root" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-bar" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-title" }, t("panel")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement(ThemeButton, { appearance, t })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, t("noDb")), /* @__PURE__ */ import_react7.default.createElement("span", null, t("noDbHint").replace("{path}", status?.dbPath ?? status?.dataDir ?? "")), /* @__PURE__ */ import_react7.default.createElement("code", { className: "qibi-code" }, status?.dbPath)), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-card" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, t("dataSettingsTitle")), /* @__PURE__ */ import_react7.default.createElement(
             DataSettings,
             {
               key: `data-settings-inline-${loadEpoch}`,
@@ -5337,10 +5778,10 @@ window.__ModuleLoader__.load({
           )), dataSettingsDialogNode);
         }
         if (phase === "error") {
-          return /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-root" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-bar" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-title" }, t("panel")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement(ThemeButton, { appearance, t })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, t("error")), /* @__PURE__ */ import_react5.default.createElement("span", null, error?.message ?? ""), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-actions", style: { marginTop: 12 } }, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn", onClick: retryStatus }, t("retry")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn primary", onClick: () => setDataSettingsOpen(true) }, t("dataSettingsOpen")))), dataSettingsDialogNode);
+          return /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-root" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-bar" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-title" }, t("panel")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement(ThemeButton, { appearance, t })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, t("error")), /* @__PURE__ */ import_react7.default.createElement("span", null, error?.message ?? ""), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-actions", style: { marginTop: 12 } }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn", onClick: retryStatus }, t("retry")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn primary", onClick: () => setDataSettingsOpen(true) }, t("dataSettingsOpen")))), dataSettingsDialogNode);
         }
         if (phase === "empty") {
-          return /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-root" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-bar" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-title" }, t("panel")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement(
+          return /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-root" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-bar" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-title" }, t("panel")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement(
             "button",
             {
               type: "button",
@@ -5350,13 +5791,13 @@ window.__ModuleLoader__.load({
               disabled: !status?.configWritable,
               title: status?.configWritable ? t("writeToggleHint") : "config.allowWrite = false"
             },
-            /* @__PURE__ */ import_react5.default.createElement("span", { className: `qibi-chip-dot${writable ? " on" : ""}` }),
+            /* @__PURE__ */ import_react7.default.createElement("span", { className: `qibi-chip-dot${writable ? " on" : ""}` }),
             writable ? t("writeOn") : t("writeOff")
-          ), /* @__PURE__ */ import_react5.default.createElement(ThemeButton, { appearance, t }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => setDataSettingsOpen(true) }, t("dataSettingsOpen")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable, onClick: openNovelCreate }, "\uFF0B ", t("newNovel"))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, t("emptyNovel")), /* @__PURE__ */ import_react5.default.createElement("span", null, t("emptyNovelHint")), /* @__PURE__ */ import_react5.default.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn", disabled: !writable, onClick: openNovelCreate }, t("newNovel")))), novelDialogNode, dataSettingsDialogNode);
+          ), /* @__PURE__ */ import_react7.default.createElement(ThemeButton, { appearance, t }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => setDataSettingsOpen(true) }, t("dataSettingsOpen")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable, onClick: openNovelCreate }, "\uFF0B ", t("newNovel"))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, t("emptyNovel")), /* @__PURE__ */ import_react7.default.createElement("span", null, t("emptyNovelHint")), /* @__PURE__ */ import_react7.default.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn", disabled: !writable, onClick: openNovelCreate }, t("newNovel")))), novelDialogNode, dataSettingsDialogNode);
         }
-        return /* @__PURE__ */ import_react5.default.createElement("div", { className: `qibi-root${zen ? " zen" : ""}` }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-bar" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-title" }, t("panel")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, activeNovel ? `\u300A${activeNovel.title}\u300B\xB7 ${activeNovel.chapterCount} ${t("chapters")} \xB7 ${formatWords(activeNovel.wordCount)} ${t("words")}` : ""), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement(ThemeButton, { appearance, t }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: async () => {
+        return /* @__PURE__ */ import_react7.default.createElement("div", { className: `qibi-root${zen ? " zen" : ""}` }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-bar" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-title" }, t("panel")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, activeNovel ? `\u300A${activeNovel.title}\u300B\xB7 ${activeNovel.chapterCount} ${t("chapters")} \xB7 ${formatWords(activeNovel.wordCount)} ${t("words")}` : ""), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement(ThemeButton, { appearance, t }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: async () => {
           if (await guardDirty()) setDataSettingsOpen(true);
-        } }, t("dataSettingsOpen")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !activeNovel, onClick: openNovelEdit }, t("novelSettings")), /* @__PURE__ */ import_react5.default.createElement(
+        } }, t("dataSettingsOpen")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !activeNovel, onClick: openNovelEdit }, t("novelSettings")), /* @__PURE__ */ import_react7.default.createElement(
           "button",
           {
             type: "button",
@@ -5366,9 +5807,9 @@ window.__ModuleLoader__.load({
             disabled: !status?.configWritable,
             title: status?.configWritable ? t("writeToggleHint") : "config.allowWrite = false"
           },
-          /* @__PURE__ */ import_react5.default.createElement("span", { className: `qibi-chip-dot${writable ? " on" : ""}` }),
+          /* @__PURE__ */ import_react7.default.createElement("span", { className: `qibi-chip-dot${writable ? " on" : ""}` }),
           writable ? t("writeOn") : t("writeOff")
-        ), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void reload() }, t("reload"))), conflict && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-banner" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, t("conflict")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, t("conflictHint")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement(
+        ), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => void reload() }, t("reload"))), conflict && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-banner" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, t("conflict")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, t("conflictHint")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement(
           "button",
           {
             type: "button",
@@ -5379,16 +5820,16 @@ window.__ModuleLoader__.load({
             }
           },
           t("reload")
-        ), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", onClick: () => {
+        ), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", onClick: () => {
           void save({ force: true });
-        } }, t("overwrite"))), notice && /* @__PURE__ */ import_react5.default.createElement(
+        } }, t("overwrite"))), notice && /* @__PURE__ */ import_react7.default.createElement(
           "div",
           {
             className: `qibi-notice${notice.kind === "error" ? " error" : ""}`,
             role: notice.kind === "error" ? "alert" : "status"
           },
-          /* @__PURE__ */ import_react5.default.createElement("span", null, notice.text),
-          notice.action && /* @__PURE__ */ import_react5.default.createElement(
+          /* @__PURE__ */ import_react7.default.createElement("span", null, notice.text),
+          notice.action && /* @__PURE__ */ import_react7.default.createElement(
             "button",
             {
               type: "button",
@@ -5397,8 +5838,8 @@ window.__ModuleLoader__.load({
             },
             notice.action.label
           ),
-          /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", "aria-label": t("close"), onClick: () => setNotice(null) }, "\xD7")
-        ), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-body" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-side" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-side-block novels" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-side-head" }, /* @__PURE__ */ import_react5.default.createElement("span", null, t("novels")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable, onClick: openNovelCreate, title: t("newNovel") }, "\uFF0B")), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-side-search" }, /* @__PURE__ */ import_react5.default.createElement(
+          /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", "aria-label": t("close"), onClick: () => setNotice(null) }, "\xD7")
+        ), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-body" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-side" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-side-block novels" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-side-head" }, /* @__PURE__ */ import_react7.default.createElement("span", null, t("novels")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable, onClick: openNovelCreate, title: t("newNovel") }, "\uFF0B")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-side-search" }, /* @__PURE__ */ import_react7.default.createElement(
           "input",
           {
             className: "qibi-input",
@@ -5409,7 +5850,7 @@ window.__ModuleLoader__.load({
               if (event.key === "Escape") setNovelQuery("");
             }
           }
-        )), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-list" }, visibleNovels.length === 0 && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-side-note" }, t("noMatch")), visibleNovels.map((novel) => /* @__PURE__ */ import_react5.default.createElement(
+        )), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-list" }, visibleNovels.length === 0 && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-side-note" }, t("noMatch")), visibleNovels.map((novel) => /* @__PURE__ */ import_react7.default.createElement(
           "button",
           {
             key: novel.id,
@@ -5419,9 +5860,9 @@ window.__ModuleLoader__.load({
               void chooseNovel(novel.id);
             }
           },
-          /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-novel-name" }, "\u300A", novel.title, "\u300B"),
-          /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-novel-meta" }, novel.genre, " \xB7 ", formatWords(novel.wordCount), " ", t("words"))
-        )))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-side-block chapters" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-side-subhead" }, /* @__PURE__ */ import_react5.default.createElement("span", null, t("chapters")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, chapters.length), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: locateChapter, title: t("locateChapter"), "aria-label": t("locateChapter") }, "\u25CE"), /* @__PURE__ */ import_react5.default.createElement(
+          /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-novel-name" }, "\u300A", novel.title, "\u300B"),
+          /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-novel-meta" }, novel.genre, " \xB7 ", formatWords(novel.wordCount), " ", t("words"))
+        )))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-side-block chapters" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-side-subhead" }, /* @__PURE__ */ import_react7.default.createElement("span", null, t("chapters")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, chapters.length), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: locateChapter, title: t("locateChapter"), "aria-label": t("locateChapter") }, "\u25CE"), /* @__PURE__ */ import_react7.default.createElement(
           "button",
           {
             type: "button",
@@ -5434,7 +5875,7 @@ window.__ModuleLoader__.load({
             title: t("newChapter")
           },
           "\uFF0B"
-        )), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-side-search" }, /* @__PURE__ */ import_react5.default.createElement(
+        )), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-side-search" }, /* @__PURE__ */ import_react7.default.createElement(
           "input",
           {
             className: "qibi-input",
@@ -5445,7 +5886,7 @@ window.__ModuleLoader__.load({
               if (event.key === "Escape") setChapterQuery("");
             }
           }
-        )), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-list" }, visibleChapters.length === 0 && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-side-note" }, chapters.length === 0 ? t("emptyChapter") : t("noMatch")), visibleChapters.map((row) => /* @__PURE__ */ import_react5.default.createElement(
+        )), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-list" }, visibleChapters.length === 0 && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-side-note" }, chapters.length === 0 ? t("emptyChapter") : t("noMatch")), visibleChapters.map((row) => /* @__PURE__ */ import_react7.default.createElement(
           "button",
           {
             key: row.id,
@@ -5455,10 +5896,10 @@ window.__ModuleLoader__.load({
               void chooseChapter(row.id);
             }
           },
-          /* @__PURE__ */ import_react5.default.createElement("span", { className: `qibi-dot${row.status === "\u5DF2\u53D1\u5E03" ? " published" : ""}` }),
-          /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-chapter-name" }, row.title),
-          /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-chapter-words" }, formatWords(row.wordCount))
-        )))), creating && novelId !== null && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-newrow" }, /* @__PURE__ */ import_react5.default.createElement(
+          /* @__PURE__ */ import_react7.default.createElement("span", { className: `qibi-dot${row.status === "\u5DF2\u53D1\u5E03" ? " published" : ""}` }),
+          /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-chapter-name" }, row.title),
+          /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-chapter-words" }, formatWords(row.wordCount))
+        )))), creating && novelId !== null && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-newrow" }, /* @__PURE__ */ import_react7.default.createElement(
           "input",
           {
             autoFocus: true,
@@ -5474,12 +5915,12 @@ window.__ModuleLoader__.load({
               }
             }
           }
-        ), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", onClick: () => {
+        ), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", onClick: () => {
           void createChapter();
-        } }, "\u2713"))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-main" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-main-head" }, chapter ? /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-chapter-title", title: chapter.title }, chapter.title), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-chip" }, chapter.status || t("statusDraft")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, formatWords(wordCount), " ", t("words"), saveLabel ? ` \xB7 ${saveLabel}` : "", " \xB7 ", chapter.updatedAt), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), aiInfo?.available && /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", onClick: () => openAi(null) }, t("aiButton")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => openFind(false), title: t("findTitle") }, t("findTitle")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: autoFormat, title: t("formatTitle"), disabled: !draft }, t("format")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => {
+        } }, "\u2713"))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-main" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-main-head" }, chapter ? /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-chapter-title", title: chapter.title }, chapter.title), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-chip" }, chapter.status || t("statusDraft")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, formatWords(wordCount), " ", t("words"), saveLabel ? ` \xB7 ${saveLabel}` : "", " \xB7 ", chapter.updatedAt), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), aiInfo?.available && /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", onClick: () => openAi(null) }, t("aiButton")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => openFind(false), title: t("findTitle") }, t("findTitle")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: autoFormat, title: t("formatTitle"), disabled: !draft }, t("format")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => {
           setZen((value) => !value);
           setTab("body");
-        }, title: t("zenHint") }, zen ? t("zenOff") : t("zen")), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-menu-wrap" }, /* @__PURE__ */ import_react5.default.createElement(
+        }, title: t("zenHint") }, zen ? t("zenOff") : t("zen")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-menu-wrap" }, /* @__PURE__ */ import_react7.default.createElement(
           "button",
           {
             type: "button",
@@ -5493,33 +5934,33 @@ window.__ModuleLoader__.load({
             }
           },
           "\u22EF"
-        ), chapterMenu && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-menu", role: "menu", onClick: (event) => event.stopPropagation() }, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", role: "menuitem", disabled: !editable, onClick: () => {
+        ), chapterMenu && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-menu", role: "menu", onClick: (event) => event.stopPropagation() }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", role: "menuitem", disabled: !editable, onClick: () => {
           setChapterMenu(false);
           undo();
           editorRef.current?.focus();
-        } }, t("undo"), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, " Ctrl+Z")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", role: "menuitem", disabled: !editable, onClick: () => {
+        } }, t("undo"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, " Ctrl+Z")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", role: "menuitem", disabled: !editable, onClick: () => {
           setChapterMenu(false);
           redo();
           editorRef.current?.focus();
-        } }, t("redo"), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, " Ctrl+Y")), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-menu-sep" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", role: "menuitem", disabled: !previousChapter, onClick: () => {
+        } }, t("redo"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, " Ctrl+Y")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-menu-sep" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", role: "menuitem", disabled: !previousChapter, onClick: () => {
           setChapterMenu(false);
           if (previousChapter) void chooseChapter(previousChapter.id);
-        } }, t("previousChapter")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", role: "menuitem", disabled: !nextChapter, onClick: () => {
+        } }, t("previousChapter")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", role: "menuitem", disabled: !nextChapter, onClick: () => {
           setChapterMenu(false);
           if (nextChapter) void chooseChapter(nextChapter.id);
-        } }, t("nextChapter")), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-menu-sep" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", role: "menuitem", disabled: !writable, onClick: () => {
+        } }, t("nextChapter")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-menu-sep" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", role: "menuitem", disabled: !writable, onClick: () => {
           setChapterMenu(false);
           void moveChapter("up");
-        } }, t("moveUp")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", role: "menuitem", disabled: !writable, onClick: () => {
+        } }, t("moveUp")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", role: "menuitem", disabled: !writable, onClick: () => {
           setChapterMenu(false);
           void moveChapter("down");
-        } }, t("moveDown")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", role: "menuitem", disabled: !writable, onClick: () => {
+        } }, t("moveDown")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", role: "menuitem", disabled: !writable, onClick: () => {
           setChapterMenu(false);
           void openChapterEdit();
-        } }, t("edit")), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-menu-sep" }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", role: "menuitem", className: "danger", disabled: !writable, onClick: () => {
+        } }, t("edit")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-menu-sep" }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", role: "menuitem", className: "danger", disabled: !writable, onClick: () => {
           setChapterMenu(false);
           void deleteChapter();
-        } }, t("delete"))))) : /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, t("noChapterSelected"))), chapter && !editable && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-readonly-bar" }, !writable ? t("readonlyWriteOff") : t("readonlyConflict")), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-tabs", role: "tablist", "aria-label": t("panel"), onKeyDown: onTabKey }, TABS.map(([key, labelKey]) => /* @__PURE__ */ import_react5.default.createElement(
+        } }, t("delete"))))) : /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, t("noChapterSelected"))), chapter && !editable && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-readonly-bar" }, !writable ? t("readonlyWriteOff") : t("readonlyConflict")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-tabs", role: "tablist", "aria-label": t("panel"), onKeyDown: onTabKey }, TABS.map(([key, labelKey]) => /* @__PURE__ */ import_react7.default.createElement(
           "button",
           {
             key,
@@ -5533,7 +5974,7 @@ window.__ModuleLoader__.load({
             onClick: () => setTab(key)
           },
           t(labelKey)
-        ))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-body", role: "tabpanel", "aria-labelledby": "qibi-tab-body", style: { display: tab === "body" ? "flex" : "none" } }, chapter ? /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, findOpen && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-find" }, /* @__PURE__ */ import_react5.default.createElement(
+        ))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-body", role: "tabpanel", "aria-labelledby": "qibi-tab-body", style: { display: tab === "body" ? "flex" : "none" } }, chapter ? /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, findOpen && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-find" }, /* @__PURE__ */ import_react7.default.createElement(
           "input",
           {
             autoFocus: true,
@@ -5552,7 +5993,7 @@ window.__ModuleLoader__.load({
               if (event.key === "Escape") setFindOpen(false);
             }
           }
-        ), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub qibi-find-count" }, findMatches.length ? `${Math.min(Math.abs(findIndex) % findMatches.length + 1, findMatches.length)}/${findMatches.length}` : "0/0"), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !findMatches.length, onClick: () => findStep(-1), title: t("findPrev") }, "\u2191"), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !findMatches.length, onClick: () => findStep(1), title: t("findNext") }, "\u2193"), /* @__PURE__ */ import_react5.default.createElement(
+        ), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub qibi-find-count" }, findMatches.length ? `${Math.min(Math.abs(findIndex) % findMatches.length + 1, findMatches.length)}/${findMatches.length}` : "0/0"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !findMatches.length, onClick: () => findStep(-1), title: t("findPrev") }, "\u2191"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !findMatches.length, onClick: () => findStep(1), title: t("findNext") }, "\u2193"), /* @__PURE__ */ import_react7.default.createElement(
           "input",
           {
             className: "qibi-input",
@@ -5563,7 +6004,7 @@ window.__ModuleLoader__.load({
               if (event.key === "Escape") setFindOpen(false);
             }
           }
-        ), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || !findMatches.length, onClick: replaceOne }, t("findReplaceOne")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || !findMatches.length, onClick: replaceAll }, t("findReplaceAll")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => setFindOpen(false) }, "\xD7")), cast.length > 0 && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-cast" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, t("castThisChapter")), cast.map((row) => /* @__PURE__ */ import_react5.default.createElement(
+        ), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || !findMatches.length, onClick: replaceOne }, t("findReplaceOne")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: !writable || !findMatches.length, onClick: replaceAll }, t("findReplaceAll")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => setFindOpen(false) }, "\xD7")), cast.length > 0 && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-cast" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, t("castThisChapter")), cast.map((row) => /* @__PURE__ */ import_react7.default.createElement(
           "button",
           {
             type: "button",
@@ -5576,7 +6017,7 @@ window.__ModuleLoader__.load({
           row.name,
           " \xD7",
           row.count
-        ))), anchors.length > 0 && /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-anchors" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-sub" }, t("outlineAnchors")), anchors.map((anchor) => markerEditing?.id === anchor.id ? /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-anchor-form", key: anchor.id }, /* @__PURE__ */ import_react5.default.createElement(
+        ))), anchors.length > 0 && /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-anchors" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-sub" }, t("outlineAnchors")), anchors.map((anchor) => markerEditing?.id === anchor.id ? /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-anchor-form", key: anchor.id }, /* @__PURE__ */ import_react7.default.createElement(
           "input",
           {
             autoFocus: true,
@@ -5589,7 +6030,7 @@ window.__ModuleLoader__.load({
               if (event.key === "Escape") setMarkerEditing(null);
             }
           }
-        ), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small primary", onClick: saveMarker }, "\u2713"), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "qibi-btn small", "aria-label": t("cancel"), onClick: () => setMarkerEditing(null) }, "\xD7")) : /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-anchor", key: anchor.id }, /* @__PURE__ */ import_react5.default.createElement(
+        ), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small primary", onClick: saveMarker }, "\u2713"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "qibi-btn small", "aria-label": t("cancel"), onClick: () => setMarkerEditing(null) }, "\xD7")) : /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-anchor", key: anchor.id }, /* @__PURE__ */ import_react7.default.createElement(
           "button",
           {
             type: "button",
@@ -5597,9 +6038,9 @@ window.__ModuleLoader__.load({
             title: anchor.done ? t("anchorDoneHint") : t("anchorTodoHint"),
             onClick: () => jumpToAnchor(anchor)
           },
-          /* @__PURE__ */ import_react5.default.createElement("span", { className: `qibi-dot${anchor.done ? " published" : ""}` }),
+          /* @__PURE__ */ import_react7.default.createElement("span", { className: `qibi-dot${anchor.done ? " published" : ""}` }),
           anchor.title || anchor.marker || `#${anchor.id}`
-        ), /* @__PURE__ */ import_react5.default.createElement(
+        ), /* @__PURE__ */ import_react7.default.createElement(
           "button",
           {
             type: "button",
@@ -5609,7 +6050,7 @@ window.__ModuleLoader__.load({
             onClick: () => setMarkerEditing({ id: anchor.id, value: anchor.custom ? anchor.marker : "" })
           },
           "\u270E"
-        )))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-editor-wrap" }, /* @__PURE__ */ import_react5.default.createElement(
+        )))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-editor-wrap" }, /* @__PURE__ */ import_react7.default.createElement(
           "textarea",
           {
             ref: editorRef,
@@ -5658,18 +6099,18 @@ window.__ModuleLoader__.load({
               }
             }
           }
-        ))) : /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, t("emptyChapter")), /* @__PURE__ */ import_react5.default.createElement("span", null, t("noChapterHint")))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-outline", role: "tabpanel", "aria-labelledby": "qibi-tab-outline", style: { display: tab === "outline" ? "flex" : "none" } }, /* @__PURE__ */ import_react5.default.createElement(OutlineTab, { key: novelId, call, novelId, chapters, writable, active: tab === "outline", notify, t })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-characters", role: "tabpanel", "aria-labelledby": "qibi-tab-characters", style: { display: tab === "characters" ? "flex" : "none" } }, /* @__PURE__ */ import_react5.default.createElement(CharactersTab, { key: novelId, call, novelId, chapterId, writable, active: tab === "characters", notify, t, guard: guardDirty })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-distill", role: "tabpanel", "aria-labelledby": "qibi-tab-distill", style: { display: tab === "distill" ? "flex" : "none" } }, /* @__PURE__ */ import_react5.default.createElement(DistillTab, { key: novelId, call, novelId, writable, active: tab === "distill", notify, t })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-continuity", role: "tabpanel", "aria-labelledby": "qibi-tab-continuity", style: { display: tab === "continuity" ? "flex" : "none" } }, /* @__PURE__ */ import_react5.default.createElement(ContinuityTab, { key: novelId, call, novelId, chapterId, writable, active: tab === "continuity", notify, t })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-search", role: "tabpanel", "aria-labelledby": "qibi-tab-search", style: { display: tab === "search" ? "flex" : "none" } }, /* @__PURE__ */ import_react5.default.createElement(SearchTab, { key: novelId, call, novelId, writable, active: tab === "search", notify, onOpenChapter: openChapterFromSearch, t })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-revisions", role: "tabpanel", "aria-labelledby": "qibi-tab-revisions", style: { display: tab === "revisions" ? "flex" : "none" } }, /* @__PURE__ */ import_react5.default.createElement(RevisionsTab, { key: chapterId ?? "none", call, chapterId, writable, active: tab === "revisions", notify, onRestored: onChapterRestored, guard: guardDirty, t })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-export", role: "tabpanel", "aria-labelledby": "qibi-tab-export", style: { display: tab === "export" ? "flex" : "none" } }, /* @__PURE__ */ import_react5.default.createElement(ExportTab, { key: novelId, call, novelId, notify, t })))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-foot" }, /* @__PURE__ */ import_react5.default.createElement("span", null, status?.dataDir), /* @__PURE__ */ import_react5.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react5.default.createElement("span", null, status?.user ? `${status.user.username}` : "")), contextMenu && /* @__PURE__ */ import_react5.default.createElement(
+        ))) : /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, t("emptyChapter")), /* @__PURE__ */ import_react7.default.createElement("span", null, t("noChapterHint")))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-outline", role: "tabpanel", "aria-labelledby": "qibi-tab-outline", style: { display: tab === "outline" ? "flex" : "none" } }, /* @__PURE__ */ import_react7.default.createElement(OutlineWorkspace, { key: novelId, call, novelId, chapterId, registerGuard: registerOutlineGuard, chapters, writable, active: tab === "outline", notify, t })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-characters", role: "tabpanel", "aria-labelledby": "qibi-tab-characters", style: { display: tab === "characters" ? "flex" : "none" } }, /* @__PURE__ */ import_react7.default.createElement(CharactersTab, { key: novelId, call, novelId, chapterId, writable, active: tab === "characters", notify, t, guard: guardDirty })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-distill", role: "tabpanel", "aria-labelledby": "qibi-tab-distill", style: { display: tab === "distill" ? "flex" : "none" } }, /* @__PURE__ */ import_react7.default.createElement(DistillTab, { key: novelId, call, novelId, writable, active: tab === "distill", notify, t })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-continuity", role: "tabpanel", "aria-labelledby": "qibi-tab-continuity", style: { display: tab === "continuity" ? "flex" : "none" } }, /* @__PURE__ */ import_react7.default.createElement(ContinuityTab, { key: novelId, call, novelId, chapterId, writable, active: tab === "continuity", notify, t })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-search", role: "tabpanel", "aria-labelledby": "qibi-tab-search", style: { display: tab === "search" ? "flex" : "none" } }, /* @__PURE__ */ import_react7.default.createElement(SearchTab, { key: novelId, call, novelId, writable, active: tab === "search", notify, onOpenChapter: openChapterFromSearch, t })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-revisions", role: "tabpanel", "aria-labelledby": "qibi-tab-revisions", style: { display: tab === "revisions" ? "flex" : "none" } }, /* @__PURE__ */ import_react7.default.createElement(RevisionsTab, { key: chapterId ?? "none", call, chapterId, writable, active: tab === "revisions", notify, onRestored: onChapterRestored, guard: guardDirty, t })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-export", role: "tabpanel", "aria-labelledby": "qibi-tab-export", style: { display: tab === "export" ? "flex" : "none" } }, /* @__PURE__ */ import_react7.default.createElement(ExportTab, { key: novelId, call, novelId, notify, t })))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-foot" }, /* @__PURE__ */ import_react7.default.createElement("span", null, status?.dataDir), /* @__PURE__ */ import_react7.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react7.default.createElement("span", null, status?.user ? `${status.user.username}` : "")), contextMenu && /* @__PURE__ */ import_react7.default.createElement(
           "div",
           {
             className: "qibi-context",
             style: { left: Math.min(contextMenu.x, window.innerWidth - 200), top: Math.min(contextMenu.y, window.innerHeight - 260) },
             onClick: (event) => event.stopPropagation()
           },
-          /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-context-label" }, "\u201C", contextMenu.text.slice(0, 16), contextMenu.text.length > 16 ? "\u2026" : "", "\u201D"),
-          aiInfo?.available && /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", onClick: () => openAi({ ...contextMenu }, "deslop-selection") }, t("aiDeslop")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", onClick: () => openAi({ ...contextMenu }, "polish-selection") }, t("aiPolish")), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", onClick: () => openAi({ ...contextMenu }, "expand-selection") }, t("aiExpand")), /* @__PURE__ */ import_react5.default.createElement("div", { className: "qibi-context-sep" })),
-          /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", onClick: () => void copySelection() }, t("copySelection")),
-          /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", onClick: () => void cutSelection() }, t("cutSelection")),
-          /* @__PURE__ */ import_react5.default.createElement(
+          /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-context-label" }, "\u201C", contextMenu.text.slice(0, 16), contextMenu.text.length > 16 ? "\u2026" : "", "\u201D"),
+          aiInfo?.available && /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", onClick: () => openAi({ ...contextMenu }, "deslop-selection") }, t("aiDeslop")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", onClick: () => openAi({ ...contextMenu }, "polish-selection") }, t("aiPolish")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", onClick: () => openAi({ ...contextMenu }, "expand-selection") }, t("aiExpand")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "qibi-context-sep" })),
+          /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", onClick: () => void copySelection() }, t("copySelection")),
+          /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", onClick: () => void cutSelection() }, t("cutSelection")),
+          /* @__PURE__ */ import_react7.default.createElement(
             "button",
             {
               type: "button",
@@ -5681,7 +6122,7 @@ window.__ModuleLoader__.load({
             },
             t("findSelected")
           )
-        ), aiOpen && /* @__PURE__ */ import_react5.default.createElement(
+        ), aiOpen && /* @__PURE__ */ import_react7.default.createElement(
           AiDrawer,
           {
             key: `${status?.dbPath}:${novelId}:${chapterId}`,

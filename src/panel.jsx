@@ -20,6 +20,9 @@ import { saveCharacterEditor } from './character-editor.js'
 import DistillGuide from './DistillGuide.jsx'
 import { distillInstruction } from './distill-guide.js'
 import ForeshadowEditor from './ForeshadowEditor.jsx'
+import NovelSettingsFields from './NovelSettingsFields.jsx'
+import OutlineTab from './OutlineWorkspace.jsx'
+import { novelForm, novelFormDirty, novelPayload } from './novel-settings.js'
 
 /** 面板 id：侧栏图标与中央面板必须用同一个。 */
 const PANEL_ID = 'qibi'
@@ -736,7 +739,7 @@ function Field({ label, children }) {
 }
 
 /** 面板内模态框。 */
-function Dialog({ title, onClose, children, footer, busy = false }) {
+function Dialog({ title, onClose, children, footer, busy = false, className = '' }) {
   const element = useRef(null)
   const close = useRef(onClose)
   const locked = useRef(busy)
@@ -749,7 +752,7 @@ function Dialog({ title, onClose, children, footer, busy = false }) {
     const onKey = event => {
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); if (!locked.current) close.current() }
       if (event.key !== 'Tab' || !element.current) return
-      const controls = Array.from(element.current.querySelectorAll('button, input, textarea, select, [tabindex="0"]')).filter(node => !node.matches(':disabled') && node.getClientRects().length)
+      const controls = Array.from(element.current.querySelectorAll('button, input, textarea, select, summary, a[href], [tabindex="0"]')).filter(node => !node.matches(':disabled') && node.getClientRects().length)
       const first = controls[0], last = controls[controls.length - 1]
       if (!first) { event.preventDefault(); element.current.focus() }
       else if (event.shiftKey && (document.activeElement === first || !controls.includes(document.activeElement))) { event.preventDefault(); last.focus() }
@@ -759,7 +762,7 @@ function Dialog({ title, onClose, children, footer, busy = false }) {
     return () => { document.removeEventListener('keydown', onKey, true); if (trigger?.isConnected) trigger.focus() }
   }, [])
   return <div className="qibi-overlay" onMouseDown={event => { if (event.target === event.currentTarget && !busy) onClose() }}>
-    <div ref={element} className="qibi-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-busy={busy} tabIndex={-1}>
+    <div ref={element} className={`qibi-dialog${className ? ` ${className}` : ''}`} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-busy={busy} tabIndex={-1}>
       <div className="qibi-dialog-head"><strong id={titleId}>{title}</strong><span className="qibi-spacer" /><button type="button" className="qibi-btn small" disabled={busy} aria-label={title + ' · 关闭'} onClick={onClose}>×</button></div>
       <div className="qibi-dialog-body"><fieldset className="qibi-form-lock" disabled={busy}>{children}</fieldset></div>
       {footer ? <div className="qibi-dialog-foot">{footer}</div> : null}
@@ -776,175 +779,6 @@ function LoadError({ message, onRetry, t }) {
       <div style={{ marginTop: 12 }}>
         <button type="button" className="qibi-btn" onClick={onRetry}>{t('retry')}</button>
       </div>
-    </div>
-  )
-}
-
-/** 大纲：总纲 + 章节细纲的增删改查。 */
-function OutlineTab({ call, novelId, chapters, writable, active, notify, t }) {
-  const [outline, setOutline] = useState(null)
-  const [editing, setEditing] = useState(null)
-  const [form, setForm] = useState({ title: '', content: '', chapterId: '' })
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState(null)
-  const [editToken, setEditToken] = useState(null)
-
-  const load = useCallback(async () => {
-    if (novelId === null) return
-    try {
-      const result = await call('outline', { novelId })
-      setOutline(result.outline)
-      setError(null)
-    } catch (cause) {
-      setError(causeText(cause))
-    }
-  }, [call, novelId])
-
-  useEffect(() => {
-    setOutline(null)
-    setEditing(null)
-    setForm({ title: '', content: '', chapterId: '' })
-    setError(null)
-  }, [novelId])
-
-  useEffect(() => {
-    if (active) void load()
-  }, [active, load])
-
-  const startNew = () => {
-    setEditing('new')
-    setEditToken(null)
-    setForm({ title: '', content: '', chapterId: '' })
-  }
-
-  const startEdit = row => {
-    setEditing(row.id)
-    setEditToken(row.token ?? null)
-    setForm({ title: row.title, content: row.content, chapterId: row.chapterId === null ? '' : String(row.chapterId) })
-  }
-
-  const cancel = () => {
-    setEditing(null)
-    setEditToken(null)
-    setForm({ title: '', content: '', chapterId: '' })
-  }
-
-  const submit = async () => {
-    if (busy) return
-    if (!form.title.trim() && !form.content.trim()) {
-      notify('error', t('titleRequired'))
-      return
-    }
-    setBusy(true)
-    try {
-      const chapterId = form.chapterId === '' ? null : Number(form.chapterId)
-      if (editing === 'new') {
-        await call('createOutline', { novelId, title: form.title, content: form.content, chapterId })
-      } else {
-        await call('updateOutline', {
-          outlineId: editing,
-          title: form.title,
-          content: form.content,
-          chapterId,
-          expectedToken: editToken ?? undefined,
-        })
-      }
-      await load()
-      cancel()
-      notify('info', t('savedNotice'))
-    } catch (cause) {
-      if (cause?.code === 'ENTITY_CONFLICT') {
-        notify('error', t('entityConflict'))
-        // Keep the local form so it can be copied or explicitly discarded.
-      } else {
-        notify('error', causeText(cause))
-      }
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  const remove = async row => {
-    if (!window.confirm(t('confirmDeleteOutline'))) return
-    try {
-      await call('deleteOutline', { outlineId: row.id })
-      await load()
-      notify('info', t('deletedNotice'))
-    } catch (cause) {
-      notify('error', causeText(cause))
-    }
-  }
-
-  const chapterLabel = id => chapters.find(row => row.id === id)?.title ?? `#${id}`
-
-  return (
-    <div className="qibi-pane">
-      <div className="qibi-row">
-        <span className="qibi-section-title">{t('tabOutline')}</span>
-        <span className="qibi-spacer" />
-        <button type="button" className="qibi-btn small" disabled={!writable || busy} onClick={startNew}>＋ {t('outlineNew')}</button>
-      </div>
-
-      {editing !== null && (
-        <fieldset className="qibi-form-lock" disabled={busy || !writable}><div className="qibi-form">
-          <Field label={t('outlineTarget')}>
-            <select
-              className="qibi-select"
-              value={form.chapterId}
-              onChange={event => setForm(current => ({ ...current, chapterId: event.target.value }))}
-            >
-              <option value="">{t('outlineMaster')}</option>
-              {chapters.map(row => <option key={row.id} value={String(row.id)}>{row.title}</option>)}
-            </select>
-          </Field>
-          <Field label={t('outlineTitle')}>
-            <input
-              className="qibi-input"
-              value={form.title}
-              placeholder={t('outlineTitle')}
-              onChange={event => setForm(current => ({ ...current, title: event.target.value }))}
-            />
-          </Field>
-          <Field label={t('outlineContent')}>
-            <textarea
-              className="qibi-textarea"
-              rows={6}
-              value={form.content}
-              onChange={event => setForm(current => ({ ...current, content: event.target.value }))}
-            />
-          </Field>
-          <div className="qibi-actions">
-            <button type="button" className="qibi-btn small primary" disabled={busy} onClick={() => void submit()}>{t('save')}</button>
-            <button type="button" className="qibi-btn small" onClick={cancel}>{t('cancel')}</button>
-          </div>
-        </div></fieldset>
-      )}
-
-      {error && <LoadError message={error} onRetry={() => void load()} t={t} />}
-      {!error && outline === null && <div className="qibi-sub">{t('loading')}</div>}
-      {!error && outline !== null && outline.length === 0 && (
-        <div className="qibi-empty">
-          <strong>{t('emptyOutline')}</strong>
-          <span>{t('emptyOutlineHint')}</span>
-          {writable && (
-            <div style={{ marginTop: 12 }}>
-              <button type="button" className="qibi-btn" onClick={startNew}>＋ {t('outlineNew')}</button>
-            </div>
-          )}
-        </div>
-      )}
-      {!error && (outline ?? []).map(row => (
-        <div className="qibi-card" key={row.id}>
-          <div className="qibi-row">
-            <h4>{row.title || t('untitled')}</h4>
-            <span className="qibi-tag">{row.chapterId === null ? t('outlineMaster') : chapterLabel(row.chapterId)}</span>
-            <span className="qibi-spacer" />
-            <button type="button" className="qibi-btn small" disabled={!writable || busy} onClick={() => startEdit(row)}>{t('edit')}</button>
-            <button type="button" className="qibi-btn small danger" disabled={!writable || busy} onClick={() => void remove(row)}>{t('delete')}</button>
-          </div>
-          <p>{row.content || '—'}</p>
-        </div>
-      ))}
     </div>
   )
 }
@@ -2352,6 +2186,13 @@ function Workbench({ call, t, appearance }) {
   const [newTitle, setNewTitle] = useState('')
   const [notice, setNotice] = useState(null)
   const [novelDialog, setNovelDialog] = useState(null)
+  const novelRequestRef = useRef(false)
+  const outlineGuardRef = useRef(null)
+  const registerOutlineGuard = useCallback(guard => {
+    outlineGuardRef.current = guard
+    return () => { if (outlineGuardRef.current === guard) outlineGuardRef.current = null }
+  }, [])
+  const novelFormId = useId()
   const [chapterDialog, setChapterDialog] = useState(null)
   const [aiInfo, setAiInfo] = useState(null)
   const [aiInfoLoading, setAiInfoLoading] = useState(false)
@@ -2808,9 +2649,10 @@ function Workbench({ call, t, appearance }) {
   }, [guardDirty])
 
   const beforeDataSettingsSave = useCallback(async () => {
+    if (outlineGuardRef.current && !(await outlineGuardRef.current())) return false
     const ok = await guardDirty()
     if (!ok) return false
-    if (['outline', 'characters', 'continuity'].includes(tab)) {
+    if (['characters', 'continuity'].includes(tab)) {
       return window.confirm(t('dataSettingsInfoPageConfirm'))
     }
     return true
@@ -2823,6 +2665,7 @@ function Workbench({ call, t, appearance }) {
 
   const chooseNovel = useCallback(async id => {
     if (id === novelId) return
+    if (outlineGuardRef.current && !(await outlineGuardRef.current())) return
     const ok = await guardDirty()
     if (!ok || transitionRef.current) return
     chapterRef.current = null
@@ -2968,86 +2811,117 @@ function Workbench({ call, t, appearance }) {
   }, [runTransition, call, guardDirty, novelId, notify, refreshChapters, refreshNovels, t])
 
   const openNovelCreate = useCallback(() => {
-    setNovelDialog({
-      mode: 'create',
-      form: { title: '', author: status?.user?.username ?? '', genre: '玄幻', status: '连载中', intro: '' },
-      busy: false,
-    })
+    const form = novelForm({ title: '', author: status?.user?.username ?? '', genre: '玄幻', status: '连载中', intro: '' })
+    setNovelDialog({ mode: 'create', id: null, form, initial: { ...form }, original: null, busy: false, error: '' })
   }, [status])
 
   const openNovelEdit = useCallback(() => {
     const row = novels.find(novel => novel.id === novelId)
     if (!row) return
-    setNovelDialog({
-      mode: 'edit',
-      form: { title: row.title, author: row.author, genre: row.genre, status: row.status, intro: row.intro ?? '' },
-      busy: false,
-    })
+    const form = novelForm(row)
+    setNovelDialog({ mode: 'edit', id: row.id, form, initial: { ...form }, original: { ...row }, busy: false, error: '' })
   }, [novelId, novels])
 
   const setNovelField = useCallback((key, value) => {
-    setNovelDialog(current => (current ? { ...current, form: { ...current.form, [key]: value } } : current))
-  }, [])
+    if (novelRequestRef.current || !writable) return
+    setNovelDialog(current => current ? { ...current, form: { ...current.form, [key]: value }, error: '' } : current)
+  }, [writable])
+
+  const closeNovelDialog = useCallback(() => {
+    if (!novelDialog || novelRequestRef.current || novelDialog.busy) return
+    if (novelFormDirty(novelDialog.form, novelDialog.initial) && !window.confirm(t('novelDiscardChanges'))) return
+    setNovelDialog(null)
+  }, [novelDialog, t])
 
   const submitNovel = useCallback(async () => {
-    if (!novelDialog || novelDialog.busy || !writable) return
+    if (!novelDialog || novelDialog.busy || novelRequestRef.current || !writable) return
     if (!novelDialog.form.title.trim()) {
-      notify('error', t('titleRequired'))
+      setNovelDialog(current => current ? { ...current, error: t('novelNameRequired') } : current)
       return
     }
-    if (novelDialog.mode === 'create') {
-      if (transitionRef.current) return
-      transitionRef.current = true
-      setTransitioning(true)
-      if (!(await guardDirty())) { transitionRef.current = false; setTransitioning(false); return }
-    }
-    setNovelDialog(previous => (previous ? { ...previous, busy: true } : previous))
+    if (novelDialog.mode === 'edit' && !novelFormDirty(novelDialog.form, novelDialog.initial)) return
+    const snapshot = novelDialog
+    if (snapshot.mode === 'create' && outlineGuardRef.current && !(await outlineGuardRef.current())) return
+    if (novelRequestRef.current) return
+    const payload = novelPayload(snapshot.form, snapshot.mode === 'edit' ? snapshot.initial : undefined)
+    novelRequestRef.current = true
+    setNovelDialog(previous => previous ? { ...previous, busy: true, error: '' } : previous)
+    let ownsTransition = false
+    let committed = false
     try {
-      if (novelDialog.mode === 'create') {
-        const result = await call('createNovel', novelDialog.form)
-        await refreshNovels(result.novel?.id)
+      if (snapshot.mode === 'create') {
+        if (transitionRef.current) return
+        transitionRef.current = true
+        ownsTransition = true
+        setTransitioning(true)
+        if (!(await guardDirty())) return
+      }
+      const result = snapshot.mode === 'create'
+        ? await call('createNovel', payload)
+        : await call('updateNovel', { novelId: snapshot.id, ...payload })
+      committed = true
+      setNovelDialog(null)
+      notify('info', t(snapshot.mode === 'create' ? 'createdNotice' : 'savedNotice'))
+      if (snapshot.mode === 'create') {
+        chapterRef.current = null
+        chapterIdRef.current = null
+        draftRef.current = ''
+        dirtyRef.current = false
         setChapterId(null)
         setChapter(null)
         setDraft('')
+        setDirty(false)
         setTab('body')
-        notify('info', t('createdNotice'))
-      } else {
-        await call('updateNovel', { novelId, ...novelDialog.form })
-        await refreshNovels(novelId)
-        notify('info', t('savedNotice'))
       }
-      setNovelDialog(null)
+      await refreshNovels(snapshot.mode === 'create' ? result.novel?.id : snapshot.id)
     } catch (cause) {
-      notify('error', causeText(cause))
-      setNovelDialog(previous => (previous ? { ...previous, busy: false } : previous))
+      if (committed) notify('error', t('novelSavedRefreshFailed'))
+      else setNovelDialog(current => current && current.id === snapshot.id && current.mode === snapshot.mode
+        ? { ...current, busy: false, error: causeText(cause) } : current)
     } finally {
-      if (novelDialog.mode === 'create') { transitionRef.current = false; setTransitioning(false) }
+      novelRequestRef.current = false
+      if (ownsTransition) { transitionRef.current = false; setTransitioning(false) }
+      if (!committed) setNovelDialog(current => current ? { ...current, busy: false } : current)
     }
-  }, [guardDirty, call, novelDialog, novelId, notify, refreshNovels, t])
+  }, [guardDirty, call, novelDialog, notify, refreshNovels, t, writable])
 
   const deleteNovel = useCallback(async () => {
-    if (novelId === null || !writable) return
-    const ok = await guardDirty()
-    if (!ok) return
-    if (!window.confirm(t('confirmDeleteNovel'))) return
-    await runTransition(async () => {
+    const snapshot = novelDialog
+    if (!snapshot || snapshot.mode !== 'edit' || snapshot.id == null || !writable || snapshot.busy || novelRequestRef.current) return
+    const confirmation = t('novelDeleteConfirm').replace('{title}', snapshot.original?.title ?? snapshot.form.title)
+    if (!window.confirm(confirmation)) return
+    novelRequestRef.current = true
+    setNovelDialog(current => current ? { ...current, busy: true, error: '' } : current)
+    let committed = false
     try {
-      await call('deleteNovel', { novelId, confirm: true })
-      setNovelDialog(null)
-      await refreshNovels()
-      setChapterId(null)
-      setChapter(null)
-      setDraft('')
-      setTab('body')
-      notify('info', t('deletedNotice'))
+      await runTransition(async () => {
+        await call('deleteNovel', { novelId: snapshot.id, confirm: true })
+        committed = true
+        setNovelDialog(null)
+        chapterRef.current = null
+        chapterIdRef.current = null
+        draftRef.current = ''
+        dirtyRef.current = false
+        setChapterId(null)
+        setChapter(null)
+        setDraft('')
+        setDirty(false)
+        setTab('body')
+        notify('info', t('deletedNotice'))
+        await refreshNovels()
+      })
     } catch (cause) {
-      notify('error', causeText(cause))
+      if (committed) notify('error', t('novelSavedRefreshFailed'))
+      else setNovelDialog(current => current ? { ...current, error: causeText(cause), busy: false } : current)
+    } finally {
+      novelRequestRef.current = false
+      if (!committed) setNovelDialog(current => current ? { ...current, busy: false } : current)
     }
-    })
-  }, [runTransition, call, guardDirty, novelId, notify, refreshNovels, t, writable])
+  }, [runTransition, call, novelDialog, notify, refreshNovels, t, writable])
 
   const openChapterFromSearch = useCallback(async (targetNovelId, targetChapterId) => {
     if (targetNovelId === novelId && targetChapterId === chapterIdRef.current) { setTab('body'); return }
+    if (targetNovelId !== novelId && outlineGuardRef.current && !(await outlineGuardRef.current())) return
     const ok = await guardDirty()
     if (!ok || transitionRef.current) return
     chapterRef.current = null
@@ -3416,41 +3290,27 @@ function Workbench({ call, t, appearance }) {
     }
   }
 
+  const novelDirty = novelDialog ? novelFormDirty(novelDialog.form, novelDialog.initial) : false
   const novelDialogNode = novelDialog ? (
     <Dialog
       title={novelDialog.mode === 'create' ? t('newNovel') : t('novelSettings')}
+      className="qibi-novel-settings-dialog"
       busy={novelDialog.busy}
-      onClose={() => { if (!novelDialog.busy) setNovelDialog(null) }}
+      onClose={closeNovelDialog}
       footer={(
         <>
-          {novelDialog.mode === 'edit' && (
-            <button type="button" className="qibi-btn small danger" disabled={!writable || novelDialog.busy} onClick={() => void deleteNovel()}>{t('delete')}</button>
-          )}
+          <span className="qibi-sub qibi-settings-save-state">{t(novelDialog.busy ? 'saving' : !writable ? 'novelReadOnlyState' : novelDirty ? 'unsaved' : 'novelNoChanges')}</span>
           <span className="qibi-spacer" />
-          <button type="button" className="qibi-btn small" disabled={novelDialog.busy} onClick={() => setNovelDialog(null)}>{t('cancel')}</button>
-          <button type="button" className="qibi-btn small primary" disabled={!writable || novelDialog.busy} onClick={() => void submitNovel()}>{t('save')}</button>
+          <button type="button" className="qibi-btn" disabled={novelDialog.busy} onClick={closeNovelDialog}>{t(novelDirty ? 'cancel' : 'close')}</button>
+          <button type="submit" form={novelFormId} className="qibi-btn primary" disabled={!writable || novelDialog.busy || (novelDialog.mode === 'edit' && !novelDirty)}>{t(novelDialog.busy ? 'saving' : novelDialog.mode === 'create' ? 'novelCreateAction' : 'novelSaveAction')}</button>
         </>
       )}
     >
-      <div className="qibi-form">
-        <Field label={t('novelTitle')}>
-          <input className="qibi-input" value={novelDialog.form.title} onChange={event => setNovelField('title', event.target.value)} />
-        </Field>
-        <Field label={t('novelAuthor')}>
-          <input className="qibi-input" value={novelDialog.form.author} onChange={event => setNovelField('author', event.target.value)} />
-        </Field>
-        <div className="qibi-row">
-          <Field label={t('novelGenre')}>
-            <input className="qibi-input" value={novelDialog.form.genre} onChange={event => setNovelField('genre', event.target.value)} />
-          </Field>
-          <Field label={t('novelStatus')}>
-            <input className="qibi-input" value={novelDialog.form.status} onChange={event => setNovelField('status', event.target.value)} />
-          </Field>
-        </div>
-        <Field label={t('novelIntro')}>
-          <textarea className="qibi-textarea" rows={4} value={novelDialog.form.intro} onChange={event => setNovelField('intro', event.target.value)} />
-        </Field>
-      </div>
+      <NovelSettingsFields
+        formId={novelFormId} form={novelDialog.form} initial={novelDialog.original}
+        mode={novelDialog.mode} writable={writable} busy={novelDialog.busy} error={novelDialog.error}
+        onField={setNovelField} onSubmit={submitNovel} onDelete={deleteNovel} t={t}
+      />
     </Dialog>
   ) : null
 
@@ -3947,7 +3807,7 @@ function Workbench({ call, t, appearance }) {
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-outline" role="tabpanel" aria-labelledby="qibi-tab-outline" style={{ display: tab === 'outline' ? 'flex' : 'none' }}>
-            <OutlineTab key={novelId} call={call} novelId={novelId} chapters={chapters} writable={writable} active={tab === 'outline'} notify={notify} t={t} />
+            <OutlineTab key={novelId} call={call} novelId={novelId} chapterId={chapterId} registerGuard={registerOutlineGuard} chapters={chapters} writable={writable} active={tab === 'outline'} notify={notify} t={t} />
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-characters" role="tabpanel" aria-labelledby="qibi-tab-characters" style={{ display: tab === 'characters' ? 'flex' : 'none' }}>
@@ -4058,7 +3918,7 @@ function installStyles() {
 export const inject = ['slots', 'locale', 'layout']
 
 /** 供 scripts/render-check.mjs 做真实渲染自检。 */
-export { AiDrawer, DataSettings, OutlineTab, CharactersTab, ContinuityTab, DistillTab, Dialog, Workbench }
+export { AiDrawer, DataSettings, OutlineTab, CharactersTab, ContinuityTab, DistillTab, Dialog, Workbench, NovelSettingsFields }
 
 /**
  * 注册左侧栏图标与中央写作台。

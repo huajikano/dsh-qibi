@@ -495,6 +495,82 @@ export const STYLES = `
   border-bottom: 1px solid var(--dsw-alias-border-l1);
 }
 
+/* ---- Outline and manuscript settings ---- */
+.qibi-outline-workspace { display: flex; flex-direction: column; gap: 16px; min-width: 0; container: qibi-outline / inline-size; }
+.qibi-outline-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 10px 16px; flex: 0 0 auto; }
+.qibi-outline-header > div:first-child { flex: 1 1 240px; min-width: 0; }
+.qibi-outline-heading { margin: 0; font-size: 16px; font-weight: 600; }
+.qibi-outline-header p { line-height: 1.7; margin: 5px 0 0; }
+.qibi-outline-columns { display: flex; flex-direction: column; gap: 16px; min-width: 0; min-height: 0; }
+.qibi-outline-editor { box-sizing: border-box; padding: 16px; min-width: 0; border: 1px solid var(--dsw-alias-border-l1); border-radius: 9px; background: var(--dsw-alias-bg-base); }
+.qibi-outline-editor h3, .qibi-outline-list h3 { font-size: 13px; margin: 0; overflow-wrap: anywhere; }
+.qibi-outline-form { margin: 0; gap: 12px; }
+.qibi-outline-fields { display: flex; flex-direction: column; gap: 12px; }
+.qibi-outline-editor .qibi-input { width: 100%; box-sizing: border-box; }
+.qibi-outline-textarea { min-height: 230px; resize: vertical; line-height: 1.8; }
+.qibi-outline-form > .qibi-sub { line-height: 1.65; margin: 0; }
+.qibi-outline-form-actions { padding-top: 12px; border-top: 1px solid var(--dsw-alias-border-l1); }
+.qibi-outline-form-actions .qibi-outline-reload { margin-left: auto; }
+.qibi-outline-reader { display: flex; flex-direction: column; gap: 10px; }
+.qibi-outline-reader > p { margin: 0; }
+.qibi-outline-reader-empty { text-align: left; padding: 22px 0; max-width: none; }
+.qibi-outline-reader-empty h3 { font-size: 14px; margin-bottom: 6px; color: var(--dsw-alias-label-primary); }
+.qibi-outline-list { min-width: 0; }
+.qibi-outline-list-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.qibi-outline-count { margin-left: auto; }
+.qibi-outline-filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto; align-items: end; gap: 8px; padding-bottom: 12px; }
+.qibi-outline-filters .qibi-input { width: 100%; box-sizing: border-box; }
+.qibi-outline-group { margin-top: 14px; }
+.qibi-outline-group-heading { color: var(--dsw-alias-label-secondary); font-weight: 500; font-size: 12px; margin: 0 0 8px; overflow-wrap: anywhere; }
+.qibi-outline-card { min-width: 0; padding: 12px; }
+.qibi-outline-card-selected { border-color: var(--dsw-alias-brand-primary); }
+.qibi-outline-card-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px; }
+.qibi-outline-card-heading > h4 { flex: 1 1 120px; min-width: 0; overflow-wrap: anywhere; }
+.qibi-outline-card-heading .qibi-tag { max-width: 100%; height: auto; white-space: normal; overflow-wrap: anywhere; }
+.qibi-outline-card .qibi-outline-preview { margin: 8px 0 10px; overflow-wrap: anywhere; }
+.qibi-outline-delete { margin-left: auto; }
+.qibi-outline-conflict, .qibi-outline-error { margin: 10px 0; padding: 10px; border-radius: 6px; font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
+.qibi-outline-conflict { color: var(--dsw-alias-label-primary); background: var(--dsw-alias-bg-layer-1); border: 1px solid var(--dsw-alias-state-warn-primary); }
+.qibi-outline-error { color: var(--dsw-alias-state-error-primary); border: 1px solid var(--dsw-alias-state-error-primary); }
+@container qibi-outline (min-width: 820px) {
+  .qibi-outline-columns { display: grid; grid-template-columns: minmax(250px, .85fr) minmax(0, 1.15fr); flex: 1 1 0; overflow: hidden; }
+  .qibi-outline-editor { grid-column: 2; grid-row: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+  .qibi-outline-list { grid-column: 1; grid-row: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding-right: 4px; }
+}
+@container qibi-outline (max-width: 480px) {
+  .qibi-outline-filters { grid-template-columns: minmax(0, 1fr); }
+  .qibi-outline-editor { padding: 12px; }
+  .qibi-outline-form-actions .qibi-outline-reload { margin-left: 0; }
+}
+
+.qibi-novel-settings-dialog { box-sizing: border-box; width: min(720px, 100%); max-height: 100%; min-height: 0; overflow: hidden; container: qibi-novel-settings / inline-size; }
+.qibi-novel-settings-dialog > .qibi-dialog-head, .qibi-novel-settings-dialog > .qibi-dialog-foot { flex: 0 0 auto; }
+.qibi-novel-settings-dialog > .qibi-dialog-body { padding: 0 20px; flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.qibi-novel-settings-dialog > .qibi-dialog-foot { flex-wrap: wrap; gap: 8px; }
+.qibi-settings-context { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; padding: 18px 0; border-bottom: 1px solid var(--dsw-alias-border-l1); }
+.qibi-settings-context > div { flex: 1 1 220px; min-width: 0; }
+.qibi-settings-context strong { display: block; font-size: 15px; overflow-wrap: anywhere; }
+.qibi-settings-context p { margin: 5px 0 0; line-height: 1.7; }
+.qibi-settings-bookmark { display: flex; flex: 0 0 auto; align-items: center; justify-content: center; width: 38px; height: 44px; color: var(--dsw-alias-brand-primary); background: var(--dsw-alias-bg-layer-1); border-radius: 7px; }
+.qibi-settings-form { min-width: 0; margin: 0; }
+.qibi-settings-section { display: flex; flex-direction: column; gap: 12px; padding: 18px 0; border-bottom: 1px solid var(--dsw-alias-border-l1); }
+.qibi-settings-section-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.qibi-settings-section-head > h3 { font-size: 13px; margin: 0; flex: 1 1 auto; }
+.qibi-settings-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.qibi-novel-settings .qibi-input { width: 100%; box-sizing: border-box; }
+.qibi-setting-hint { font-size: 11px; line-height: 1.6; }
+.qibi-novel-intro { min-height: 150px; max-height: 40dvh; }
+.qibi-settings-error { padding: 10px 12px; margin: 10px 0; border: 1px solid var(--dsw-alias-state-error-primary); border-radius: 6px; }
+.qibi-settings-danger { padding: 14px 0 18px; }
+.qibi-settings-danger > summary { width: fit-content; color: var(--dsw-alias-state-error-primary); cursor: pointer; font-size: 12px; padding: 5px 0; }
+.qibi-settings-danger > summary:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 2px; border-radius: 3px; }
+.qibi-settings-danger > p { margin: 8px 0 12px; line-height: 1.7; }
+.qibi-settings-save-state { flex: 1 1 160px; }
+@container qibi-novel-settings (max-width: 520px) {
+  .qibi-settings-grid { grid-template-columns: minmax(0, 1fr); }
+  .qibi-novel-settings-dialog > .qibi-dialog-body { padding: 0 14px; }
+}
+
 /* ---- Writer-friendly continuity and author guidance ---- */
 .qibi-foreshadow-editor { min-width: 0; }
 .qibi-foreshadow-list { display: flex; flex-direction: column; gap: 10px; min-width: 0; border: 0; margin: 0; padding: 0; }

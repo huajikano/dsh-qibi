@@ -103,7 +103,7 @@ try{
   await check('大纲冲突保留本地输入；保存期间字段锁定',async()=>{
     const gate=deferred()
     const app=mount(panel.OutlineTab,{novelId:1,chapters:[],call:async method=>method==='outline'?{outline:[]}:gate.promise})
-    try{await app.settle();app.button('＋ outlineNew').props.onClick();app.sync();app.field('').props.onChange({target:{value:'本地新标题'}});app.sync();const action=app.button('save').props.onClick();await app.settle();assert.ok(app.nodes(n=>n.type==='fieldset'&&n.props.disabled).length);gate.reject(Object.assign(Error('conflict'),{code:'ENTITY_CONFLICT'}));await action;await app.settle();assert.ok(app.field('本地新标题'))}finally{app.unmount()}
+    try{await app.settle();app.button('outlineNewMaster').props.onClick();app.sync();app.nodes(n=>n.props?.name==='outline-title')[0].props.onChange({target:{value:'本地新标题'}});app.sync();const action=app.button('save').props.onClick();await app.settle();assert.ok(app.nodes(n=>n.type==='fieldset'&&n.props.disabled).length);gate.reject(Object.assign(Error('conflict'),{code:'ENTITY_CONFLICT'}));await action;await app.settle();assert.ok(app.field('本地新标题'))}finally{app.unmount()}
   })
   await check('人物账本读取失败禁用保存，并提供重试读取',async()=>{
     const app=mount(panel.CharactersTab,{novelId:1,chapterId:11,call:async method=>{if(method==='characters')return{characters:[{id:42,name:'夹具人',token:'p1'}]};throw Error('synthetic read failure')}})
