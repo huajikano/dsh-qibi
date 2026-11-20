@@ -167,6 +167,55 @@ try{
       assert.equal(app.nodes(n=>n.props?.className==='qibi-distill-title')[0].props.children,'固定作者')
     }finally{app.unmount()}
   })
+  await check('自动整理只在本作品启用后、面板状态变为已发布时触发', async()=>{
+    let saved={id:11,novelId:1,title:'发布夹具',status:'草稿',content:'一盏蓝灯亮着。',wordCount:8,token:'saved0'}
+    const organized=[],updates=[]
+    const call=async(method,input)=>{
+      if(method==='status')return{exists:true,writable:true,configWritable:true,user:{id:1},dbPath:'fixture/publish-db',counts:{novels:1}}
+      if(method==='novels')return{novels:[{id:1,title:'自动整理夹具',chapterCount:1,wordCount:saved.wordCount}]}
+      if(method==='chapters')return{chapters:[saved]}
+      if(method==='chapter')return{chapter:{...saved}}
+      if(method==='characters')return{characters:[]};if(method==='outline')return{outline:[]};if(method==='aiInfo')return{available:false};if(method==='select')return{}
+      if(method==='updateChapter'){const becamePublished=saved.status!=='已发布'&&input.status==='已发布';saved={...saved,title:input.title,status:input.status};updates.push(input);return{chapter:{...saved},becamePublished}}
+      if(method==='save'){saved={...saved,content:input.content,token:'saved1'};return{chapter:{...saved}}}
+      if(method==='organizeContinuity'){organized.push(input);return{filled:3,foreshadowAdded:1,ledgerSkipped:false,alreadyOrganized:false}}
+      throw Error(method)
+    }
+    const app=mount(panel.Workbench,{call,appearance:{open(){},name:'fixture'}})
+    const editStatus=async value=>{
+      app.nodes(n=>n.type==='button'&&n.props['aria-haspopup']==='menu')[0].props.onClick({stopPropagation(){}})
+      await app.settle();app.button('edit').props.onClick();await app.settle()
+      app.nodes(n=>n.type==='select'&&n.props.value===saved.status)[0].props.onChange({target:{value}});app.sync()
+      const dialog=app.nodes(n=>n.type===panel.Dialog&&n.props.title==='chapterSettings')[0]
+      dialog.props.footer.props.children.find(n=>n?.type==='button'&&n.props.children==='save').props.onClick()
+      await app.settle()
+    }
+    try{
+      await app.settle();assert.equal(app.nodes(n=>n.type===panel.ContinuityTab)[0].props.organizer.enabled,false)
+      await editStatus('已发布');assert.equal(organized.length,0)
+      app.nodes(n=>n.type===panel.ContinuityTab)[0].props.organizer.setAuto(true);await app.settle()
+      await editStatus('草稿');assert.equal(organized.length,0)
+      await editStatus('已发布');assert.equal(organized.length,1);assert.equal(organized[0].requirePublished,true);assert.equal(organized[0].expectedChapterToken,saved.token)
+      assert.deepEqual(organized[0].scope,{dbPath:'fixture/publish-db',userId:1})
+      await editStatus('已发布');assert.equal(organized.length,1)
+      app.nodes(n=>n.props?.className==='qibi-editor')[0].props.onChange({target:{value:saved.content+' 新内容。'}});app.sync()
+      app.nodes(n=>n.props?.className==='qibi-editor')[0].props.onBlur();await app.settle();assert.equal(organized.length,1,'普通自动保存不调用整理')
+    }finally{app.unmount()}
+  })
+  await check('整理后的后台刷新保留本地摘要，更新未修改的全书记录', async()=>{
+    let generation=0,summaryReads=0,writerReads=0
+    const app=mount(panel.ContinuityTab,{novelId:1,chapterId:11,organizer:{refreshVersion:0},call:async method=>{
+      if(method==='volumes')return{volumes:[]}
+      if(method==='chapterSummary'){summaryReads++;return{summary:{exists:true,summary:generation?'AI摘要':'原摘要',keyEvents:'',cliffhanger:'',token:'summary'}}}
+      if(method==='writerState'){writerReads++;return{writerState:{exists:true,progress:generation?'后台进度':'原进度',foreshadowing:'[]',token:'state'}}}
+      throw Error(method)
+    }})
+    try{
+      await app.settle();app.field('原摘要').props.onChange({target:{value:'尚未保存的手动摘要'}});app.sync()
+      generation=1;app.props.organizer={refreshVersion:1};await app.settle()
+      assert.ok(app.field('尚未保存的手动摘要'));assert.ok(app.field('后台进度'));assert.equal(summaryReads,1);assert.equal(writerReads,2)
+    }finally{app.unmount()}
+  })
   console.log(`PASS: ${passed} deferred-request QA checks; actual component callbacks, isolated state and fake failures only. Browser layout is not tested here.`)
 }finally{
   for(const[key,descriptor]of Object.entries(originals)){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else delete globalThis[key]}

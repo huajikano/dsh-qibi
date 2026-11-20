@@ -20,6 +20,8 @@ import { saveCharacterEditor } from './character-editor.js'
 import DistillGuide from './DistillGuide.jsx'
 import { distillInstruction } from './distill-guide.js'
 import ForeshadowEditor from './ForeshadowEditor.jsx'
+import ContinuityOrganizer from './ContinuityOrganizer.jsx'
+import { useContinuityJobs } from './continuity-jobs.js'
 import NovelSettingsFields from './NovelSettingsFields.jsx'
 import OutlineTab from './OutlineWorkspace.jsx'
 import { novelForm, novelFormDirty, novelPayload } from './novel-settings.js'
@@ -1442,8 +1444,14 @@ function DistillTab({ call, novelId, writable, active, notify, t }) {
 }
 
 /** 连续性：分卷 / 章节摘要 / 写作状态。 */
-function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }) {
+function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t, chapter, chapterDirty = false, organizer }) {
+  const refreshVersion = organizer?.refreshVersion ?? 0
+  const summaryEdited = useRef(false)
+  const writerEdited = useRef(false)
+  const summaryVersion = useRef(0)
+  const writerVersion = useRef(0)
   const [volumes, setVolumes] = useState(null)
+  const [volumeError, setVolumeError] = useState('')
   const [volumeForm, setVolumeForm] = useState(null)
   const [summary, setSummary] = useState(null)
   const [summaryForm, setSummaryForm] = useState({ summary: '', keyEvents: '', cliffhanger: '' })
@@ -1465,17 +1473,18 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
   const loadVolumes = useCallback(async () => {
     if (novelId === null) return
     const seq = ++volumeSeq.current
+    setVolumeError('')
     try {
       const result = await call('volumes', { novelId })
-      if (seq !== volumeSeq.current) return
+      if (seq !== volumeSeq.current || scopeRef.current.novelId !== novelId) return
       setVolumes(result.volumes)
     } catch (cause) {
-      if (seq === volumeSeq.current) notify('error', causeText(cause))
+      if (seq === volumeSeq.current && scopeRef.current.novelId === novelId) setVolumeError(causeText(cause))
     }
-  }, [call, novelId, notify])
+  }, [call, novelId])
 
-  const loadSummary = useCallback(async () => {
-    if (scopeRef.current.chapterId !== chapterId) return
+  const loadSummary = useCallback(async ({ preserve = false } = {}) => {
+    if (scopeRef.current.chapterId !== chapterId || scopeRef.current.novelId !== novelId || (preserve && summaryEdited.current)) return
     if (chapterId === null) {
       loadedSummaryFor.current = null
       setSummary(null)
@@ -1488,44 +1497,46 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
     setSummaryError('')
     try {
       const result = await call('chapterSummary', { chapterId: target })
-      // 切章后旧响应不能覆盖新章的表单，否则保存会把 A 章摘要写进 B 章。
-      if (seq !== summarySeq.current || scopeRef.current.chapterId !== target) return
+      // A background refresh cannot replace a draft or its optimistic lock.
+      if (seq !== summarySeq.current || scopeRef.current.chapterId !== target || scopeRef.current.novelId !== novelId || (preserve && summaryEdited.current)) return
+      summaryEdited.current = false
+      summaryVersion.current = refreshVersion
+      loadedSummaryFor.current = target
       setSummary(result.summary)
       setSummaryForm({
         summary: result.summary.summary ?? '',
         keyEvents: result.summary.keyEvents ?? '',
         cliffhanger: result.summary.cliffhanger ?? '',
       })
-      loadedSummaryFor.current = target
     } catch (cause) {
-      if (seq === summarySeq.current) { setSummaryError(causeText(cause)); notify('error', causeText(cause)) }
+      if (seq === summarySeq.current) setSummaryError(causeText(cause))
     } finally {
       if (seq === summarySeq.current) setLoadingSummary(false)
     }
-  }, [call, chapterId, notify])
+  }, [call, novelId, chapterId, refreshVersion])
 
-  const loadWriter = useCallback(async () => {
-    if (scopeRef.current.novelId !== novelId) return
-    if (novelId === null) return
-    const target = novelId
+  const loadWriter = useCallback(async ({ preserve = false } = {}) => {
+    if (scopeRef.current.novelId !== novelId || novelId === null || (preserve && writerEdited.current)) return
     const seq = ++writerSeq.current
     setLoadingWriter(true)
     setWriterError('')
     try {
-      const result = await call('writerState', { novelId: target })
-      if (seq !== writerSeq.current || scopeRef.current.novelId !== target) return
+      const result = await call('writerState', { novelId })
+      if (seq !== writerSeq.current || scopeRef.current.novelId !== novelId || (preserve && writerEdited.current)) return
+      writerEdited.current = false
+      writerVersion.current = refreshVersion
+      loadedWriterFor.current = novelId
       setWriterState(result.writerState)
       setWriterForm({
         progress: result.writerState.progress ?? '',
         foreshadowing: result.writerState.foreshadowing ?? '[]',
       })
-      loadedWriterFor.current = target
     } catch (cause) {
-      if (seq === writerSeq.current) { setWriterError(causeText(cause)); notify('error', causeText(cause)) }
+      if (seq === writerSeq.current) setWriterError(causeText(cause))
     } finally {
       if (seq === writerSeq.current) setLoadingWriter(false)
     }
-  }, [call, novelId, notify])
+  }, [call, novelId, refreshVersion])
 
   useEffect(() => {
     volumeSeq.current += 1
@@ -1533,6 +1544,10 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
     writerSeq.current += 1
     loadedSummaryFor.current = undefined
     loadedWriterFor.current = undefined
+    summaryEdited.current = false
+    writerEdited.current = false
+    summaryVersion.current = 0
+    writerVersion.current = 0
     setVolumes(null)
     setVolumeForm(null)
     setSummary(null)
@@ -1547,6 +1562,8 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
 
   useEffect(() => {
     summarySeq.current += 1
+    summaryEdited.current = false
+    summaryVersion.current = 0
     loadedSummaryFor.current = undefined
     setSummary(null)
     setSummaryForm({ summary: '', keyEvents: '', cliffhanger: '' })
@@ -1558,19 +1575,19 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
   }, [active, loadVolumes])
 
   useEffect(() => {
-    if (active && loadedSummaryFor.current !== chapterId) void loadSummary()
-  }, [active, chapterId, loadSummary])
+    if (active && (loadedSummaryFor.current !== chapterId || summaryVersion.current !== refreshVersion)) void loadSummary({ preserve: true })
+  }, [active, chapterId, refreshVersion, loadSummary])
 
   useEffect(() => {
-    if (active && loadedWriterFor.current !== novelId) void loadWriter()
-  }, [active, novelId, loadWriter])
+    if (active && (loadedWriterFor.current !== novelId || writerVersion.current !== refreshVersion)) void loadWriter({ preserve: true })
+  }, [active, novelId, refreshVersion, loadWriter])
 
   const startVolume = row => setVolumeForm(row
     ? { id: row.id, token: row.token ?? null, title: row.title, summary: row.summary, coreConflict: row.coreConflict }
     : { id: null, token: null, title: '', summary: '', coreConflict: '' })
 
   const submitVolume = async () => {
-    if (!volumeForm || busy) return
+    if (!writable || !volumeForm || busy) return
     if (!volumeForm.title.trim()) {
       notify('error', t('titleRequired'))
       return
@@ -1599,7 +1616,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
     if (!writable || busy || loadingSummary || summaryError || chapterId === null || loadedSummaryFor.current !== chapterId) return
     setBusy(true)
     try {
-      await call('updateChapterSummary', { chapterId, ...summaryForm, expectedToken: summary?.token ?? undefined })
+      await call('updateChapterSummary', { chapterId, ...summaryForm, expectedToken: summary?.token ?? undefined, expectedAbsent: summary?.exists === false })
       await loadSummary()
       notify('info', t('savedNotice'))
     } catch (cause) {
@@ -1624,7 +1641,7 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
     }
     setBusy(true)
     try {
-      await call('updateWriterState', { novelId, ...writerForm, expectedToken: writerState?.token ?? undefined })
+      await call('updateWriterState', { novelId, ...writerForm, expectedToken: writerState?.token ?? undefined, expectedAbsent: writerState?.exists === false })
       await loadWriter()
       notify('info', t('savedNotice'))
     } catch (cause) {
@@ -1640,13 +1657,62 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
   }
 
   return (
-    <div className="qibi-pane">
+    <div className="qibi-pane qibi-continuity-pane">
+      {organizer && <ContinuityOrganizer
+        chapter={chapter} writable={writable} enabled={organizer.enabled}
+        canOrganize={Boolean(chapter?.content?.trim()) && !chapterDirty && !busy && !summaryEdited.current && !writerEdited.current && !loadingSummary && !loadingWriter && !summaryError && !writerError}
+        unavailableKey={chapterDirty ? 'continuityOrganizerSaveProse' : busy || loadingSummary || loadingWriter ? 'continuityOrganizerLoading' : summaryError || writerError ? 'continuityOrganizerLoadError' : summaryEdited.current || writerEdited.current ? 'continuityOrganizerSaveNotes' : undefined}
+        onToggle={organizer.setAuto} onOrganize={organizer.organize} onCancel={organizer.cancel}
+        task={organizer.task} hasSummary={Boolean(summary?.summary?.trim())} t={t}
+      />}
+      <div className="qibi-section-title">{t('chapterSummary')}</div>
+      {summaryError && <div className="qibi-error-text" role="alert">{t('continuityReadFailed')} {summaryError} <button type="button" className="qibi-btn small" disabled={busy || loadingSummary} onClick={() => void loadSummary()}>{t('retry')}</button></div>}
+      {chapterId === null
+        ? <div className="qibi-sub">{t('noChapterHint')}</div>
+        : (
+          <fieldset className="qibi-form-lock" disabled={busy || !writable || loadingSummary || Boolean(summaryError) || loadedSummaryFor.current !== chapterId}><div className="qibi-form">
+            <Field label={t('summaryText')}>
+              <textarea className="qibi-textarea" rows={3} value={summaryForm.summary} onChange={event => { if (!writable || busy) return; summaryEdited.current = true; setSummaryForm(current => ({ ...current, summary: event.target.value })) }} />
+            </Field>
+            <Field label={t('keyEvents')}>
+              <textarea className="qibi-textarea" rows={2} value={summaryForm.keyEvents} onChange={event => { if (!writable || busy) return; summaryEdited.current = true; setSummaryForm(current => ({ ...current, keyEvents: event.target.value })) }} />
+            </Field>
+            <Field label={t('cliffhanger')}>
+              <textarea className="qibi-textarea" rows={2} value={summaryForm.cliffhanger} onChange={event => { if (!writable || busy) return; summaryEdited.current = true; setSummaryForm(current => ({ ...current, cliffhanger: event.target.value })) }} />
+            </Field>
+            <div className="qibi-actions">
+              <button type="button" className="qibi-btn small primary" disabled={!writable || busy || loadingSummary || Boolean(summaryError) || loadedSummaryFor.current !== chapterId} onClick={() => void submitSummary()}>{t('save')}</button>
+              <button type="button" className="qibi-btn small" disabled={busy || loadingSummary} onClick={() => { if (window.confirm(t('discardInfoDraftConfirm'))) void loadSummary() }}>{t('reload')}</button>
+              {summary?.exists && <span className="qibi-sub">{t('updatedAt')} {summary.updatedAt}</span>}
+            </div>
+          </div></fieldset>
+        )}
+
+      <div className="qibi-section-title">{t('writerState')}</div>
+      {writerError && <div className="qibi-error-text" role="alert">{t('continuityReadFailed')} {writerError} <button type="button" className="qibi-btn small" disabled={busy || loadingWriter} onClick={() => void loadWriter()}>{t('retry')}</button></div>}
+      <fieldset className="qibi-form-lock" disabled={busy || loadingWriter || Boolean(writerError) || loadedWriterFor.current !== novelId}><div className="qibi-form">
+        <Field label={t('progress')}>
+          <textarea className="qibi-textarea" rows={3} readOnly={!writable} value={writerForm.progress} onChange={event => { if (!writable || busy) return; writerEdited.current = true; setWriterForm(current => ({ ...current, progress: event.target.value })) }} />
+        </Field>
+        <div className="qibi-field">
+          <span className="qibi-label">{t('foreshadowing')}</span>
+          <ForeshadowEditor value={writerForm.foreshadowing} onChange={value => { if (!writable || busy) return; writerEdited.current = true; setWriterForm(current => ({ ...current, foreshadowing: value })) }} disabled={!writable || busy || loadingWriter || Boolean(writerError) || loadedWriterFor.current !== novelId} t={t} />
+        </div>
+        <div className="qibi-actions">
+          <button type="button" className="qibi-btn small primary" disabled={!writable || busy || loadingWriter || Boolean(writerError) || loadedWriterFor.current !== novelId} onClick={() => void submitWriter()}>{t('save')}</button>
+          <button type="button" className="qibi-btn small" disabled={busy || loadingWriter} onClick={() => { if (window.confirm(t('discardInfoDraftConfirm'))) void loadWriter() }}>{t('reload')}</button>
+          {writerState?.exists && <span className="qibi-sub">{t('updatedAt')} {writerState.updatedAt}</span>}
+        </div>
+      </div></fieldset>
+      <hr className="qibi-continuity-divider" />
       <div className="qibi-row">
         <span className="qibi-section-title">{t('volumes')}</span>
+        <span className="qibi-sub">{t('continuityVolumesOptional')}</span>
         <span className="qibi-spacer" />
         <button type="button" className="qibi-btn small" disabled={!writable || busy} onClick={() => startVolume(null)}>＋ {t('volumeNew')}</button>
       </div>
-      {volumes === null && <div className="qibi-sub">{t('loading')}</div>}
+      {volumeError && <div className="qibi-error-text" role="alert">{volumeError} <button type="button" className="qibi-btn small" onClick={() => void loadVolumes()}>{t('retry')}</button></div>}
+      {!volumeError && volumes === null && <div className="qibi-sub">{t('loading')}</div>}
       {volumes !== null && volumes.length === 0 && <div className="qibi-sub">{t('emptyVolumes')}</div>}
       {(volumes ?? []).map(row => (
         <div className="qibi-card" key={row.id}>
@@ -1678,45 +1744,6 @@ function ContinuityTab({ call, novelId, chapterId, writable, active, notify, t }
         </div></fieldset>
       )}
 
-      <div className="qibi-section-title">{t('chapterSummary')}</div>
-      {summaryError && <div className="qibi-error-text" role="alert">{t('continuityReadFailed')} {summaryError} <button type="button" className="qibi-btn small" disabled={busy || loadingSummary} onClick={() => void loadSummary()}>{t('retry')}</button></div>}
-      {chapterId === null
-        ? <div className="qibi-sub">{t('noChapterHint')}</div>
-        : (
-          <fieldset className="qibi-form-lock" disabled={busy || !writable || loadingSummary || Boolean(summaryError) || loadedSummaryFor.current !== chapterId}><div className="qibi-form">
-            <Field label={t('summaryText')}>
-              <textarea className="qibi-textarea" rows={3} value={summaryForm.summary} onChange={event => setSummaryForm(current => ({ ...current, summary: event.target.value }))} />
-            </Field>
-            <Field label={t('keyEvents')}>
-              <textarea className="qibi-textarea" rows={2} value={summaryForm.keyEvents} onChange={event => setSummaryForm(current => ({ ...current, keyEvents: event.target.value }))} />
-            </Field>
-            <Field label={t('cliffhanger')}>
-              <textarea className="qibi-textarea" rows={2} value={summaryForm.cliffhanger} onChange={event => setSummaryForm(current => ({ ...current, cliffhanger: event.target.value }))} />
-            </Field>
-            <div className="qibi-actions">
-              <button type="button" className="qibi-btn small primary" disabled={!writable || busy || loadingSummary || Boolean(summaryError) || loadedSummaryFor.current !== chapterId} onClick={() => void submitSummary()}>{t('save')}</button>
-              <button type="button" className="qibi-btn small" disabled={busy || loadingSummary} onClick={() => { if (window.confirm(t('discardInfoDraftConfirm'))) void loadSummary() }}>{t('reload')}</button>
-              {summary?.exists && <span className="qibi-sub">{t('updatedAt')} {summary.updatedAt}</span>}
-            </div>
-          </div></fieldset>
-        )}
-
-      <div className="qibi-section-title">{t('writerState')}</div>
-      {writerError && <div className="qibi-error-text" role="alert">{t('continuityReadFailed')} {writerError} <button type="button" className="qibi-btn small" disabled={busy || loadingWriter} onClick={() => void loadWriter()}>{t('retry')}</button></div>}
-      <fieldset className="qibi-form-lock" disabled={busy || loadingWriter || Boolean(writerError) || loadedWriterFor.current !== novelId}><div className="qibi-form">
-        <Field label={t('progress')}>
-          <textarea className="qibi-textarea" rows={3} readOnly={!writable} value={writerForm.progress} onChange={event => setWriterForm(current => ({ ...current, progress: event.target.value }))} />
-        </Field>
-        <div className="qibi-field">
-          <span className="qibi-label">{t('foreshadowing')}</span>
-          <ForeshadowEditor value={writerForm.foreshadowing} onChange={value => setWriterForm(current => ({ ...current, foreshadowing: value }))} disabled={!writable || busy || loadingWriter || Boolean(writerError) || loadedWriterFor.current !== novelId} t={t} />
-        </div>
-        <div className="qibi-actions">
-          <button type="button" className="qibi-btn small primary" disabled={!writable || busy || loadingWriter || Boolean(writerError) || loadedWriterFor.current !== novelId} onClick={() => void submitWriter()}>{t('save')}</button>
-          <button type="button" className="qibi-btn small" disabled={busy || loadingWriter} onClick={() => { if (window.confirm(t('discardInfoDraftConfirm'))) void loadWriter() }}>{t('reload')}</button>
-          {writerState?.exists && <span className="qibi-sub">{t('updatedAt')} {writerState.updatedAt}</span>}
-        </div>
-      </div></fieldset>
     </div>
   )
 }
@@ -2232,6 +2259,8 @@ function Workbench({ call, t, appearance }) {
   useEffect(() => { tabRef.current = tab }, [tab])
 
   const notify = useCallback((kind, text) => setNotice({ kind, text }), [])
+  const continuity = useContinuityJobs({ call, status, novelId, writable, notify, t })
+  const chapterSubmitRef = useRef(false)
 
   const retryStatus = useCallback(() => {
     // Re-query status/novels in this Workbench; never reload the host page/session.
@@ -2760,31 +2789,32 @@ function Workbench({ call, t, appearance }) {
     if (!current) return
     const ok = await guardDirty()
     if (!ok) return
-    setChapterDialog({ form: { title: current.title, status: current.status || '草稿' }, busy: false })
+    const saved = chapterRef.current
+    if (!saved || saved.id !== current.id) return
+    setChapterDialog({ chapterId: saved.id, form: { title: saved.title, status: saved.status || '草稿' }, busy: false })
   }, [guardDirty])
 
   const submitChapter = useCallback(async () => {
     const current = chapterRef.current
-    if (!current || !chapterDialog || chapterDialog.busy) return
-    if (!chapterDialog.form.title.trim()) {
-      notify('error', t('titleRequired'))
-      return
-    }
-    setChapterDialog(previous => (previous ? { ...previous, busy: true } : previous))
+    if (!current || !writable || !chapterDialog || chapterDialog.busy || chapterSubmitRef.current || current.id !== chapterDialog.chapterId) return
+    if (!chapterDialog.form.title.trim()) { notify('error', t('titleRequired')); return }
+    const sourceScope = continuity.scopeKey
+    chapterSubmitRef.current = true
+    setChapterDialog(previous => previous ? { ...previous, busy: true } : previous)
     try {
-      const result = await call('updateChapter', {
-        chapterId: current.id,
-        title: chapterDialog.form.title,
-        status: chapterDialog.form.status,
+      await runTransition(async () => {
+        const result = await call('updateChapter', { chapterId: current.id, title: chapterDialog.form.title, status: chapterDialog.form.status })
+        if (chapterIdRef.current === result.chapter.id) adoptChapter(result.chapter)
+        setChapterDialog(null)
+        notify('info', t('savedNotice'))
+        if (result.becamePublished) continuity.enqueue(result.chapter, true, sourceScope)
       })
-      adoptChapter(result.chapter)
-      setChapterDialog(null)
-      notify('info', t('savedNotice'))
-    } catch (cause) {
-      notify('error', causeText(cause))
-      setChapterDialog(previous => (previous ? { ...previous, busy: false } : previous))
+    } catch (cause) { notify('error', causeText(cause)) }
+    finally {
+      chapterSubmitRef.current = false
+      setChapterDialog(previous => previous?.chapterId === current.id ? { ...previous, busy: false } : previous)
     }
-  }, [adoptChapter, call, chapterDialog, notify, t])
+  }, [adoptChapter, call, chapterDialog, continuity, notify, runTransition, t, writable])
 
   const deleteChapter = useCallback(async () => {
     const current = chapterRef.current
@@ -3344,6 +3374,7 @@ function Workbench({ call, t, appearance }) {
             {chapterStatusOptions(chapter.status).map(option => <option key={option} value={option}>{option}</option>)}
           </select>
         </Field>
+        {continuity.enabled && <span className="qibi-sub">{t('continuityOrganizerPublishEnabled')}</span>}
       </div>
     </Dialog>
   ) : null
@@ -3819,7 +3850,7 @@ function Workbench({ call, t, appearance }) {
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-continuity" role="tabpanel" aria-labelledby="qibi-tab-continuity" style={{ display: tab === 'continuity' ? 'flex' : 'none' }}>
-            <ContinuityTab key={novelId} call={call} novelId={novelId} chapterId={chapterId} writable={writable} active={tab === 'continuity'} notify={notify} t={t} />
+            <ContinuityTab key={novelId} call={call} novelId={novelId} chapterId={chapterId} chapter={chapter} chapterDirty={dirty} organizer={{ ...continuity, organize: () => continuity.enqueue(chapterRef.current) }} writable={writable} active={tab === 'continuity'} notify={notify} t={t} />
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-search" role="tabpanel" aria-labelledby="qibi-tab-search" style={{ display: tab === 'search' ? 'flex' : 'none' }}>

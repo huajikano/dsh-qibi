@@ -1,5 +1,5 @@
 import React, { useId, useRef, useState } from 'react'
-import { addForeshadowing, parseForeshadowing, removeForeshadowing, updateForeshadowing } from './foreshadowing.js'
+import { addForeshadowing, parseForeshadowing, removeForeshadowing, updateForeshadowing } from '../lib/foreshadowing.js'
 
 let keySequence = 0
 const rowKey = () => `foreshadow-row-${++keySequence}`

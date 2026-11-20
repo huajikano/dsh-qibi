@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { transform } from 'esbuild'
-import { parseForeshadowing, addForeshadowing, updateForeshadowing, removeForeshadowing } from '../src/foreshadowing.js'
+import { parseForeshadowing, addForeshadowing, updateForeshadowing, removeForeshadowing } from '../lib/foreshadowing.js'
 
 let assertions = 0
 const check = (condition, message) => { assert.ok(condition, message); assertions++ }
@@ -53,7 +53,7 @@ const filename = fileURLToPath(new URL('../src/ForeshadowEditor.jsx', import.met
 const source = await readFile(filename, 'utf8')
 const compiled = await transform(source, { loader: 'jsx', format: 'cjs', target: 'es2022', sourcefile: filename })
 const evaluated = { exports: {} }
-const localRequire = id => id === './foreshadowing.js' ? { parseForeshadowing, addForeshadowing, updateForeshadowing, removeForeshadowing } : require(id)
+const localRequire = id => id === '../lib/foreshadowing.js' ? { parseForeshadowing, addForeshadowing, updateForeshadowing, removeForeshadowing } : require(id)
 new Function('require', 'module', 'exports', compiled.code)(localRequire, evaluated, evaluated.exports)
 const Editor = evaluated.exports.default
 const t = key => key
