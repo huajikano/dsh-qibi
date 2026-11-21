@@ -68,7 +68,8 @@
   },
   "scripts": {
     "build": "node build.mjs",
-    "test:release": "node scripts/database-check.mjs && node scripts/release-check.mjs && node scripts/storage-settings-check.mjs && node scripts/ai-reasoning-check.mjs && node scripts/history-check.mjs && node scripts/character-ai-check.mjs && node scripts/character-flow-check.mjs && node scripts/character-ui-check.mjs && node scripts/theme-check.mjs && node scripts/density-check.mjs && node scripts/foreshadow-check.mjs && node scripts/distill-guide-check.mjs && node scripts/character-batch-check.mjs && node scripts/user-journey-check.mjs && node scripts/qa-regression-check.mjs && node scripts/novel-settings-check.mjs && node scripts/outline-workspace-check.mjs && node scripts/continuity-ai-check.mjs && node scripts/continuity-flow-check.mjs && node scripts/continuity-entry-check.mjs && node scripts/continuity-jobs-check.mjs && node scripts/render-check.mjs",
+    "check:build": "node build.mjs --check",
+    "test:release": "node scripts/test.mjs",
     "test:local": "node scripts/selftest.mjs"
   },
   "dependencies": {

@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "QiBi writing desk",
-    "description": "QiBi writing desk: read and write QiBi manuscripts from the DSH sidebar, with 12 tools, 13 AI writing actions and pre-write revision backups.",
+    "description": "QiBi writing desk: read and write QiBi manuscripts from the DSH sidebar, with 13 tools, 13 AI writing actions and pre-write revision backups.",
     "detail": "docs/DETAIL.md"
   },
   "ui": {
@@ -522,6 +522,15 @@
     "continuityOrganizerSaveNotes": "Save or reload the manual edits on this page first",
     "continuityOrganizerPreferenceNotSaved": "The setting applies to this session only; this browser could not remember it",
     "continuityOrganizerPublishEnabled": "This novel organizes notes automatically after publication",
-    "continuityVolumesOptional": "Optional: group the story into stages"
+    "continuityVolumesOptional": "Optional: group the story into stages",
+    "versionMismatch": "Panel v{client} and backend v{host} differ — toggle QiBi off and on, or restart DSH",
+    "backupsTitle": "Deleted chapter backups",
+    "backupsHint": "Deleting a chapter saves its prose here. Restoring creates a new chapter and keeps the backup.",
+    "backupsEmpty": "This novel has no restorable backups.",
+    "backupRestore": "Restore as new chapter",
+    "backupRestoreConfirm": "Restore the backup of “{title}” as a new chapter? The original chapter is not merged back.",
+    "backupRestored": "Restored from backup",
+    "todayWords": "Today",
+    "todayWordsHint": "Estimated from this novel’s first word count seen today on this device; edits from other windows also count."
   }
 }

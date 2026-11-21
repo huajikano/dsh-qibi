@@ -11,11 +11,31 @@
  * 用法：node build.mjs
  */
 
-import { readFile, writeFile, rm } from 'node:fs/promises'
+import { readdir, readFile, writeFile, rm } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
+
+// 构建指纹：版本号来自 package.json，BUILD 取 src/ 全部源码的内容哈希。
+// 面板页脚显示这两项，界面与后台版本不一致时能当场看出来。
+const pkg = JSON.parse(await readFile(path.join(here, 'package.json'), 'utf8'))
+const srcDir = path.join(here, 'src')
+const sourceNames = (await readdir(srcDir))
+  .filter(name => /\.(js|jsx)$/.test(name) && name !== 'build-info.js')
+  .sort()
+const digest = createHash('sha256')
+for (const name of sourceNames) {
+  digest.update(name)
+  digest.update(await readFile(path.join(srcDir, name)))
+}
+const BUILD = digest.digest('hex').slice(0, 8)
+// --check：只验证提交的 client.js 与 src/ 一致，不写任何文件，供 CI 与发布前检查使用。
+const checkOnly = process.argv.includes('--check')
+const buildInfoPath = path.join(srcDir, 'build-info.js')
+const buildInfo = `// 由 build.mjs 生成，请勿手工修改。\nexport const VERSION = ${JSON.stringify(pkg.version)}\nexport const BUILD = ${JSON.stringify(BUILD)}\n`
+if (!checkOnly) await writeFile(buildInfoPath, buildInfo, 'utf8')
 // 必须与 package.json 的 name 一致：宿主用这个 id 注册工厂。
 const ID = 'dsh-qibi'
 const BODY = path.join(here, '.build', 'body.cjs')
@@ -56,6 +76,30 @@ ${indented}
   },
 })
 `
+
+if (checkOnly) {
+  const { rm: remove } = await import('node:fs/promises')
+  const problems = []
+  let committedInfo = ''
+  try { committedInfo = await readFile(buildInfoPath, 'utf8') } catch { problems.push('缺少 src/build-info.js（请先运行 node build.mjs）') }
+  if (committedInfo && committedInfo !== buildInfo) problems.push('src/build-info.js 与 src/ 当前内容不一致')
+  let committedClient = ''
+  try { committedClient = await readFile(OUT, 'utf8') } catch { problems.push('缺少 client.js（请先运行 node build.mjs）') }
+  if (committedClient && committedClient !== output) {
+    const expected = output.split('\n')
+    const actual = committedClient.split('\n')
+    let line = 0
+    while (line < Math.min(expected.length, actual.length) && expected[line] === actual[line]) line += 1
+    problems.push(`client.js 与 src/ 重新构建的结果不同（首个差异在第 ${line + 1} 行，期望 ${expected.length} 行、现有 ${actual.length} 行）`)
+  }
+  await remove(path.join(here, '.build'), { recursive: true, force: true })
+  if (problems.length > 0) {
+    console.error('[dsh-qibi] 构建产物已过期：\n- ' + problems.join('\n- ') + '\n请运行 node build.mjs 后提交 client.js 与 src/build-info.js。')
+    process.exit(1)
+  }
+  console.log(`[dsh-qibi] 构建产物一致：v${pkg.version} · ${BUILD}`)
+  process.exit(0)
+}
 
 await writeFile(OUT, output, 'utf8')
 await rm(path.join(here, '.build'), { recursive: true, force: true })

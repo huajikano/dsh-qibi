@@ -6,7 +6,7 @@
 
 **起笔写作台 · DeepSeek Harness 原生小说工作台**
 
-把本机的起笔（QiBi）书稿接进 DSH：左侧栏一个面板、12 个工具、13 种 AI 写作动作。
+把本机的起笔（QiBi）书稿接进 DSH：左侧栏一个面板、13 个工具、13 种 AI 写作动作。
 
 <p>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0f766e?style=for-the-badge" alt="License" /></a>
@@ -30,7 +30,7 @@
 
 > **本地优先。** 书稿在你明确指定的本机数据库中读写，所有作品、正文与设定都留在你自己的磁盘上。首次安装不会自动连接旧库，发行包不含任何小说内容、用户数据库或备份。
 >
-> *Native QiBi writing desk for DeepSeek Harness: sidebar panel, 12 model tools, and 13 AI writing actions over your local `novelforge.db`.*
+> *Native QiBi writing desk for DeepSeek Harness: sidebar panel, 13 model tools, and 13 AI writing actions over your local `novelforge.db`.*
 
 起笔桌面版：[huajikano/qibi-desktop](https://github.com/huajikano/qibi-desktop)。本仓库提供独立的 DSH 插件，使用 DSH 原生界面。
 
@@ -149,12 +149,13 @@ dsh plugin --profile web add -w github:huajikano/dsh-qibi#v1.4.0
 
 ## 工具参考
 
-12 个领域工具，每个用 `action` 区分动作。省略 `novelId` / `chapterId` 时默认取面板当前选中项。
+13 个领域工具，每个用 `action` 区分动作。省略 `novelId` / `chapterId` 时默认取面板当前选中项。
 
 | 工具 | 动作 | 说明 |
 | :--- | :--- | :--- |
 | `qibi_storage` | `info` `configure` | 查看或保存数据位置；新建空白库或连接已有库，通过 DSH 配置服务保留选择 |
 | `qibi_status` | — | 数据目录、当前作者、作品/章节/字数统计、写入是否开启、面板选中项 |
+| `qibi_context` | — | 一次取全写这一章所需上下文：目录与摘要、总纲与本章细纲、人物、分卷、进度伏笔、前一章结尾与文风；只读 |
 | `qibi_novel` | `list` `get` `create` `update` `delete` | 作品增删改查；删除需 `confirm: true` |
 | `qibi_chapter` | `list` `read` `write` `create` `update` `delete` `move` | 章节读写与增删；完整 `read` 返回 `token`，写入时带 `expectedToken` |
 | `qibi_revision` | `list` `restore` | 章节版本历史与恢复 |
@@ -258,15 +259,17 @@ AI 写作顶部“生成模型”旁提供“思考强度”选择，档位直�
 ## 开发
 
 ```sh
-npm install
-npm run build             # src/*.jsx → client.js（React 由宿主提供）
-npm run test:release      # 临时夹具验证首次使用隔离 + 浏览器渲染；不需要私有书稿
+npm ci
+npm run build             # src/*.jsx → client.js，并写入 src/build-info.js
+npm run check:build        # 校验提交的 client.js 与 src/ 逐字节一致
+npm run test:release      # 全部回归；临时夹具 + 模型替身，不需要私有书稿
+npm run test:release -- --filter continuity   # 只跑名字匹配的检查
 npm run test:local        # 可选：针对本机已有起笔库的集成自检
 ```
 
 `test:release` 在临时目录模拟既有数据库，断言首次使用不打开它，作品与章节计数保持为零。`test:local` 只在临时副本执行写入，不会把数据库打包到发行物。
 
-自检覆盖：路由与工具契约、12 个工具的动作、只读拒写、正文保存的四处不变量（字数 / 版本备份 / 作品总字数 / 知识库分块）、令牌乐观锁、版本恢复、人物动态账本、章节摘要、写作状态、知识库重建与 BM25 检索、导出文本，以及 client.js 的 slot 渲染。
+自检覆盖：路由与工具契约、13 个工具的动作、只读拒写、正文保存的四处不变量（字数 / 版本备份 / 作品总字数 / 知识库分块）、令牌乐观锁、版本恢复、人物动态账本、章节摘要、写作状态、知识库重建与 BM25 检索、导出文本，以及 client.js 的 slot 渲染。
 
 写测试**只落临时副本**，并在结束时断言真实库没有任何改动。自检需要本机已有一份起笔数据库（只读取它）；`scripts/make-icon.py` 生成市场用位图（Pillow）。
 
@@ -279,6 +282,8 @@ npm run test:local        # 可选：针对本机已有起笔库的集成自检
 | 文档 | 内容 |
 | :--- | :--- |
 | [docs/DETAIL.md](docs/DETAIL.md) | 功能清单、数据通路、安全边界与已知限制的完整版 |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Host/Client 分层、写入不变量、面板与 API 契约 |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | 开发命令、改动约定、新增工具的步骤 |
 | [LICENSE](LICENSE) | MIT |
 
 ---
@@ -291,4 +296,4 @@ npm run test:local        # 可选：针对本机已有起笔库的集成自检
 
 The panel follows the host language; switch at **Settings → General → Language**. Your manuscripts, outlines and assets keep whatever language they already use.
 
-dsh-qibi is a DeepSeek Harness plugin with a native writing panel, eight tabs, 12 `qibi_*` tools and 13 AI writing actions routed through `ctx.llm`. A fresh Windows install prefers `D:\dsh-qibi\data` and initializes an empty compatible SQLite database with one local author and no novels. Use **Data location** to create a new empty library or explicitly connect an existing QiBi library; the host configuration editor saves the choice across restarts. Existing databases are never migrated or overwritten during setup. Chapter writes use revision backups and optimistic-lock tokens. The QiBi desktop app is optional and need not be running.
+dsh-qibi is a DeepSeek Harness plugin with a native writing panel, eight tabs, 13 `qibi_*` tools and 13 AI writing actions routed through `ctx.llm`. A fresh Windows install prefers `D:\dsh-qibi\data` and initializes an empty compatible SQLite database with one local author and no novels. Use **Data location** to create a new empty library or explicitly connect an existing QiBi library; the host configuration editor saves the choice across restarts. Existing databases are never migrated or overwritten during setup. Chapter writes use revision backups and optimistic-lock tokens. The QiBi desktop app is optional and need not be running.

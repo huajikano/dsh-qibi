@@ -179,6 +179,13 @@ export const STYLES = `
   display: flex; align-items: center; gap: 8px;
   padding: 6px 16px; border-top: 1px solid var(--dsw-alias-border-l1);
   color: var(--dsw-alias-label-secondary); font-size: 11px; flex: 0 0 auto;
+  flex-wrap: wrap;
+}
+.qibi-foot-version { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.qibi-foot-warn {
+  padding: 2px 8px; border-radius: 999px; white-space: normal;
+  border: 1px solid var(--dsw-alias-state-warn-primary);
+  color: var(--dsw-alias-state-warn-primary); font-size: 11px;
 }
 .qibi-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .qibi-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -494,6 +501,12 @@ export const STYLES = `
   background: var(--dsw-alias-bg-layer-1);
   border-bottom: 1px solid var(--dsw-alias-border-l1);
 }
+
+.qibi-backups { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--dsw-alias-border-l1); }
+.qibi-backups > summary { cursor: pointer; font-size: 13px; padding: 4px 0; width: fit-content; }
+.qibi-backups > summary:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 2px; border-radius: 3px; }
+.qibi-backups > .qibi-sub { margin: 6px 0; line-height: 1.7; }
+.qibi-backups > .qibi-card { margin-top: 8px; }
 
 /* ---- Continuity: a chapter task first, optional records below ---- */
 .qibi-continuity-pane { min-width: 0; }

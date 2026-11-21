@@ -25,6 +25,8 @@ import { useContinuityJobs } from './continuity-jobs.js'
 import NovelSettingsFields from './NovelSettingsFields.jsx'
 import OutlineTab from './OutlineWorkspace.jsx'
 import { novelForm, novelFormDirty, novelPayload } from './novel-settings.js'
+import { VERSION, BUILD } from './build-info.js'
+import { dailyDelta, dailyKey, resolveDailyBaseline } from './daily-words.js'
 
 /** 面板 id：侧栏图标与中央面板必须用同一个。 */
 const PANEL_ID = 'qibi'
@@ -94,7 +96,14 @@ async function callHost(endpoint, payload, options = {}) {
       : `宿主返回 HTTP ${response.status}`)
   }
   const data = await response.json()
-  if (!data?.ok) throw rpcError(data?.error)
+  if (!data?.ok) {
+    const error = rpcError(data?.error)
+    // 界面刚更新、后台仍是旧实例时，宿主只认识旧接口；把排查方向直接写在报错里。
+    if (error.code === 'UNKNOWN_ENDPOINT') {
+      error.message = `${error.message}（插件界面与后台版本可能不一致：请在 DSH 插件页关闭「起笔」再重新启用，或重启 DSH 后重试。）`
+    }
+    throw error
+  }
   return data.value
 }
 
@@ -1868,10 +1877,41 @@ function SearchTab({ call, novelId, writable, active, notify, onOpenChapter, t }
 }
 
 /** 版本历史：列表 + 恢复。 */
-function RevisionsTab({ call, chapterId, writable, active, notify, onRestored, guard, t }) {
+function RevisionsTab({ call, novelId, chapterId, writable, active, notify, onRestored, guard, t }) {
   const [revisions, setRevisions] = useState(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
+  const [backups, setBackups] = useState(null)
+  const [backupsOpen, setBackupsOpen] = useState(false)
+  const [backupsError, setBackupsError] = useState('')
+  const [restoringBackup, setRestoringBackup] = useState('')
+
+  const loadBackups = useCallback(async () => {
+    if (novelId == null) { setBackups([]); return }
+    setBackupsError('')
+    try {
+      const result = await call('chapterBackups', { novelId })
+      setBackups(result.backups ?? [])
+    } catch (cause) {
+      setBackupsError(causeText(cause))
+    }
+  }, [call, novelId])
+
+  const restoreBackup = async row => {
+    if (!writable || restoringBackup) return
+    if (!window.confirm(t('backupRestoreConfirm').replace('{title}', row.title || t('untitled')))) return
+    setRestoringBackup(row.file)
+    try {
+      const result = await call('restoreChapterBackup', { file: row.file })
+      notify('info', `${t('backupRestored')} · 《${result.chapter?.title ?? row.title}》`)
+      await loadBackups()
+      if (onRestored) await onRestored(result.chapter)
+    } catch (cause) {
+      notify('error', causeText(cause))
+    } finally {
+      setRestoringBackup('')
+    }
+  }
 
   const load = useCallback(async () => {
     if (chapterId === null) {
@@ -1943,6 +1983,41 @@ function RevisionsTab({ call, chapterId, writable, active, notify, onRestored, g
           <p>{row.reason || '—'}</p>
         </div>
       ))}
+
+      <details
+        className="qibi-backups"
+        open={backupsOpen}
+        onToggle={event => {
+          const open = event.currentTarget.open
+          setBackupsOpen(open)
+          if (open && backups === null) void loadBackups()
+        }}
+      >
+        <summary>{t('backupsTitle')}</summary>
+        <p className="qibi-sub">{t('backupsHint')}</p>
+        <div className="qibi-actions">
+          <button type="button" className="qibi-btn small" disabled={!backupsOpen} onClick={() => void loadBackups()}>{t('refresh')}</button>
+        </div>
+        {backupsOpen && backupsError && <div className="qibi-error-text" role="alert">{backupsError}</div>}
+        {backupsOpen && !backupsError && backups === null && <div className="qibi-sub">{t('loading')}</div>}
+        {backupsOpen && !backupsError && backups !== null && backups.length === 0 && <div className="qibi-sub">{t('backupsEmpty')}</div>}
+        {backupsOpen && (backups ?? []).map(row => (
+          <div className="qibi-card" key={row.file}>
+            <div className="qibi-row">
+              <h4>{row.title || t('untitled')}</h4>
+              <span className="qibi-sub">{row.deletedAt || '—'}</span>
+              <span className="qibi-spacer" />
+              <span className="qibi-sub">{formatWords(row.wordCount)} {t('words')}</span>
+              <button
+                type="button"
+                className="qibi-btn small"
+                disabled={!writable || Boolean(restoringBackup)}
+                onClick={() => void restoreBackup(row)}
+              >{restoringBackup === row.file ? t('saving') : t('backupRestore')}</button>
+            </div>
+          </div>
+        ))}
+      </details>
     </div>
   )
 }
@@ -2236,6 +2311,7 @@ function Workbench({ call, t, appearance }) {
   const [chapterQuery, setChapterQuery] = useState('')
   const [chapterMenu, setChapterMenu] = useState(false)
   const [zen, setZen] = useState(() => readFlag('qibi:zen'))
+  const [dailyBase, setDailyBase] = useState(0)
   const [outlines, setOutlines] = useState([])
   const [outlineMarkers, setOutlineMarkers] = useState(() => readJson('qibi:outline-markers', {}))
   const [markerEditing, setMarkerEditing] = useState(null)
@@ -2290,6 +2366,7 @@ function Workbench({ call, t, appearance }) {
   }, [notice])
 
   useEffect(() => { writeFlag('qibi:zen', zen) }, [zen])
+
 
   // Alt+F 专注模式：与起笔一致，隐藏左右栏并放大正文。
   useEffect(() => {
@@ -3213,6 +3290,18 @@ function Workbench({ call, t, appearance }) {
 
   // ---- 渲染 ----
   const activeNovel = novels.find(row => row.id === novelId) ?? null
+  // 后台在 status 里回报自身版本；与本次构建不一致时提示重载，而不是让用户对着“未知接口”猜。
+  const hostVersion = status?.pluginVersion ?? ''
+  const versionMismatch = Boolean(hostVersion && hostVersion !== VERSION)
+  // 今日新增：以当天第一次看到的作品总字数为基线，只存在本机。
+  useEffect(() => {
+    const key = dailyKey(status?.dbPath ? JSON.stringify([status.dbPath, status.user?.id ?? null]) : null, novelId)
+    const words = activeNovel?.wordCount ?? 0
+    if (!key) { setDailyBase(0); return }
+    let storage = null
+    try { storage = globalThis.localStorage ?? null } catch { storage = null }
+    setDailyBase(resolveDailyBaseline({ storage, key, words }).baseline)
+  }, [status?.dbPath, status?.user?.id, novelId, activeNovel?.wordCount])
   const wordCount = draft.length
   const editable = writable && !transitioning && conflict === null && chapter !== null
   const saveLabel = saveState === 'saving'
@@ -3478,6 +3567,7 @@ function Workbench({ call, t, appearance }) {
         <span className="qibi-title">{t('panel')}</span>
         <span className="qibi-sub">{activeNovel ? `《${activeNovel.title}》· ${activeNovel.chapterCount} ${t('chapters')} · ${formatWords(activeNovel.wordCount)} ${t('words')}` : ''}</span>
         <span className="qibi-spacer" />
+        {dailyDelta(activeNovel?.wordCount ?? 0, dailyBase) > 0 && <span className="qibi-chip" title={t('todayWordsHint')}>{t('todayWords')} +{formatWords(dailyDelta(activeNovel?.wordCount ?? 0, dailyBase))}</span>}
         <ThemeButton appearance={appearance} t={t} />
         <button type="button" className="qibi-btn small" onClick={async () => { if (await guardDirty()) setDataSettingsOpen(true) }}>{t('dataSettingsOpen')}</button>
         <button type="button" className="qibi-btn small" disabled={!activeNovel} onClick={openNovelEdit}>{t('novelSettings')}</button>
@@ -3858,7 +3948,7 @@ function Workbench({ call, t, appearance }) {
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-revisions" role="tabpanel" aria-labelledby="qibi-tab-revisions" style={{ display: tab === 'revisions' ? 'flex' : 'none' }}>
-            <RevisionsTab key={chapterId ?? 'none'} call={call} chapterId={chapterId} writable={writable} active={tab === 'revisions'} notify={notify} onRestored={onChapterRestored} guard={guardDirty} t={t} />
+            <RevisionsTab key={chapterId ?? 'none'} call={call} novelId={novelId} chapterId={chapterId} writable={writable} active={tab === 'revisions'} notify={notify} onRestored={onChapterRestored} guard={guardDirty} t={t} />
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-export" role="tabpanel" aria-labelledby="qibi-tab-export" style={{ display: tab === 'export' ? 'flex' : 'none' }}>
@@ -3870,6 +3960,12 @@ function Workbench({ call, t, appearance }) {
       <div className="qibi-foot">
         <span>{status?.dataDir}</span>
         <span className="qibi-spacer" />
+        {versionMismatch && (
+          <span className="qibi-foot-warn" role="status">
+            {t('versionMismatch').replace('{client}', VERSION).replace('{host}', hostVersion)}
+          </span>
+        )}
+        <span className="qibi-foot-version" title={`build ${BUILD}`}>v{VERSION} · {BUILD}</span>
         <span>{status?.user ? `${status.user.username}` : ''}</span>
       </div>
 

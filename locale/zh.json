@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "起笔写作台",
-    "description": "起笔写作台：在 DSH 侧栏读写起笔书稿，含 12 个工具、13 种 AI 写作动作与写前版本备份。",
+    "description": "起笔写作台：在 DSH 侧栏读写起笔书稿，含 13 个工具、13 种 AI 写作动作与写前版本备份。",
     "detail": "docs/DETAIL.md"
   },
   "ui": {
@@ -522,6 +522,15 @@
     "continuityOrganizerSaveNotes": "先保存或重载本页的手动修改",
     "continuityOrganizerPreferenceNotSaved": "设置仅本次有效，浏览器未能记住自动整理开关",
     "continuityOrganizerPublishEnabled": "本作品已开启发布后自动整理",
-    "continuityVolumesOptional": "可选：按故事阶段分组"
+    "continuityVolumesOptional": "可选：按故事阶段分组",
+    "versionMismatch": "界面 v{client} 与后台 v{host} 不一致，请关闭再启用「起笔」或重启 DSH",
+    "backupsTitle": "已删除章节的备份",
+    "backupsHint": "删除章节时正文会另存到这里；恢复会新建一章，原备份保留。",
+    "backupsEmpty": "这部作品没有可恢复的备份。",
+    "backupRestore": "恢复为新章节",
+    "backupRestoreConfirm": "把《{title}》的备份恢复成一个新章节？原章节不会自动合并。",
+    "backupRestored": "已从备份恢复",
+    "todayWords": "今日",
+    "todayWordsHint": "按本机当天首次看到的作品字数估算，跨窗口写入也会计入。"
   }
 }
