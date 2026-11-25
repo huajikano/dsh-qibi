@@ -165,8 +165,10 @@ check('export 可用', (await readOnly.call('export', { novelId: novel.id, forma
 check('pulse 可用', (await readOnly.call('pulse')).ok === true)
 
 const toolNames = readOnly.tools.map(tool => tool.name).sort()
-const expected = ['qibi_chapter', 'qibi_character', 'qibi_continuity', 'qibi_context', 'qibi_distill', 'qibi_export', 'qibi_kb', 'qibi_novel', 'qibi_outline', 'qibi_revision', 'qibi_search', 'qibi_status', 'qibi_storage']
-check('注册了 13 个领域工具', JSON.stringify(toolNames) === JSON.stringify(expected), toolNames.join(','))
+// 两边都必须先排序再比：手写顺序和字典序不一致（qibi_context 排在 qibi_continuity 之前），
+// 之前只在左边排过序，导致这条断言永远失败。
+const expected = ['qibi_chapter', 'qibi_character', 'qibi_continuity', 'qibi_context', 'qibi_distill', 'qibi_export', 'qibi_kb', 'qibi_novel', 'qibi_outline', 'qibi_revision', 'qibi_search', 'qibi_status', 'qibi_storage'].sort()
+check(`注册了 ${expected.length} 个领域工具`, JSON.stringify(toolNames) === JSON.stringify(expected), toolNames.join(','))
 
 /**
  * 校验工具 schema 的 OpenAPI 子集形状。
@@ -221,8 +223,14 @@ const novelList = await readOnly.tool('qibi_novel').execute({ action: 'list' }, 
 check('qibi_novel(list) 有作品', novelList.novels.length > 0)
 const chapterList = await readOnly.tool('qibi_chapter').execute({ action: 'list', novelId: novel.id }, {})
 check('qibi_chapter(list) 有章节', chapterList.chapters.length > 0)
+// 真实书稿有多长不可控（可能只有一两个字），所以这里只断言契约本身：
+// 「截断 ⇔ 不发 token」。构造性验证放在下面用临时副本、按可控长度做。
 const readResult = await readOnly.tool('qibi_chapter').execute({ action: 'read', chapterId: chapterMeta.id, maxChars: 100 }, {})
-check('qibi_chapter(read) 截断时不发 token', readResult.truncated === true && readResult.token === null)
+check(
+  'qibi_chapter(read) 截断时不发 token',
+  readResult.truncated ? readResult.token === null : typeof readResult.token === 'string',
+  `truncated=${readResult.truncated} token=${readResult.token === null ? 'null' : 'set'}`,
+)
 const kb = await readOnly.tool('qibi_kb').execute({ action: 'query', novelId: novel.id, query: '的' }, {})
 check('qibi_kb(query) 有命中', Array.isArray(kb.hits))
 const exported = await readOnly.tool('qibi_export').execute({ novelId: novel.id, format: 'markdown' }, {})
@@ -279,6 +287,21 @@ check('库里有备份行', db.prepare('SELECT COUNT(*) AS c FROM chapter_revisi
 const novelRow = db.prepare('SELECT word_count FROM novels WHERE id = ?').get(before.novelId)
 const sum = db.prepare('SELECT COALESCE(SUM(word_count),0) AS wc FROM chapters WHERE novel_id = ?').get(before.novelId).wc
 check('作品总字数已重算', Number(novelRow.word_count) === Number(sum))
+
+// BM25：写入即在同一事务里重建本章分块，所以刚写进去的句子必须立刻能检索到。
+// 这条断言必须放在「恢复历史版本」之前——恢复会把正文换回旧稿，那句话届时已不在库里。
+const savedHits = await writer.tool('qibi_kb').execute({ action: 'query', novelId: before.novelId, query: '自检追加' }, {})
+check('BM25 检索能命中刚写入的句子', savedHits.hits.some(hit => String(hit.content).includes('自检追加')), `命中 ${savedHits.hits.length} 条`)
+
+// 截断保护的构造性验证：临时副本里的正文长度由本脚本决定，不依赖真实书稿写了多少字。
+const truncProbe = await chapterTool.execute({ action: 'read', chapterId: before.id, maxChars: nextContent.length - 1 }, {})
+check(
+  '截断读取不发 token（临时副本）',
+  truncProbe.truncated === true && truncProbe.token === null && truncProbe.content.length === nextContent.length - 1,
+  `truncated=${truncProbe.truncated} token=${truncProbe.token === null ? 'null' : 'set'} len=${truncProbe.content.length}/${nextContent.length}`,
+)
+const wholeProbe = await chapterTool.execute({ action: 'read', chapterId: before.id, maxChars: nextContent.length }, {})
+check('未截断读取带 token（临时副本）', wholeProbe.truncated === false && typeof wholeProbe.token === 'string')
 
 // 强乐观锁
 let conflict = null
@@ -400,8 +423,14 @@ await outlineTool.execute({ action: 'delete', outlineId: indexedOutline.id }, {}
 await characterTool.execute({ action: 'delete', characterId: indexedCharacter.id }, {})
 check('删除大纲清掉分块', outlineChunks() === 0)
 check('删除人物清掉分块', characterChunks() === 0)
-const hits = await kbTool.execute({ action: 'query', novelId: before.novelId, query: '自检追加' }, {})
-check('BM25 检索能命中刚写入的句子', hits.hits.length > 0)
+// 恢复历史版本同样重排本章分块：被换掉的正文不该再出现在检索结果里。
+const restoredContent = db.prepare('SELECT content FROM chapters WHERE id = ?').get(before.id).content
+const staleHits = await kbTool.execute({ action: 'query', novelId: before.novelId, query: '自检追加' }, {})
+check(
+  '恢复历史版本后旧句子不再被检索到',
+  restoredContent === before.content && staleHits.hits.every(hit => !String(hit.content).includes('自检追加')),
+  `正文已回退=${restoredContent === before.content} 残留命中=${staleHits.hits.length}`,
+)
 
 // 导出
 const exportedNow = await writer.tool('qibi_export').execute({ novelId: before.novelId, format: 'txt' }, {})
