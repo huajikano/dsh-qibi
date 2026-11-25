@@ -135,7 +135,7 @@ try {
     const invalid = await writable.failure('characterAi', { novelId: 1, action: 'generate', idea: '一句话', modelKey, reasoningEffort: 'unknown' })
     assert.match(invalid.code, /REASONING/)
     await assert.rejects(writable.execute({ action: 'ai_generate', idea: '一句话', modelKey, reasoningEffort: 'unknown' }), /档位|强度|REASONING/)
-    await writable.failure('characterAi', { novelId: 1, action: 'generate', idea: '一句话', modelKey: 'fixture/stale', reasoningEffort: 'strong' }, 'AI_MODEL_CHANGED')
+    await writable.failure('characterAi', { novelId: 1, action: 'generate', idea: '一句话', modelKey: 'fixture/stale', reasoningEffort: 'strong' }, 'AI_MODEL_UNAVAILABLE')
     await assert.rejects(writable.execute({ action: 'ai_generate', idea: '一句话', modelKey: 'fixture/stale', reasoningEffort: 'strong' }), /模型|AI_MODEL_CHANGED/)
     assert.equal(writable.calls.length, count)
   })

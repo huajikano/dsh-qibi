@@ -4,6 +4,10 @@ import { CHARACTER_FIELDS as FIELDS, CHARACTER_IMPORT_LIMIT, candidateFields, ch
 const FIELD_KEYS = Object.fromEntries(FIELDS.map(field => [field, `characterAi${field[0].toUpperCase()}${field.slice(1)}`]))
 const LONG_FIELDS = new Set(['appearance', 'personality', 'background'])
 const REASONING_KEY = 'qibi:ai-reasoning'
+
+function modelOptions(info) {
+  return Array.isArray(info?.models) ? info.models.filter(row => row && typeof row.key === 'string' && row.key) : []
+}
 const REASONING_LABELS = { none: 'aiReasoningNone', off: 'aiReasoningNone', minimal: 'aiReasoningMinimal', low: 'aiReasoningLow', medium: 'aiReasoningMedium', high: 'aiReasoningHigh', xhigh: 'aiReasoningXhigh', max: 'aiReasoningMax' }
 const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
 
@@ -31,7 +35,7 @@ function errorText(error) {
 }
 
 /** Preview first; only the explicit import action writes character records. */
-export default function CharacterAiDialog({ call, novelId, chapterId, characters = [], writable, initialAction = 'extract', t, onClose, onImported }) {
+export default function CharacterAiDialog({ call, novelId, chapterId, characters = [], writable, initialAction = 'extract', t, onClose, onImported, modelKey = '', onModelChange }) {
   const action = initialAction === 'generate' ? 'generate' : 'extract'
   const [scope, setScope] = useState(chapterId != null ? 'chapter' : 'all')
   const [chapterList, setChapterList] = useState(null)
@@ -48,6 +52,8 @@ export default function CharacterAiDialog({ call, novelId, chapterId, characters
   const [modelError, setModelError] = useState('')
   const [infoRetry, setInfoRetry] = useState(0)
   const [effort, setEffort] = useState('')
+  const options = modelOptions(info)
+  const selectedModelKey = modelKey || info?.model || ''
   const [busy, setBusy] = useState('')
   const [candidates, setCandidates] = useState([])
   const [source, setSource] = useState(null)
@@ -169,7 +175,7 @@ export default function CharacterAiDialog({ call, novelId, chapterId, characters
     setModelError('')
     const current = () => matchesContext(context) && infoRef.current === controller && !controller.signal.aborted
     // Promise.resolve also handles a call adapter that throws synchronously.
-    Promise.resolve().then(() => current() ? call('aiInfo', {}, { signal: controller.signal }) : undefined).then(result => {
+    Promise.resolve().then(() => current() ? call('aiInfo', modelKey ? { modelKey } : {}, { signal: controller.signal }) : undefined).then(result => {
       if (!current()) return
       modelContextRef.current = context
       setInfo(result)
@@ -186,7 +192,7 @@ export default function CharacterAiDialog({ call, novelId, chapterId, characters
       controller.abort()
       if (infoRef.current === controller) infoRef.current = null
     }
-  }, [call, novelId, chapterId, action, infoRetry])
+  }, [call, novelId, chapterId, action, modelKey, infoRetry])
 
   useEffect(() => {
     if (action !== 'extract' || novelId == null) return
@@ -235,6 +241,11 @@ export default function CharacterAiDialog({ call, novelId, chapterId, characters
     setStatus(t('characterAiCancelled'))
   }
 
+  const chooseModel = event => {
+    onModelChange?.(event.target.value)
+    setEffort('')
+  }
+
   const chooseEffort = event => {
     const next = validEffort(info, event.target.value)
     setEffort(next)
@@ -274,7 +285,7 @@ export default function CharacterAiDialog({ call, novelId, chapterId, characters
     if (candidates.length > 0) setPendingReset(change)
     else resetPreview(change)
   }
-  const canStart = Boolean(matchesContext(modelContextRef.current) && !busy && !pendingReset && !modelLoading && info?.available && info?.model && novelId != null &&
+  const canStart = Boolean(matchesContext(modelContextRef.current) && !busy && !pendingReset && !modelLoading && info?.available && selectedModelKey && novelId != null &&
     (action === 'generate' ? idea.trim() : batching ? validRange && !batchDone : chapterId != null))
 
   const start = async () => {
@@ -284,7 +295,7 @@ export default function CharacterAiDialog({ call, novelId, chapterId, characters
     try {
       const reasoningEffort = validEffort(info, effort)
       const result = await call('characterAi', {
-        novelId, action, modelKey: info.model,
+        novelId, action, modelKey: selectedModelKey,
         ...(batching ? { scope: 'range', startChapterId: loadedChapters[startIndex].id, endChapterId: loadedChapters[endIndex].id, ...(batchCursor ? { batchCursor } : {}) }
           : action === 'extract' ? { scope: 'chapter', chapterId } : { idea: idea.trim() }),
         ...(info.reasoning?.supported ? { reasoningEffort } : {}),
@@ -373,7 +384,11 @@ export default function CharacterAiDialog({ call, novelId, chapterId, characters
           <div className="qibi-character-ai-settings">
             <div className="qibi-row qibi-character-ai-model-settings" aria-busy={modelLoading}>
               <Field label={t('aiGenerationModel')}>
-                <span className="qibi-sub" title={info?.model ?? ''}>{modelLoading ? t('aiModelLoading') : info?.model || t('aiUnavailable')}</span>
+                {modelLoading ? <span className="qibi-sub" title={info?.model ?? ''}>{t('aiModelLoading')}</span> : options.length > 0 ? (
+                   <select className="qibi-select" aria-label={t('aiGenerationModel')} value={selectedModelKey} onChange={chooseModel} disabled={Boolean(busy)}>
+                     {options.map(row => <option key={row.key} value={row.key} title={row.description}>{row.label}</option>)}
+                   </select>
+                 ) : <span className="qibi-sub" title={info?.model ?? ''}>{info?.model || t('aiUnavailable')}</span>}
               </Field>
               {reasoning?.supported && <Field label={t('aiReasoning')}>
                 <select className="qibi-select" aria-label={t('aiReasoning')} value={validEffort(info, effort)} onChange={chooseEffort} disabled={Boolean(busy) || modelLoading}>

@@ -52,6 +52,7 @@ const PROPS = {
   info: {
     available: true,
     model: 'render-check',
+     models: [{ key: 'fixture/render-check', label: 'Fixture · Render check', provider: 'fixture', model: 'render-check' }, { key: 'fixture/other-model', label: 'Fixture · Other model', provider: 'fixture', model: 'other-model' }],
     modes: [
       { id: 'draft', label: '细纲写章', group: 'chapter' },
       { id: 'polish', label: '润色全章', group: 'chapter' },
@@ -167,6 +168,8 @@ export async function checkReasoningControls() {
     },
   }
   const html = await renderAiDrawer({ info })
+  const modelSelect = html.match(/<select\b[^>]*aria-label="aiGenerationModel"[^>]*>[\s\S]*?<\/select>/)?.[0]
+  if (!modelSelect || !modelSelect.includes('fixture/render-check') || !modelSelect.includes('fixture/other-model')) throw new Error('模型目录必须渲染为可选项')
   const select = html.match(/<select\b[^>]*aria-label="aiReasoning"[^>]*>[\s\S]*?<\/select>/)?.[0]
   if (!select || select.includes('disabled=""')) throw new Error('模型支持思考档位时必须显示可用选择器')
   for (const value of ['low', 'high', 'adaptive']) {

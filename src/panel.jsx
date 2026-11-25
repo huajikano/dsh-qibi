@@ -181,8 +181,12 @@ export function validReasoningPreference(info, value) {
   return typeof value === 'string' && info?.reasoning?.efforts?.some(row => row.id === value) ? value : ''
 }
 
-export function aiReasoningRequest(info, value) {
-  return { modelKey: info?.model ?? '', reasoningEffort: validReasoningPreference(info, value) }
+export function aiReasoningRequest(info, value, selectedModelKey = '') {
+  return { modelKey: selectedModelKey || info?.model || '', reasoningEffort: validReasoningPreference(info, value) }
+}
+
+export function modelOptions(info) {
+  return Array.isArray(info?.models) ? info.models.filter(row => row && typeof row.key === 'string' && row.key) : []
 }
 
 function reasoningLabel(row, t) {
@@ -204,8 +208,10 @@ export function previewOnlyHistory(entry) {
 }
 
 /** 面板内 AI 抽屉：模式、补充要求、流式预览与应用。 */
-function AiDrawer({ call, novelId, chapterId, historyScope, draft, selection, initialMode, writable, info, modelLoading = false, hasOutline, t, notify, onApply, onClose }) {
+function AiDrawer({ call, novelId, chapterId, historyScope, draft, selection, initialMode, writable, info, modelLoading = false, modelKey = '', onModelChange, hasOutline, t, notify, onApply, onClose }) {
   const [reasoningEffort, setReasoningEffort] = useState(() => validReasoningPreference(info, readJson(AI_REASONING_KEY, {})?.[info?.model]))
+  const options = modelOptions(info)
+  const selectedModelKey = modelKey || info?.model || ''
   const [mode, setMode] = useState('draft')
   const [extra, setExtra] = useState('')
   const [busy, setBusy] = useState(false)
@@ -229,7 +235,13 @@ function AiDrawer({ call, novelId, chapterId, historyScope, draft, selection, in
 
   useEffect(() => {
     setReasoningEffort(validReasoningPreference(info, readJson(AI_REASONING_KEY, {})?.[info?.model]))
-  }, [info])
+  }, [info, selectedModelKey])
+
+  const chooseModel = event => {
+    const next = event.target.value
+    onModelChange?.(next)
+    setReasoningEffort('')
+  }
 
   const chooseReasoning = event => {
     const next = validReasoningPreference(info, event.target.value)
@@ -278,7 +290,7 @@ function AiDrawer({ call, novelId, chapterId, historyScope, draft, selection, in
     abortRef.current = controller
     try {
       const result = await streamAi({
-        ...aiReasoningRequest(info, reasoningEffort),
+        ...aiReasoningRequest(info, reasoningEffort, selectedModelKey),
         mode,
         novelId,
         chapterId,
@@ -327,7 +339,7 @@ function AiDrawer({ call, novelId, chapterId, historyScope, draft, selection, in
     const join = value => `${base}${base.endsWith('\n') || !value ? '' : '\n'}${value}`
     try {
       const result = await streamAi({
-        ...aiReasoningRequest(info, reasoningEffort),
+        ...aiReasoningRequest(info, reasoningEffort, selectedModelKey),
         mode: 'continue',
         novelId,
         chapterId,
@@ -389,7 +401,11 @@ function AiDrawer({ call, novelId, chapterId, historyScope, draft, selection, in
 
       <div className="qibi-row qibi-ai-model-settings" aria-busy={modelLoading}>
         <Field label={t('aiGenerationModel')}>
-          <span className="qibi-sub qibi-ai-model" title={info?.model ?? ''}>{modelLoading ? t('aiModelLoading') : info?.model || t('aiUnavailable')}</span>
+{modelLoading ? <span className="qibi-sub qibi-ai-model" title={info?.model ?? ''}>{t('aiModelLoading')}</span> : options.length > 0 ? (
+            <select className="qibi-select" aria-label={t('aiGenerationModel')} value={selectedModelKey} onChange={chooseModel} disabled={busy}>
+              {options.map(row => <option key={row.key} value={row.key} title={row.description}>{row.label}</option>)}
+            </select>
+          ) : <span className="qibi-sub qibi-ai-model" title={info?.model ?? ''}>{info?.model || t('aiUnavailable')}</span>}
         </Field>
         <Field label={t('aiReasoning')}>
           <select className="qibi-select" aria-label={t('aiReasoning')} value={validReasoningPreference(info, reasoningEffort)} onChange={chooseReasoning} disabled={busy || modelLoading || !reasoning?.supported}>
@@ -795,7 +811,7 @@ function LoadError({ message, onRetry, t }) {
 }
 
 /** 人物：设定卡 + 动态账本。 */
-function CharactersTab({ call, novelId, chapterId, writable, active, notify, t, guard }) {
+function CharactersTab({ call, novelId, chapterId, writable, active, notify, t, guard, modelKey, onModelChange }) {
   const [characters, setCharacters] = useState(null)
   const [aiAction, setAiAction] = useState(null)
   const [dialog, setDialog] = useState(null)
@@ -933,7 +949,7 @@ function CharactersTab({ call, novelId, chapterId, writable, active, notify, t, 
         <CharacterAiDialog
           key={`${novelId}:${chapterId ?? 'all'}:${aiAction}`}
           call={call} novelId={novelId} chapterId={chapterId} characters={characters ?? []}
-          writable={writable} initialAction={aiAction} t={t}
+          writable={writable} initialAction={aiAction} modelKey={modelKey} onModelChange={onModelChange} t={t}
           onClose={() => setAiAction(null)}
           onImported={async result => {
             setCharacters(result.characters)
@@ -2298,6 +2314,7 @@ function Workbench({ call, t, appearance }) {
   const [chapterDialog, setChapterDialog] = useState(null)
   const [aiInfo, setAiInfo] = useState(null)
   const [aiInfoLoading, setAiInfoLoading] = useState(false)
+  const [aiModelKey, setAiModelKey] = useState('')
   const aiInfoSequence = useRef(0)
   const [aiOpen, setAiOpen] = useState(false)
   const [aiSelection, setAiSelection] = useState(null)
@@ -2335,6 +2352,10 @@ function Workbench({ call, t, appearance }) {
   useEffect(() => { tabRef.current = tab }, [tab])
 
   const notify = useCallback((kind, text) => setNotice({ kind, text }), [])
+  const selectAiModel = useCallback(next => {
+    setAiInfoLoading(true)
+    setAiModelKey(next)
+  }, [])
   const continuity = useContinuityJobs({ call, status, novelId, writable, notify, t })
   const chapterSubmitRef = useRef(false)
 
@@ -2382,19 +2403,25 @@ function Workbench({ call, t, appearance }) {
     return () => window.removeEventListener('keydown', onKey, true)
   }, [])
 
-  // AI 可用性与模型名：配了模型才显示生成入口。
+  // AI 模型目录来自 DSH 的 llm 注册表；默认模型只是初始选中项。
   useEffect(() => {
     let cancelled = false
+    setAiInfoLoading(true)
     ;(async () => {
       try {
-        const info = await call('aiInfo', {})
-        if (!cancelled) setAiInfo(info)
+        const info = await call('aiInfo', aiModelKey ? { modelKey: aiModelKey } : {})
+        if (!cancelled) {
+          setAiInfo(info)
+          setAiModelKey(current => current || info?.model || '')
+        }
       } catch {
         // 没有可用的模型服务时保持 null，面板显示不可用。
+      } finally {
+        if (!cancelled) setAiInfoLoading(false)
       }
     })()
     return () => { cancelled = true }
-  }, [call])
+  }, [call, aiModelKey])
 
   // 人物名单：用于「本章出场人物」识别，失败时静默（不影响正文）。
   useEffect(() => {
@@ -3184,8 +3211,11 @@ function Workbench({ call, t, appearance }) {
     setContextMenu(null)
     const sequence = ++aiInfoSequence.current
     setAiInfoLoading(true)
-    void call('aiInfo', {}).then(next => {
-      if (sequence === aiInfoSequence.current) setAiInfo(next)
+    void call('aiInfo', aiModelKey ? { modelKey: aiModelKey } : {}).then(next => {
+      if (sequence === aiInfoSequence.current) {
+        setAiInfo(next)
+        setAiModelKey(current => current || next?.model || '')
+      }
     }).catch(cause => {
       if (sequence === aiInfoSequence.current) {
         setAiInfo(null)
@@ -3194,7 +3224,7 @@ function Workbench({ call, t, appearance }) {
     }).finally(() => {
       if (sequence === aiInfoSequence.current) setAiInfoLoading(false)
     })
-  }, [call, notify])
+  }, [call, notify, aiModelKey])
 
   // AI 写回后给一次「撤销」出口：记住写回前的正文与所属章节。
   const showUndo = useCallback((previous, appliedChapterId, messageKey) => {
@@ -3932,7 +3962,7 @@ function Workbench({ call, t, appearance }) {
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-characters" role="tabpanel" aria-labelledby="qibi-tab-characters" style={{ display: tab === 'characters' ? 'flex' : 'none' }}>
-            <CharactersTab key={novelId} call={call} novelId={novelId} chapterId={chapterId} writable={writable} active={tab === 'characters'} notify={notify} t={t} guard={guardDirty} />
+            <CharactersTab key={novelId} call={call} novelId={novelId} chapterId={chapterId} writable={writable} active={tab === 'characters'} notify={notify} t={t} guard={guardDirty} modelKey={aiModelKey} onModelChange={selectAiModel} />
           </div>
 
           <div className="qibi-tabpane" id="qibi-pane-distill" role="tabpanel" aria-labelledby="qibi-tab-distill" style={{ display: tab === 'distill' ? 'flex' : 'none' }}>
@@ -4010,6 +4040,8 @@ function Workbench({ call, t, appearance }) {
           writable={writable}
           info={aiInfo}
           modelLoading={aiInfoLoading}
+          modelKey={aiModelKey}
+          onModelChange={selectAiModel}
           hasOutline={outlines.some(row => row.chapterId === chapterId)}
           t={t}
           notify={notify}

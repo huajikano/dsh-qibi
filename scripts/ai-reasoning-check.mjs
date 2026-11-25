@@ -21,6 +21,8 @@ try {
   }
   const calls = []
   const llm = {
+    async listProviders() { return [{ id: 'fixture', name: 'Fixture provider' }] },
+    async listModels(provider) { return [{ id: model, name: model === 'fixture-a' ? 'Fixture A' : 'Fixture B', description: 'Synthetic model' }] },
     async resolveModelInfo(provider, id) {
       if (metadataFailure) throw new Error('fixture: capability unavailable')
       return { provider, id, name: id, reasoning }
@@ -52,6 +54,8 @@ try {
   assert.deepEqual(info.value.reasoning.efforts.map(row => row.id), ['low', 'medium', 'high'])
   assert.equal(info.value.reasoning.selectedEffort, 'medium')
   assert.equal(info.value.reasoning.defaultEffort, 'low')
+   assert.deepEqual(info.value.models.map(row => row.key), ['fixture/fixture-a'])
+   assert.equal(info.value.models[0].label, 'Fixture provider · Fixture A')
 
   const generate = async extra => ai.fetch(request('/api/qibi/ai', {
     mode: 'polish-selection', novelId: novel.id, chapterId: chapter.id, content: '夹具原文', ...extra,
@@ -99,7 +103,7 @@ try {
   model = 'fixture-b'
   const stale = await generate({ modelKey: 'fixture/fixture-a', reasoningEffort: 'high' })
   assert.equal(stale.status, 400)
-  assert.equal((await stale.json()).error.code, 'AI_MODEL_CHANGED')
+  assert.equal((await stale.json()).error.code, 'AI_MODEL_UNAVAILABLE')
   assert.equal(calls.length, count)
   console.log('PASS: reasoning options follow exact model metadata; explicit and inherited values reach llm.stream; continuation preserves the choice; unsupported, invalid and stale-model requests never dispatch.')
 } finally {

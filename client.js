@@ -53,6 +53,7 @@ window.__ModuleLoader__.load({
         inject: () => inject,
         listAiDrafts: () => listAiDrafts,
         matchOutlineAnchors: () => matchOutlineAnchors,
+        modelOptions: () => modelOptions2,
         previewOnlyHistory: () => previewOnlyHistory,
         pushHistory: () => pushHistory,
         pushTypingHistory: () => pushTypingHistory,
@@ -1916,6 +1917,9 @@ window.__ModuleLoader__.load({
       var FIELD_KEYS = Object.fromEntries(CHARACTER_FIELDS.map((field) => [field, `characterAi${field[0].toUpperCase()}${field.slice(1)}`]));
       var LONG_FIELDS = /* @__PURE__ */ new Set(["appearance", "personality", "background"]);
       var REASONING_KEY = "qibi:ai-reasoning";
+      function modelOptions(info) {
+        return Array.isArray(info?.models) ? info.models.filter((row) => row && typeof row.key === "string" && row.key) : [];
+      }
       var REASONING_LABELS = { none: "aiReasoningNone", off: "aiReasoningNone", minimal: "aiReasoningMinimal", low: "aiReasoningLow", medium: "aiReasoningMedium", high: "aiReasoningHigh", xhigh: "aiReasoningXhigh", max: "aiReasoningMax" };
       var FOCUSABLE = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
       function Field({ label, children }) {
@@ -1938,7 +1942,7 @@ window.__ModuleLoader__.load({
       function errorText(error) {
         return error instanceof Error ? error.message : String(error);
       }
-      function CharacterAiDialog({ call, novelId, chapterId, characters = [], writable, initialAction = "extract", t, onClose, onImported }) {
+      function CharacterAiDialog({ call, novelId, chapterId, characters = [], writable, initialAction = "extract", t, onClose, onImported, modelKey = "", onModelChange }) {
         const action = initialAction === "generate" ? "generate" : "extract";
         const [scope, setScope] = (0, import_react.useState)(chapterId != null ? "chapter" : "all");
         const [chapterList, setChapterList] = (0, import_react.useState)(null);
@@ -1955,6 +1959,8 @@ window.__ModuleLoader__.load({
         const [modelError, setModelError] = (0, import_react.useState)("");
         const [infoRetry, setInfoRetry] = (0, import_react.useState)(0);
         const [effort, setEffort] = (0, import_react.useState)("");
+        const options = modelOptions(info);
+        const selectedModelKey = modelKey || info?.model || "";
         const [busy, setBusy] = (0, import_react.useState)("");
         const [candidates, setCandidates] = (0, import_react.useState)([]);
         const [source, setSource] = (0, import_react.useState)(null);
@@ -2066,7 +2072,7 @@ window.__ModuleLoader__.load({
           setModelLoading(true);
           setModelError("");
           const current = () => matchesContext(context) && infoRef.current === controller && !controller.signal.aborted;
-          Promise.resolve().then(() => current() ? call("aiInfo", {}, { signal: controller.signal }) : void 0).then((result) => {
+          Promise.resolve().then(() => current() ? call("aiInfo", modelKey ? { modelKey } : {}, { signal: controller.signal }) : void 0).then((result) => {
             if (!current()) return;
             modelContextRef.current = context;
             setInfo(result);
@@ -2083,7 +2089,7 @@ window.__ModuleLoader__.load({
             controller.abort();
             if (infoRef.current === controller) infoRef.current = null;
           };
-        }, [call, novelId, chapterId, action, infoRetry]);
+        }, [call, novelId, chapterId, action, modelKey, infoRetry]);
         (0, import_react.useEffect)(() => {
           if (action !== "extract" || novelId == null) return;
           const controller = new AbortController();
@@ -2128,6 +2134,10 @@ window.__ModuleLoader__.load({
           taskRef.current = null;
           updateBusy("");
           setStatus(t("characterAiCancelled"));
+        };
+        const chooseModel = (event) => {
+          onModelChange?.(event.target.value);
+          setEffort("");
         };
         const chooseEffort = (event) => {
           const next = validEffort(info, event.target.value);
@@ -2177,7 +2187,7 @@ window.__ModuleLoader__.load({
           if (candidates.length > 0) setPendingReset(change);
           else resetPreview(change);
         };
-        const canStart = Boolean(matchesContext(modelContextRef.current) && !busy && !pendingReset && !modelLoading && info?.available && info?.model && novelId != null && (action === "generate" ? idea.trim() : batching ? validRange && !batchDone : chapterId != null));
+        const canStart = Boolean(matchesContext(modelContextRef.current) && !busy && !pendingReset && !modelLoading && info?.available && selectedModelKey && novelId != null && (action === "generate" ? idea.trim() : batching ? validRange && !batchDone : chapterId != null));
         const start = async () => {
           if (!canStart) return;
           const task = beginTask("preview");
@@ -2187,7 +2197,7 @@ window.__ModuleLoader__.load({
             const result = await call("characterAi", {
               novelId,
               action,
-              modelKey: info.model,
+              modelKey: selectedModelKey,
               ...batching ? { scope: "range", startChapterId: loadedChapters[startIndex].id, endChapterId: loadedChapters[endIndex].id, ...batchCursor ? { batchCursor } : {} } : action === "extract" ? { scope: "chapter", chapterId } : { idea: idea.trim() },
               ...info.reasoning?.supported ? { reasoningEffort } : {}
             }, { signal: task.controller.signal });
@@ -2261,7 +2271,7 @@ window.__ModuleLoader__.load({
         const selectRange = (label, value, kind) => /* @__PURE__ */ import_react.default.createElement(Field, { label: t(label) }, /* @__PURE__ */ import_react.default.createElement("select", { className: "qibi-select", "aria-label": t(label), value, disabled: controlsDisabled, onChange: (event) => requestReset({ kind, value: event.target.value }) }, loadedChapters.map((row, index) => /* @__PURE__ */ import_react.default.createElement("option", { key: row.id, value: String(row.id) }, index + 1, ". ", row.title))));
         return /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-overlay qibi-character-ai-overlay", onMouseDown: (event) => {
           if (event.target === event.currentTarget) close();
-        } }, /* @__PURE__ */ import_react.default.createElement("div", { ref: dialogRef, className: "qibi-dialog qibi-character-ai-dialog", role: "dialog", "aria-modal": "true", "aria-labelledby": titleId, "aria-describedby": statusId, "aria-busy": Boolean(busy) || modelLoading, tabIndex: -1 }, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-dialog-head" }, /* @__PURE__ */ import_react.default.createElement("strong", { id: titleId }, title), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", "aria-label": t("close"), title: t("close"), disabled: busy === "import", onClick: close }, "\xD7")), /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-dialog-body qibi-character-ai-body" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-character-ai-settings" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-row qibi-character-ai-model-settings", "aria-busy": modelLoading }, /* @__PURE__ */ import_react.default.createElement(Field, { label: t("aiGenerationModel") }, /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-sub", title: info?.model ?? "" }, modelLoading ? t("aiModelLoading") : info?.model || t("aiUnavailable"))), reasoning?.supported && /* @__PURE__ */ import_react.default.createElement(Field, { label: t("aiReasoning") }, /* @__PURE__ */ import_react.default.createElement("select", { className: "qibi-select", "aria-label": t("aiReasoning"), value: validEffort(info, effort), onChange: chooseEffort, disabled: Boolean(busy) || modelLoading }, /* @__PURE__ */ import_react.default.createElement("option", { value: "" }, t("aiReasoningFollow"), inheritedRow ? ` \xB7 ${reasoningLabel(inheritedRow, t)}` : ""), (reasoning.efforts || []).map((row) => /* @__PURE__ */ import_react.default.createElement("option", { key: row.id, value: row.id, title: row.description }, reasoningLabel(row, t)))))), !modelLoading && !modelError && /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub" }, !info?.available ? t("aiUnavailable") : reasoning?.supported ? t("aiReasoningHint") : reasoning?.known ? t("aiReasoningUnsupported") : t("aiReasoningUnknown")), modelError && /* @__PURE__ */ import_react.default.createElement("div", { role: "alert", className: "qibi-character-ai-error" }, /* @__PURE__ */ import_react.default.createElement("p", null, modelError), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: Boolean(busy), onClick: () => setInfoRetry((value) => value + 1) }, t("retry"))), action === "extract" ? /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement(Field, { label: t("characterAiScope") }, /* @__PURE__ */ import_react.default.createElement("select", { className: "qibi-select", "aria-label": t("characterAiScope"), value: scope, onChange: (event) => requestReset({ kind: "scope", value: event.target.value }), disabled: controlsDisabled }, /* @__PURE__ */ import_react.default.createElement("option", { value: "chapter", disabled: chapterId == null }, t("characterAiCurrentChapter")), /* @__PURE__ */ import_react.default.createElement("option", { value: "range" }, t("characterAiChapterRange")), /* @__PURE__ */ import_react.default.createElement("option", { value: "all" }, t("characterAiAllChapters")))), scope === "range" && loadedChapters?.length > 0 && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-character-batch-range" }, selectRange("characterAiRangeStart", rangeStart, "start"), selectRange("characterAiRangeEnd", rangeEnd, "end")), rangeLoading && /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub", role: "status" }, t("characterAiChaptersLoading")), batching && chapterError && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-character-ai-error", role: "alert" }, /* @__PURE__ */ import_react.default.createElement("p", null, chapterError), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: controlsDisabled, onClick: () => setChapterRetry((value) => value + 1) }, t("retry"))), batching && loadedChapters?.length === 0 && /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub" }, t("characterAiChaptersEmpty")), batching && loadedChapters?.length > 0 && !validRange && /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-character-ai-error", role: "alert" }, t("characterAiRangeInvalid")), /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub" }, t(batching ? "characterAiBatchHint" : "characterAiChapterHint")), pendingReset && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-character-batch-reset" }, /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub", role: "status" }, t("characterAiResetConfirm")), /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => resetPreview(pendingReset) }, t("characterAiResetApply")), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => setPendingReset(null) }, t("characterAiResetKeep"))))) : /* @__PURE__ */ import_react.default.createElement(Field, { label: t("characterAiIdea") }, /* @__PURE__ */ import_react.default.createElement("textarea", { className: "qibi-textarea", rows: 3, value: idea, onChange: (event) => setIdea(event.target.value), placeholder: t("characterAiIdeaPlaceholder"), disabled: Boolean(busy) })), /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub" }, t("characterAiPreviewHint")), !writable && /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub" }, t("characterAiReadOnly"))), /* @__PURE__ */ import_react.default.createElement("div", { id: statusId, className: "qibi-character-ai-status", role: "status", "aria-live": "polite", "aria-atomic": "true" }, busy ? t(busy === "import" ? "characterAiImporting" : "characterAiWorking") : status || (modelLoading ? t("aiModelLoading") : ""), importFeedback && /* @__PURE__ */ import_react.default.createElement("span", null, " \xB7 ", t("characterAiCreated"), " ", importFeedback.created, " \xB7 ", t("characterAiSkipped"), " ", importFeedback.skipped)), error && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-character-ai-error", role: "alert" }, error), source && action === "extract" && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-sub qibi-character-ai-source", role: "status" }, scopeLabel(scope), " \xB7 ", source.scope === "range" ? /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, t("characterAiBatchAnalyzed"), " ", source.analyzedChapters, " \xB7 ", t("characterAiBatchProgress"), " ", rangeProgress, " / ", rangeSize) : /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, t("characterAiAnalyzedChapters"), " ", source.analyzedChapters ?? 0, " / ", source.availableChapters ?? 0), source.scope === "range" ? /* @__PURE__ */ import_react.default.createElement("p", null, t(batchDone ? "characterAiBatchDone" : "characterAiBatchPending")) : source.truncated && /* @__PURE__ */ import_react.default.createElement("p", null, t("characterAiTruncated"))), hasResult && candidates.length === 0 && !importFeedback && /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-empty" }, t("characterAiEmpty")), candidates.length > 0 && /* @__PURE__ */ import_react.default.createElement("section", { className: "qibi-character-ai-candidates", "aria-label": t("characterAiCandidates") }, /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub" }, t("characterAiReviewHint")), (candidates.length > CHARACTER_IMPORT_LIMIT || selected.length >= CHARACTER_IMPORT_LIMIT) && /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub" }, t("characterAiSelectionLimit")), candidates.map((row, index) => {
+        } }, /* @__PURE__ */ import_react.default.createElement("div", { ref: dialogRef, className: "qibi-dialog qibi-character-ai-dialog", role: "dialog", "aria-modal": "true", "aria-labelledby": titleId, "aria-describedby": statusId, "aria-busy": Boolean(busy) || modelLoading, tabIndex: -1 }, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-dialog-head" }, /* @__PURE__ */ import_react.default.createElement("strong", { id: titleId }, title), /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", "aria-label": t("close"), title: t("close"), disabled: busy === "import", onClick: close }, "\xD7")), /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-dialog-body qibi-character-ai-body" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-character-ai-settings" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-row qibi-character-ai-model-settings", "aria-busy": modelLoading }, /* @__PURE__ */ import_react.default.createElement(Field, { label: t("aiGenerationModel") }, modelLoading ? /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-sub", title: info?.model ?? "" }, t("aiModelLoading")) : options.length > 0 ? /* @__PURE__ */ import_react.default.createElement("select", { className: "qibi-select", "aria-label": t("aiGenerationModel"), value: selectedModelKey, onChange: chooseModel, disabled: Boolean(busy) }, options.map((row) => /* @__PURE__ */ import_react.default.createElement("option", { key: row.key, value: row.key, title: row.description }, row.label))) : /* @__PURE__ */ import_react.default.createElement("span", { className: "qibi-sub", title: info?.model ?? "" }, info?.model || t("aiUnavailable"))), reasoning?.supported && /* @__PURE__ */ import_react.default.createElement(Field, { label: t("aiReasoning") }, /* @__PURE__ */ import_react.default.createElement("select", { className: "qibi-select", "aria-label": t("aiReasoning"), value: validEffort(info, effort), onChange: chooseEffort, disabled: Boolean(busy) || modelLoading }, /* @__PURE__ */ import_react.default.createElement("option", { value: "" }, t("aiReasoningFollow"), inheritedRow ? ` \xB7 ${reasoningLabel(inheritedRow, t)}` : ""), (reasoning.efforts || []).map((row) => /* @__PURE__ */ import_react.default.createElement("option", { key: row.id, value: row.id, title: row.description }, reasoningLabel(row, t)))))), !modelLoading && !modelError && /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub" }, !info?.available ? t("aiUnavailable") : reasoning?.supported ? t("aiReasoningHint") : reasoning?.known ? t("aiReasoningUnsupported") : t("aiReasoningUnknown")), modelError && /* @__PURE__ */ import_react.default.createElement("div", { role: "alert", className: "qibi-character-ai-error" }, /* @__PURE__ */ import_react.default.createElement("p", null, modelError), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: Boolean(busy), onClick: () => setInfoRetry((value) => value + 1) }, t("retry"))), action === "extract" ? /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement(Field, { label: t("characterAiScope") }, /* @__PURE__ */ import_react.default.createElement("select", { className: "qibi-select", "aria-label": t("characterAiScope"), value: scope, onChange: (event) => requestReset({ kind: "scope", value: event.target.value }), disabled: controlsDisabled }, /* @__PURE__ */ import_react.default.createElement("option", { value: "chapter", disabled: chapterId == null }, t("characterAiCurrentChapter")), /* @__PURE__ */ import_react.default.createElement("option", { value: "range" }, t("characterAiChapterRange")), /* @__PURE__ */ import_react.default.createElement("option", { value: "all" }, t("characterAiAllChapters")))), scope === "range" && loadedChapters?.length > 0 && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-character-batch-range" }, selectRange("characterAiRangeStart", rangeStart, "start"), selectRange("characterAiRangeEnd", rangeEnd, "end")), rangeLoading && /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub", role: "status" }, t("characterAiChaptersLoading")), batching && chapterError && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-character-ai-error", role: "alert" }, /* @__PURE__ */ import_react.default.createElement("p", null, chapterError), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", disabled: controlsDisabled, onClick: () => setChapterRetry((value) => value + 1) }, t("retry"))), batching && loadedChapters?.length === 0 && /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub" }, t("characterAiChaptersEmpty")), batching && loadedChapters?.length > 0 && !validRange && /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-character-ai-error", role: "alert" }, t("characterAiRangeInvalid")), /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub" }, t(batching ? "characterAiBatchHint" : "characterAiChapterHint")), pendingReset && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-character-batch-reset" }, /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub", role: "status" }, t("characterAiResetConfirm")), /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-row" }, /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => resetPreview(pendingReset) }, t("characterAiResetApply")), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => setPendingReset(null) }, t("characterAiResetKeep"))))) : /* @__PURE__ */ import_react.default.createElement(Field, { label: t("characterAiIdea") }, /* @__PURE__ */ import_react.default.createElement("textarea", { className: "qibi-textarea", rows: 3, value: idea, onChange: (event) => setIdea(event.target.value), placeholder: t("characterAiIdeaPlaceholder"), disabled: Boolean(busy) })), /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub" }, t("characterAiPreviewHint")), !writable && /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub" }, t("characterAiReadOnly"))), /* @__PURE__ */ import_react.default.createElement("div", { id: statusId, className: "qibi-character-ai-status", role: "status", "aria-live": "polite", "aria-atomic": "true" }, busy ? t(busy === "import" ? "characterAiImporting" : "characterAiWorking") : status || (modelLoading ? t("aiModelLoading") : ""), importFeedback && /* @__PURE__ */ import_react.default.createElement("span", null, " \xB7 ", t("characterAiCreated"), " ", importFeedback.created, " \xB7 ", t("characterAiSkipped"), " ", importFeedback.skipped)), error && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-character-ai-error", role: "alert" }, error), source && action === "extract" && /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-sub qibi-character-ai-source", role: "status" }, scopeLabel(scope), " \xB7 ", source.scope === "range" ? /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, t("characterAiBatchAnalyzed"), " ", source.analyzedChapters, " \xB7 ", t("characterAiBatchProgress"), " ", rangeProgress, " / ", rangeSize) : /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, t("characterAiAnalyzedChapters"), " ", source.analyzedChapters ?? 0, " / ", source.availableChapters ?? 0), source.scope === "range" ? /* @__PURE__ */ import_react.default.createElement("p", null, t(batchDone ? "characterAiBatchDone" : "characterAiBatchPending")) : source.truncated && /* @__PURE__ */ import_react.default.createElement("p", null, t("characterAiTruncated"))), hasResult && candidates.length === 0 && !importFeedback && /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-empty" }, t("characterAiEmpty")), candidates.length > 0 && /* @__PURE__ */ import_react.default.createElement("section", { className: "qibi-character-ai-candidates", "aria-label": t("characterAiCandidates") }, /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub" }, t("characterAiReviewHint")), (candidates.length > CHARACTER_IMPORT_LIMIT || selected.length >= CHARACTER_IMPORT_LIMIT) && /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub" }, t("characterAiSelectionLimit")), candidates.map((row, index) => {
           const key = characterNameKey(row.fields.name);
           const sameName = key && (existingNames.has(key) || candidates.slice(0, index).some((other) => characterNameKey(other.fields.name) === key));
           return /* @__PURE__ */ import_react.default.createElement("fieldset", { key: row.origin, className: "qibi-character-ai-candidate", disabled: controlsDisabled }, /* @__PURE__ */ import_react.default.createElement("legend", null, /* @__PURE__ */ import_react.default.createElement("label", { className: "qibi-character-ai-selection" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "checkbox", disabled: controlsDisabled || !row.selected && selected.length >= CHARACTER_IMPORT_LIMIT, checked: row.selected, onChange: (event) => selectCandidate(row.origin, event.target.checked) }), " ", t("characterAiSelectCandidate"), " ", index + 1)), sameName && /* @__PURE__ */ import_react.default.createElement("p", { className: "qibi-sub" }, t("characterAiDuplicate")), /* @__PURE__ */ import_react.default.createElement("div", { className: "qibi-character-ai-fields", style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))", gap: 12 } }, CHARACTER_FIELDS.map((field) => /* @__PURE__ */ import_react.default.createElement(Field, { key: field, label: `${t(FIELD_KEYS[field])}${field === "name" ? " *" : ""}` }, LONG_FIELDS.has(field) ? /* @__PURE__ */ import_react.default.createElement("textarea", { className: "qibi-textarea", rows: 3, value: row.fields[field], onChange: (event) => editCandidate(row.origin, field, event.target.value) }) : /* @__PURE__ */ import_react.default.createElement("input", { className: "qibi-input", value: row.fields[field], required: field === "name" && row.selected, "aria-invalid": field === "name" && row.selected && !row.fields.name.trim() ? true : void 0, onChange: (event) => editCandidate(row.origin, field, event.target.value) })))));
@@ -3419,7 +3429,7 @@ window.__ModuleLoader__.load({
 
       // src/build-info.js
       var VERSION = "1.4.0";
-      var BUILD = "f477301d";
+      var BUILD = "0fc0371d";
 
       // src/daily-words.js
       var DAILY_KEY_PREFIX = "qibi:daily:v1:";
@@ -3576,8 +3586,11 @@ window.__ModuleLoader__.load({
       function validReasoningPreference(info, value) {
         return typeof value === "string" && info?.reasoning?.efforts?.some((row) => row.id === value) ? value : "";
       }
-      function aiReasoningRequest(info, value) {
-        return { modelKey: info?.model ?? "", reasoningEffort: validReasoningPreference(info, value) };
+      function aiReasoningRequest(info, value, selectedModelKey = "") {
+        return { modelKey: selectedModelKey || info?.model || "", reasoningEffort: validReasoningPreference(info, value) };
+      }
+      function modelOptions2(info) {
+        return Array.isArray(info?.models) ? info.models.filter((row) => row && typeof row.key === "string" && row.key) : [];
       }
       function reasoningLabel2(row, t) {
         const keys = { none: "aiReasoningNone", off: "aiReasoningNone", minimal: "aiReasoningMinimal", low: "aiReasoningLow", medium: "aiReasoningMedium", high: "aiReasoningHigh", xhigh: "aiReasoningXhigh", max: "aiReasoningMax" };
@@ -3591,8 +3604,10 @@ window.__ModuleLoader__.load({
       function previewOnlyHistory(entry) {
         return Boolean(entry && (entry.previewOnly === true || entry.mode === "continue" && entry.forceRewrite === true && typeof entry.complete !== "boolean"));
       }
-      function AiDrawer({ call, novelId, chapterId, historyScope, draft, selection, initialMode, writable, info, modelLoading = false, hasOutline, t, notify, onApply, onClose }) {
+      function AiDrawer({ call, novelId, chapterId, historyScope, draft, selection, initialMode, writable, info, modelLoading = false, modelKey = "", onModelChange, hasOutline, t, notify, onApply, onClose }) {
         const [reasoningEffort, setReasoningEffort] = (0, import_react9.useState)(() => validReasoningPreference(info, readJson(AI_REASONING_KEY, {})?.[info?.model]));
+        const options = modelOptions2(info);
+        const selectedModelKey = modelKey || info?.model || "";
         const [mode, setMode] = (0, import_react9.useState)("draft");
         const [extra, setExtra] = (0, import_react9.useState)("");
         const [busy, setBusy] = (0, import_react9.useState)(false);
@@ -3615,7 +3630,12 @@ window.__ModuleLoader__.load({
         const inheritedRow = reasoning?.efforts?.find((row) => row.id === inheritedEffort);
         (0, import_react9.useEffect)(() => {
           setReasoningEffort(validReasoningPreference(info, readJson(AI_REASONING_KEY, {})?.[info?.model]));
-        }, [info]);
+        }, [info, selectedModelKey]);
+        const chooseModel = (event) => {
+          const next = event.target.value;
+          onModelChange?.(next);
+          setReasoningEffort("");
+        };
         const chooseReasoning = (event) => {
           const next = validReasoningPreference(info, event.target.value);
           setReasoningEffort(next);
@@ -3660,7 +3680,7 @@ window.__ModuleLoader__.load({
           abortRef.current = controller;
           try {
             const result = await streamAi({
-              ...aiReasoningRequest(info, reasoningEffort),
+              ...aiReasoningRequest(info, reasoningEffort, selectedModelKey),
               mode,
               novelId,
               chapterId,
@@ -3706,7 +3726,7 @@ window.__ModuleLoader__.load({
           const join = (value) => `${base}${base.endsWith("\n") || !value ? "" : "\n"}${value}`;
           try {
             const result = await streamAi({
-              ...aiReasoningRequest(info, reasoningEffort),
+              ...aiReasoningRequest(info, reasoningEffort, selectedModelKey),
               mode: "continue",
               novelId,
               chapterId,
@@ -3758,7 +3778,7 @@ window.__ModuleLoader__.load({
             onClick: (event) => event.stopPropagation()
           },
           /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-ai-head" }, /* @__PURE__ */ import_react9.default.createElement("strong", null, t("aiTitle")), /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-spacer" }), /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "qibi-btn small qibi-ai-close", onClick: onClose, title: t("close"), "aria-label": t("close") }, t("close"))),
-          /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-row qibi-ai-model-settings", "aria-busy": modelLoading }, /* @__PURE__ */ import_react9.default.createElement(Field2, { label: t("aiGenerationModel") }, /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-sub qibi-ai-model", title: info?.model ?? "" }, modelLoading ? t("aiModelLoading") : info?.model || t("aiUnavailable"))), /* @__PURE__ */ import_react9.default.createElement(Field2, { label: t("aiReasoning") }, /* @__PURE__ */ import_react9.default.createElement("select", { className: "qibi-select", "aria-label": t("aiReasoning"), value: validReasoningPreference(info, reasoningEffort), onChange: chooseReasoning, disabled: busy || modelLoading || !reasoning?.supported }, /* @__PURE__ */ import_react9.default.createElement("option", { value: "" }, t("aiReasoningFollow"), inheritedRow ? ` \xB7 ${reasoningLabel2(inheritedRow, t)}` : ""), (reasoning?.efforts ?? []).map((row) => /* @__PURE__ */ import_react9.default.createElement("option", { key: row.id, value: row.id, title: row.description }, reasoningLabel2(row, t)))))),
+          /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-row qibi-ai-model-settings", "aria-busy": modelLoading }, /* @__PURE__ */ import_react9.default.createElement(Field2, { label: t("aiGenerationModel") }, modelLoading ? /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-sub qibi-ai-model", title: info?.model ?? "" }, t("aiModelLoading")) : options.length > 0 ? /* @__PURE__ */ import_react9.default.createElement("select", { className: "qibi-select", "aria-label": t("aiGenerationModel"), value: selectedModelKey, onChange: chooseModel, disabled: busy }, options.map((row) => /* @__PURE__ */ import_react9.default.createElement("option", { key: row.key, value: row.key, title: row.description }, row.label))) : /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-sub qibi-ai-model", title: info?.model ?? "" }, info?.model || t("aiUnavailable"))), /* @__PURE__ */ import_react9.default.createElement(Field2, { label: t("aiReasoning") }, /* @__PURE__ */ import_react9.default.createElement("select", { className: "qibi-select", "aria-label": t("aiReasoning"), value: validReasoningPreference(info, reasoningEffort), onChange: chooseReasoning, disabled: busy || modelLoading || !reasoning?.supported }, /* @__PURE__ */ import_react9.default.createElement("option", { value: "" }, t("aiReasoningFollow"), inheritedRow ? ` \xB7 ${reasoningLabel2(inheritedRow, t)}` : ""), (reasoning?.efforts ?? []).map((row) => /* @__PURE__ */ import_react9.default.createElement("option", { key: row.id, value: row.id, title: row.description }, reasoningLabel2(row, t)))))),
           !modelLoading && /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-sub" }, reasoning?.supported ? t("aiReasoningHint") : reasoning?.known ? t("aiReasoningUnsupported") : t("aiReasoningUnknown")),
           chapterId != null && hasOutline === false && /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-ai-note" }, t("aiNoOutline")),
           isSelectionMode && effectiveSelection && /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-ai-selection" }, /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-sub" }, t("aiSelectionLabel")), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-ai-selected" }, "\u201C", effectiveSelection.text.slice(0, 120), effectiveSelection.text.length > 120 ? "\u2026" : "", "\u201D")),
@@ -4059,7 +4079,7 @@ window.__ModuleLoader__.load({
       function LoadError({ message, onRetry, t }) {
         return /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react9.default.createElement("strong", null, t("loadFailed")), /* @__PURE__ */ import_react9.default.createElement("span", null, message), /* @__PURE__ */ import_react9.default.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "qibi-btn", onClick: onRetry }, t("retry"))));
       }
-      function CharactersTab({ call, novelId, chapterId, writable, active, notify, t, guard }) {
+      function CharactersTab({ call, novelId, chapterId, writable, active, notify, t, guard, modelKey, onModelChange }) {
         const [characters, setCharacters] = (0, import_react9.useState)(null);
         const [aiAction, setAiAction] = (0, import_react9.useState)(null);
         const [dialog, setDialog] = (0, import_react9.useState)(null);
@@ -4147,6 +4167,8 @@ window.__ModuleLoader__.load({
             characters: characters ?? [],
             writable,
             initialAction: aiAction,
+            modelKey,
+            onModelChange,
             t,
             onClose: () => setAiAction(null),
             onImported: async (result) => {
@@ -5104,6 +5126,7 @@ window.__ModuleLoader__.load({
         const [chapterDialog, setChapterDialog] = (0, import_react9.useState)(null);
         const [aiInfo, setAiInfo] = (0, import_react9.useState)(null);
         const [aiInfoLoading, setAiInfoLoading] = (0, import_react9.useState)(false);
+        const [aiModelKey, setAiModelKey] = (0, import_react9.useState)("");
         const aiInfoSequence = (0, import_react9.useRef)(0);
         const [aiOpen, setAiOpen] = (0, import_react9.useState)(false);
         const [aiSelection, setAiSelection] = (0, import_react9.useState)(null);
@@ -5146,6 +5169,10 @@ window.__ModuleLoader__.load({
           tabRef.current = tab;
         }, [tab]);
         const notify = (0, import_react9.useCallback)((kind, text) => setNotice({ kind, text }), []);
+        const selectAiModel = (0, import_react9.useCallback)((next) => {
+          setAiInfoLoading(true);
+          setAiModelKey(next);
+        }, []);
         const continuity = useContinuityJobs({ call, status, novelId, writable, notify, t });
         const chapterSubmitRef = (0, import_react9.useRef)(false);
         const retryStatus = (0, import_react9.useCallback)(() => {
@@ -5188,17 +5215,23 @@ window.__ModuleLoader__.load({
         }, []);
         (0, import_react9.useEffect)(() => {
           let cancelled = false;
+          setAiInfoLoading(true);
           (async () => {
             try {
-              const info = await call("aiInfo", {});
-              if (!cancelled) setAiInfo(info);
+              const info = await call("aiInfo", aiModelKey ? { modelKey: aiModelKey } : {});
+              if (!cancelled) {
+                setAiInfo(info);
+                setAiModelKey((current) => current || info?.model || "");
+              }
             } catch {
+            } finally {
+              if (!cancelled) setAiInfoLoading(false);
             }
           })();
           return () => {
             cancelled = true;
           };
-        }, [call]);
+        }, [call, aiModelKey]);
         (0, import_react9.useEffect)(() => {
           if (novelId === null) {
             setCharacters([]);
@@ -5951,8 +5984,11 @@ window.__ModuleLoader__.load({
           setContextMenu(null);
           const sequence = ++aiInfoSequence.current;
           setAiInfoLoading(true);
-          void call("aiInfo", {}).then((next) => {
-            if (sequence === aiInfoSequence.current) setAiInfo(next);
+          void call("aiInfo", aiModelKey ? { modelKey: aiModelKey } : {}).then((next) => {
+            if (sequence === aiInfoSequence.current) {
+              setAiInfo(next);
+              setAiModelKey((current) => current || next?.model || "");
+            }
           }).catch((cause) => {
             if (sequence === aiInfoSequence.current) {
               setAiInfo(null);
@@ -5961,7 +5997,7 @@ window.__ModuleLoader__.load({
           }).finally(() => {
             if (sequence === aiInfoSequence.current) setAiInfoLoading(false);
           });
-        }, [call, notify]);
+        }, [call, notify, aiModelKey]);
         const showUndo = (0, import_react9.useCallback)((previous, appliedChapterId, messageKey) => {
           setNotice({
             kind: "info",
@@ -6556,7 +6592,7 @@ window.__ModuleLoader__.load({
               }
             }
           }
-        ))) : /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react9.default.createElement("strong", null, t("emptyChapter")), /* @__PURE__ */ import_react9.default.createElement("span", null, t("noChapterHint")))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-outline", role: "tabpanel", "aria-labelledby": "qibi-tab-outline", style: { display: tab === "outline" ? "flex" : "none" } }, /* @__PURE__ */ import_react9.default.createElement(OutlineWorkspace, { key: novelId, call, novelId, chapterId, registerGuard: registerOutlineGuard, chapters, writable, active: tab === "outline", notify, t })), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-characters", role: "tabpanel", "aria-labelledby": "qibi-tab-characters", style: { display: tab === "characters" ? "flex" : "none" } }, /* @__PURE__ */ import_react9.default.createElement(CharactersTab, { key: novelId, call, novelId, chapterId, writable, active: tab === "characters", notify, t, guard: guardDirty })), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-distill", role: "tabpanel", "aria-labelledby": "qibi-tab-distill", style: { display: tab === "distill" ? "flex" : "none" } }, /* @__PURE__ */ import_react9.default.createElement(DistillTab, { key: novelId, call, novelId, writable, active: tab === "distill", notify, t })), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-continuity", role: "tabpanel", "aria-labelledby": "qibi-tab-continuity", style: { display: tab === "continuity" ? "flex" : "none" } }, /* @__PURE__ */ import_react9.default.createElement(ContinuityTab, { key: novelId, call, novelId, chapterId, chapter, chapterDirty: dirty, organizer: { ...continuity, organize: () => continuity.enqueue(chapterRef.current) }, writable, active: tab === "continuity", notify, t })), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-search", role: "tabpanel", "aria-labelledby": "qibi-tab-search", style: { display: tab === "search" ? "flex" : "none" } }, /* @__PURE__ */ import_react9.default.createElement(SearchTab, { key: novelId, call, novelId, writable, active: tab === "search", notify, onOpenChapter: openChapterFromSearch, t })), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-revisions", role: "tabpanel", "aria-labelledby": "qibi-tab-revisions", style: { display: tab === "revisions" ? "flex" : "none" } }, /* @__PURE__ */ import_react9.default.createElement(RevisionsTab, { key: chapterId ?? "none", call, novelId, chapterId, writable, active: tab === "revisions", notify, onRestored: onChapterRestored, guard: guardDirty, t })), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-export", role: "tabpanel", "aria-labelledby": "qibi-tab-export", style: { display: tab === "export" ? "flex" : "none" } }, /* @__PURE__ */ import_react9.default.createElement(ExportTab, { key: novelId, call, novelId, notify, t })))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-foot" }, /* @__PURE__ */ import_react9.default.createElement("span", null, status?.dataDir), /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-spacer" }), versionMismatch && /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-foot-warn", role: "status" }, t("versionMismatch").replace("{client}", VERSION).replace("{host}", hostVersion)), /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-foot-version", title: `build ${BUILD}` }, "v", VERSION, " \xB7 ", BUILD), /* @__PURE__ */ import_react9.default.createElement("span", null, status?.user ? `${status.user.username}` : "")), contextMenu && /* @__PURE__ */ import_react9.default.createElement(
+        ))) : /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-empty" }, /* @__PURE__ */ import_react9.default.createElement("strong", null, t("emptyChapter")), /* @__PURE__ */ import_react9.default.createElement("span", null, t("noChapterHint")))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-outline", role: "tabpanel", "aria-labelledby": "qibi-tab-outline", style: { display: tab === "outline" ? "flex" : "none" } }, /* @__PURE__ */ import_react9.default.createElement(OutlineWorkspace, { key: novelId, call, novelId, chapterId, registerGuard: registerOutlineGuard, chapters, writable, active: tab === "outline", notify, t })), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-characters", role: "tabpanel", "aria-labelledby": "qibi-tab-characters", style: { display: tab === "characters" ? "flex" : "none" } }, /* @__PURE__ */ import_react9.default.createElement(CharactersTab, { key: novelId, call, novelId, chapterId, writable, active: tab === "characters", notify, t, guard: guardDirty, modelKey: aiModelKey, onModelChange: selectAiModel })), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-distill", role: "tabpanel", "aria-labelledby": "qibi-tab-distill", style: { display: tab === "distill" ? "flex" : "none" } }, /* @__PURE__ */ import_react9.default.createElement(DistillTab, { key: novelId, call, novelId, writable, active: tab === "distill", notify, t })), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-continuity", role: "tabpanel", "aria-labelledby": "qibi-tab-continuity", style: { display: tab === "continuity" ? "flex" : "none" } }, /* @__PURE__ */ import_react9.default.createElement(ContinuityTab, { key: novelId, call, novelId, chapterId, chapter, chapterDirty: dirty, organizer: { ...continuity, organize: () => continuity.enqueue(chapterRef.current) }, writable, active: tab === "continuity", notify, t })), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-search", role: "tabpanel", "aria-labelledby": "qibi-tab-search", style: { display: tab === "search" ? "flex" : "none" } }, /* @__PURE__ */ import_react9.default.createElement(SearchTab, { key: novelId, call, novelId, writable, active: tab === "search", notify, onOpenChapter: openChapterFromSearch, t })), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-revisions", role: "tabpanel", "aria-labelledby": "qibi-tab-revisions", style: { display: tab === "revisions" ? "flex" : "none" } }, /* @__PURE__ */ import_react9.default.createElement(RevisionsTab, { key: chapterId ?? "none", call, novelId, chapterId, writable, active: tab === "revisions", notify, onRestored: onChapterRestored, guard: guardDirty, t })), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-tabpane", id: "qibi-pane-export", role: "tabpanel", "aria-labelledby": "qibi-tab-export", style: { display: tab === "export" ? "flex" : "none" } }, /* @__PURE__ */ import_react9.default.createElement(ExportTab, { key: novelId, call, novelId, notify, t })))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-foot" }, /* @__PURE__ */ import_react9.default.createElement("span", null, status?.dataDir), /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-spacer" }), versionMismatch && /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-foot-warn", role: "status" }, t("versionMismatch").replace("{client}", VERSION).replace("{host}", hostVersion)), /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-foot-version", title: `build ${BUILD}` }, "v", VERSION, " \xB7 ", BUILD), /* @__PURE__ */ import_react9.default.createElement("span", null, status?.user ? `${status.user.username}` : "")), contextMenu && /* @__PURE__ */ import_react9.default.createElement(
           "div",
           {
             className: "qibi-context",
@@ -6593,6 +6629,8 @@ window.__ModuleLoader__.load({
             writable,
             info: aiInfo,
             modelLoading: aiInfoLoading,
+            modelKey: aiModelKey,
+            onModelChange: selectAiModel,
             hasOutline: outlines.some((row) => row.chapterId === chapterId),
             t,
             notify,
