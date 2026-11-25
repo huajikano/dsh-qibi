@@ -126,6 +126,20 @@ export async function checkUndoHistory() {
   return true
 }
 
+/** One-click formatting removes prose paragraph gaps without damaging fenced code. */
+export async function checkAutoFormat() {
+  const module = await loadPanel()
+  if (typeof module.formatDraftText !== 'function' || typeof module.removeBlankLines !== 'function') throw new Error('panel.jsx 未导出排版函数')
+  const source = '  第一段\n\n\n 第二段'
+  const prose = module.formatDraftText(source)
+  if (prose !== '　　第一段\n\n\n　　第二段') throw new Error('一键排版不应删除原有空行')
+  const compact = module.removeBlankLines(source)
+  if (compact !== '  第一段\n 第二段') throw new Error('去除空行应只删除普通正文空行')
+  const markdown = module.removeBlankLines('标题\n\n- 项目\n\n```text\n\ncode\n```\n\n正文')
+  if (markdown !== '标题\n- 项目\n```text\n\ncode\n```\n正文') throw new Error('去除空行不应破坏代码围栏内容')
+  return true
+}
+
 /** Data-location controls must remain usable even without any novel or chapter. */
 export async function checkStorageForm() {
   const module = await loadPanel()
@@ -201,6 +215,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     if (missing.length > 0) throw new Error(`缺少渲染标记：${missing.join(', ')}`)
     await checkOutlineAnchors()
     await checkUndoHistory()
+    await checkAutoFormat()
     await checkStorageForm()
     await checkReasoningControls()
     console.log(`AI 抽屉渲染正常（${html.length} 字符）；思考档位、细纲锚点、撤销规则与数据位置表单正常`)

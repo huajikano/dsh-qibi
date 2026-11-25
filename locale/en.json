@@ -321,6 +321,8 @@
     "aiExpand": "Expand",
     "format": "Format",
     "formatTitle": "Normalize paragraph indents to two full-width spaces",
+     "removeBlankLines": "Remove blank lines",
+     "removeBlankLinesTitle": "Remove blank lines between prose paragraphs",
     "filterNovels": "Filter works",
     "filterChapters": "Filter chapters",
     "noMatch": "No matches",

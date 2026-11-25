@@ -50,6 +50,7 @@ window.__ModuleLoader__.load({
         clearAiDrafts: () => clearAiDrafts,
         createHistory: () => createHistory,
         dataSettingsPayload: () => dataSettingsPayload,
+        formatDraftText: () => formatDraftText,
         inject: () => inject,
         listAiDrafts: () => listAiDrafts,
         matchOutlineAnchors: () => matchOutlineAnchors,
@@ -59,6 +60,7 @@ window.__ModuleLoader__.load({
         pushTypingHistory: () => pushTypingHistory,
         redoHistory: () => redoHistory,
         removeAiDraft: () => removeAiDraft,
+        removeBlankLines: () => removeBlankLines,
         restoreHistorySelection: () => restoreHistorySelection,
         saveAiDraft: () => saveAiDraft,
         undoHistory: () => undoHistory,
@@ -391,6 +393,8 @@ window.__ModuleLoader__.load({
           aiExpand: "Expand",
           format: "Format",
           formatTitle: "Normalize paragraph indents to two full-width spaces",
+          removeBlankLines: "Remove blank lines",
+          removeBlankLinesTitle: "Remove blank lines between prose paragraphs",
           filterNovels: "Filter works",
           filterChapters: "Filter chapters",
           noMatch: "No matches",
@@ -929,6 +933,8 @@ window.__ModuleLoader__.load({
           aiExpand: "AI \u6269\u5199",
           format: "\u4E00\u952E\u6392\u7248",
           formatTitle: "\u6BCF\u6BB5\u9996\u884C\u7EDF\u4E00\u4E3A\u4E24\u4E2A\u5168\u89D2\u7A7A\u683C\u7F29\u8FDB",
+          removeBlankLines: "\u53BB\u9664\u7A7A\u884C",
+          removeBlankLinesTitle: "\u5220\u9664\u666E\u901A\u6B63\u6587\u6BB5\u843D\u4E4B\u95F4\u7684\u7A7A\u884C",
           filterNovels: "\u7B5B\u9009\u4F5C\u54C1",
           filterChapters: "\u7B5B\u9009\u7AE0\u8282",
           noMatch: "\u6CA1\u6709\u5339\u914D\u9879",
@@ -3429,7 +3435,7 @@ window.__ModuleLoader__.load({
 
       // src/build-info.js
       var VERSION = "1.4.0";
-      var BUILD = "0fc0371d";
+      var BUILD = "4ed3f2cb";
 
       // src/daily-words.js
       var DAILY_KEY_PREFIX = "qibi:daily:v1:";
@@ -3960,6 +3966,44 @@ window.__ModuleLoader__.load({
           const pos = marker ? text.indexOf(marker) : -1;
           return { id: row.id, title: row.title || "", marker, pos, done: pos >= 0, custom: Boolean(custom) };
         });
+      }
+      function formatDraftText(doc) {
+        const lines = String(doc ?? "").split(/\r?\n/);
+        const output = [];
+        let inFence = false;
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) {
+            output.push("");
+            continue;
+          }
+          if (trimmed.startsWith(String.fromCharCode(96, 96, 96))) {
+            output.push(trimmed);
+            inFence = !inFence;
+            continue;
+          }
+          if (inFence || /^#{1,6}\s|^\s*[-*+]\s|^\s*\d+\.\s|^>\s|^---\s*$|^\|/.test(trimmed)) {
+            output.push(trimmed);
+            continue;
+          }
+          output.push("\u3000\u3000" + trimmed);
+        }
+        return output.join("\n");
+      }
+      function removeBlankLines(doc) {
+        const lines = String(doc ?? "").split(/\r?\n/);
+        const output = [];
+        let inFence = false;
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) {
+            if (inFence) output.push(line);
+            continue;
+          }
+          output.push(line);
+          if (trimmed.startsWith(String.fromCharCode(96, 96, 96))) inFence = !inFence;
+        }
+        return output.join("\n");
       }
       var HISTORY_LIMIT = 200;
       function createHistory() {
@@ -5914,12 +5958,13 @@ window.__ModuleLoader__.load({
         const autoFormat = (0, import_react9.useCallback)(() => {
           const doc = draftRef.current;
           if (!doc) return;
-          const formatted = doc.split(/\r?\n/).map((line) => {
-            const trimmed = line.trim();
-            if (!trimmed) return "";
-            if (/^#{1,6}\s|^\s*[-*+]\s|^\s*\d+\.\s|^>\s|^```|^---\s*$|^\|/.test(trimmed)) return trimmed;
-            return `\u3000\u3000${trimmed}`;
-          }).join("\n");
+          const formatted = formatDraftText(doc);
+          if (formatted !== doc) editDraft(formatted);
+        }, [editDraft]);
+        const removeBlankLinesAction = (0, import_react9.useCallback)(() => {
+          const doc = draftRef.current;
+          if (!doc) return;
+          const formatted = removeBlankLines(doc);
           if (formatted !== doc) editDraft(formatted);
         }, [editDraft]);
         const selectMatch = (0, import_react9.useCallback)((index) => {
@@ -6410,7 +6455,7 @@ window.__ModuleLoader__.load({
           }
         ), /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "qibi-btn small primary", onClick: () => {
           void createChapter();
-        } }, "\u2713"))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-main" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-main-head" }, chapter ? /* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-chapter-title", title: chapter.title }, chapter.title), /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-chip" }, chapter.status || t("statusDraft")), /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-sub" }, formatWords(wordCount), " ", t("words"), saveLabel ? ` \xB7 ${saveLabel}` : "", " \xB7 ", chapter.updatedAt), /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-spacer" }), aiInfo?.available && /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "qibi-btn small primary", onClick: () => openAi(null) }, t("aiButton")), /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => openFind(false), title: t("findTitle") }, t("findTitle")), /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: autoFormat, title: t("formatTitle"), disabled: !draft }, t("format")), /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => {
+        } }, "\u2713"))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-main" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-main-head" }, chapter ? /* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-chapter-title", title: chapter.title }, chapter.title), /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-chip" }, chapter.status || t("statusDraft")), /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-sub" }, formatWords(wordCount), " ", t("words"), saveLabel ? ` \xB7 ${saveLabel}` : "", " \xB7 ", chapter.updatedAt), /* @__PURE__ */ import_react9.default.createElement("span", { className: "qibi-spacer" }), aiInfo?.available && /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "qibi-btn small primary", onClick: () => openAi(null) }, t("aiButton")), /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => openFind(false), title: t("findTitle") }, t("findTitle")), /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: autoFormat, title: t("formatTitle"), disabled: !draft }, t("format")), /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: removeBlankLinesAction, title: t("removeBlankLinesTitle"), disabled: !draft }, t("removeBlankLines")), /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "qibi-btn small", onClick: () => {
           setZen((value) => !value);
           setTab("body");
         }, title: t("zenHint") }, zen ? t("zenOff") : t("zen")), /* @__PURE__ */ import_react9.default.createElement("div", { className: "qibi-menu-wrap" }, /* @__PURE__ */ import_react9.default.createElement(

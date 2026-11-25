@@ -667,6 +667,48 @@ export function matchOutlineAnchors(draft, outlines, markers, chapterId) {
     })
 }
 
+/** One-click formatting normalizes paragraph indents but keeps blank lines. */
+export function formatDraftText(doc) {
+  const lines = String(doc ?? '').split(/\r?\n/)
+  const output = []
+  let inFence = false
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed) {
+      output.push('')
+      continue
+    }
+    if (trimmed.startsWith(String.fromCharCode(96, 96, 96))) {
+      output.push(trimmed)
+      inFence = !inFence
+      continue
+    }
+    if (inFence || /^#{1,6}\s|^\s*[-*+]\s|^\s*\d+\.\s|^>\s|^---\s*$|^\|/.test(trimmed)) {
+      output.push(trimmed)
+      continue
+    }
+    output.push('　　' + trimmed)
+  }
+  return output.join('\n')
+}
+
+/** Remove blank lines from ordinary prose while preserving fenced code. */
+export function removeBlankLines(doc) {
+  const lines = String(doc ?? '').split(/\r?\n/)
+  const output = []
+  let inFence = false
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed) {
+      if (inFence) output.push(line)
+      continue
+    }
+    output.push(line)
+    if (trimmed.startsWith(String.fromCharCode(96, 96, 96))) inFence = !inFence
+  }
+  return output.join('\n')
+}
+
 const HISTORY_LIMIT = 200
 
 /** 撤销历史：past 的最后一项是「当前正文之前」的快照。 */
@@ -3127,20 +3169,19 @@ function Workbench({ call, t, appearance }) {
     return true
   }, [applyDraft, writable])
 
-  // ---- 一键排版：与起笔一致，每段首行清掉前导空白再补两个全角空格 ----
+  // ---- 一键排版：只统一段首缩进，保留原有空行 ----
   const autoFormat = useCallback(() => {
     const doc = draftRef.current
     if (!doc) return
-    const formatted = doc
-      .split(/\r?\n/)
-      .map(line => {
-        const trimmed = line.trim()
-        if (!trimmed) return ''
-        // Markdown 结构行不强加中文缩进。
-        if (/^#{1,6}\s|^\s*[-*+]\s|^\s*\d+\.\s|^>\s|^```|^---\s*$|^\|/.test(trimmed)) return trimmed
-        return `　　${trimmed}`
-      })
-      .join('\n')
+    const formatted = formatDraftText(doc)
+    if (formatted !== doc) editDraft(formatted)
+  }, [editDraft])
+
+  // ---- 去除空行：独立操作，保留代码围栏内部空行 ----
+  const removeBlankLinesAction = useCallback(() => {
+    const doc = draftRef.current
+    if (!doc) return
+    const formatted = removeBlankLines(doc)
     if (formatted !== doc) editDraft(formatted)
   }, [editDraft])
 
@@ -3756,6 +3797,7 @@ function Workbench({ call, t, appearance }) {
                 )}
                 <button type="button" className="qibi-btn small" onClick={() => openFind(false)} title={t('findTitle')}>{t('findTitle')}</button>
                 <button type="button" className="qibi-btn small" onClick={autoFormat} title={t('formatTitle')} disabled={!draft}>{t('format')}</button>
+                 <button type="button" className="qibi-btn small" onClick={removeBlankLinesAction} title={t('removeBlankLinesTitle')} disabled={!draft}>{t('removeBlankLines')}</button>
                 <button type="button" className="qibi-btn small" onClick={() => { setZen(value => !value); setTab('body') }} title={t('zenHint')}>{zen ? t('zenOff') : t('zen')}</button>
                 <div className="qibi-menu-wrap">
                   <button
