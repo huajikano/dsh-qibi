@@ -3434,8 +3434,8 @@ window.__ModuleLoader__.load({
       }
 
       // src/build-info.js
-      var VERSION = "1.4.0";
-      var BUILD = "4ed3f2cb";
+      var VERSION = "1.5.0";
+      var BUILD = "2f80a78d";
 
       // src/daily-words.js
       var DAILY_KEY_PREFIX = "qibi:daily:v1:";

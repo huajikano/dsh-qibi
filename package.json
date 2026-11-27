@@ -1,6 +1,6 @@
 {
   "name": "dsh-qibi",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "QiBi writing desk for DeepSeek Harness: a native sidebar panel and 12 qibi_* tools with independent local SQLite storage.",
   "type": "module",
   "main": "index.js",

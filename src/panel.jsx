@@ -3797,7 +3797,7 @@ function Workbench({ call, t, appearance }) {
                 )}
                 <button type="button" className="qibi-btn small" onClick={() => openFind(false)} title={t('findTitle')}>{t('findTitle')}</button>
                 <button type="button" className="qibi-btn small" onClick={autoFormat} title={t('formatTitle')} disabled={!draft}>{t('format')}</button>
-                 <button type="button" className="qibi-btn small" onClick={removeBlankLinesAction} title={t('removeBlankLinesTitle')} disabled={!draft}>{t('removeBlankLines')}</button>
+                <button type="button" className="qibi-btn small" onClick={removeBlankLinesAction} title={t('removeBlankLinesTitle')} disabled={!draft}>{t('removeBlankLines')}</button>
                 <button type="button" className="qibi-btn small" onClick={() => { setZen(value => !value); setTab('body') }} title={t('zenHint')}>{zen ? t('zenOff') : t('zen')}</button>
                 <div className="qibi-menu-wrap">
                   <button
